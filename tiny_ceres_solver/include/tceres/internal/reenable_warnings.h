@@ -26,28 +26,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
-// Author: keir@google.com (Keir Mierle)
-//
-// A simple example of using the Ceres minimizer.
-//
-// Minimize 0.5 (10 - x)^2 using analytic jacobian matrix.
-/// This file is part of VIO-Hello-World
-/// Copyright (C) 2023 ZJU
-/// You should have received a copy of the GNU General Public License,
-/// see <https://www.gnu.org/licenses/> for more details
-/// Author: weihao(isweihao@zju.edu.cn), M.S at Zhejiang University
 
-#include <iostream>
-#include "tceres/internal/eigen.h"
-#include "tceres/internal/macros.h"
-#include "tceres/internal/port.h"
-#include "tceres/internal/disable_warnings.h"
-#include "tceres/internal/manual_constructor.h"
-#include "tceres/internal/fixed_array.h"
-#include "tceres/internal/scoped_ptr.h"
+// This is not your usual header guard. See disable_warnings.h
+#ifdef CERES_WARNINGS_DISABLED
+#undef CERES_WARNINGS_DISABLED
 
-int main(int argc, char** argv)
-{
-  std::cout << "Hello World VIO\n";
-  return 0;
-}
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
+
+#endif  // CERES_WARNINGS_DISABLED

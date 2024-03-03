@@ -1,2 +1,2 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_executable(helloworld_analytic_diff example/helloworld_analytic_diff.cpp)
