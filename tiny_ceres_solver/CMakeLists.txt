@@ -7,10 +7,14 @@ add_library(tiny_ceres
         internal/tceres/stringprintf.cc
         internal/tceres/corrector.cc
         internal/tceres/array_utils.cc
+        internal/tceres/residual_block.cc
+        internal/tceres/residual_block_utils.cc
+        internal/tceres/loss_function.cc
 )
 
+target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
 
-set(TEST_SOURCES small_blas_test array_utils_test)
+set(TEST_SOURCES small_blas_test array_utils_test loss_function_test)
 
 foreach (test_src ${TEST_SOURCES})
     add_executable(${test_src} internal/tceres/${test_src}.cc)

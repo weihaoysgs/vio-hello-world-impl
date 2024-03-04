@@ -41,12 +41,14 @@
 
 #include "tceres/autodiff_cost_function.h"
 #include "tceres/autodiff_local_parameterization.h"
+#include "tceres/collections_port.h"
 #include "tceres/context.h"
 #include "tceres/cost_function.h"
 #include "tceres/covariance.h"
 #include "tceres/crs_matrix.h"
 #include "tceres/evaluation_callback.h"
 #include "tceres/fpclassify.h"
+#include "tceres/integral_types.h"
 #include "tceres/internal/autodiff.h"
 #include "tceres/internal/disable_warnings.h"
 #include "tceres/internal/eigen.h"
@@ -58,18 +60,25 @@
 #include "tceres/jet.h"
 #include "tceres/local_parameterization.h"
 #include "tceres/loss_function.h"
+#include "tceres/parameter_block.h"
+#include "tceres/residual_block.h"
 #include "tceres/rotation.h"
 #include "tceres/sized_cost_function.h"
 #include "tceres/stringprintf.h"
 #include "tceres/types.h"
-#include "tceres/collections_port.h"
-#include "tceres/integral_types.h"
+
+class CostOne : public tceres::CostFunction
+{
+  virtual bool Evaluate(double const* const* parameters, double* residuals, double** jacobians) const { return true; }
+};
+
 int main(int argc, char** argv)
 {
   using namespace tceres::internal;
-  std::string result = StringPrintf("%d %s\n", 10, "hello");
-  SStringPrintf(&result, "%d %s\n", 10, "hello");
-  StringAppendF(&result, "%d %s\n", 20, "there");
-  std::cout << result;
+  using namespace tceres;
+  std::vector<ParameterBlock*> parameter_blocks{};
+  CostFunction* cost_function = new CostOne;
+  LossFunction* loss_function = new HuberLoss(1.0);
+  auto* residual_block = new ResidualBlock(cost_function, loss_function, parameter_blocks, 1);
   return 0;
 }
