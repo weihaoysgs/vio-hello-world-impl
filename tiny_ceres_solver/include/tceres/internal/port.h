@@ -62,7 +62,7 @@
 #include <memory>
 #endif
 
-namespace ceres {
+namespace tceres {
 
 #if defined(CERES_TR1_SHARED_PTR)
 using std::tr1::shared_ptr;

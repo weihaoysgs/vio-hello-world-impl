@@ -34,11 +34,11 @@
 
 #include <cstddef>
 #include "Eigen/Core"
-#include "ceres/internal/macros.h"
-#include "ceres/internal/manual_constructor.h"
+#include "tceres/internal/macros.h"
+#include "tceres/internal/manual_constructor.h"
 #include "glog/logging.h"
 
-namespace ceres {
+namespace tceres {
 namespace internal {
 
 // A FixedArray<T> represents a non-resizable array of T where the

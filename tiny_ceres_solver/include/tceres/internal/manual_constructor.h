@@ -42,7 +42,7 @@
 
 #include <new>
 
-namespace ceres {
+namespace tceres {
 namespace internal {
 
 // ------- Define CERES_ALIGNED_CHAR_ARRAY --------------------------------

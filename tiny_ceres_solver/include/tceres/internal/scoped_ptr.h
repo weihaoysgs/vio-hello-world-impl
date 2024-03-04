@@ -40,7 +40,7 @@
 #include <cstddef>
 #include <algorithm>
 
-namespace ceres {
+namespace tceres {
 namespace internal {
 
 template <class C> class scoped_ptr;

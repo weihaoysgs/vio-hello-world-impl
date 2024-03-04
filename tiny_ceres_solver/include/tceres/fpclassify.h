@@ -28,32 +28,43 @@
 //
 // Author: keir@google.com (Keir Mierle)
 //
-// A simple example of using the Ceres minimizer.
+// Portable floating point classification. The names are picked such that they
+// do not collide with macros. For example, "isnan" in C99 is a macro and hence
+// does not respect namespaces.
 //
-// Minimize 0.5 (10 - x)^2 using analytic jacobian matrix.
-/// This file is part of VIO-Hello-World
-/// Copyright (C) 2023 ZJU
-/// You should have received a copy of the GNU General Public License,
-/// see <https://www.gnu.org/licenses/> for more details
-/// Author: weihao(isweihao@zju.edu.cn), M.S at Zhejiang University
+// TODO(keir): Finish porting!
 
-#include <iostream>
-#include "tceres/internal/eigen.h"
-#include "tceres/internal/macros.h"
-#include "tceres/internal/port.h"
-#include "tceres/internal/disable_warnings.h"
-#include "tceres/internal/manual_constructor.h"
-#include "tceres/internal/fixed_array.h"
-#include "tceres/internal/scoped_ptr.h"
-#include "tceres/context.h"
-#include "tceres/covariance.h"
-#include "tceres/fpclassify.h"
-#include "tceres/jet.h"
-#include "tceres/rotation.h"
-#include "tceres/types.h"
+#ifndef CERES_PUBLIC_FPCLASSIFY_H_
+#define CERES_PUBLIC_FPCLASSIFY_H_
 
-int main(int argc, char** argv)
-{
-  std::cout << "Hello World VIO\n";
-  return 0;
+#if defined(_MSC_VER)
+#include <float.h>
+#endif
+
+#include <limits>
+
+namespace tceres {
+
+#if defined(_MSC_VER)
+
+inline bool IsFinite  (double x) { return _finite(x) != 0;                   }
+inline bool IsInfinite(double x) { return _finite(x) == 0 && _isnan(x) == 0; }
+inline bool IsNaN     (double x) { return _isnan(x) != 0;                    }
+inline bool IsNormal  (double x) {  // NOLINT
+  const int classification = _fpclass(x);
+  return (classification == _FPCLASS_NN || classification == _FPCLASS_PN);
 }
+
+# else
+
+// These definitions are for the normal Unix suspects.
+inline bool IsFinite  (double x) { return std::isfinite(x); }
+inline bool IsInfinite(double x) { return std::isinf(x);    }
+inline bool IsNaN     (double x) { return std::isnan(x);    }
+inline bool IsNormal  (double x) { return std::isnormal(x); }
+
+#endif
+
+}  // namespace ceres
+
+#endif  // CERES_PUBLIC_FPCLASSIFY_H_
