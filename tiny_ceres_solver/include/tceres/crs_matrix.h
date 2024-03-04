@@ -26,43 +26,61 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 //
-// Author: keir@google.com (Keir Mierle)
-//
-// A simple example of using the Ceres minimizer.
-//
-// Minimize 0.5 (10 - x)^2 using analytic jacobian matrix.
-/// This file is part of VIO-Hello-World
-/// Copyright (C) 2023 ZJU
-/// You should have received a copy of the GNU General Public License,
-/// see <https://www.gnu.org/licenses/> for more details
-/// Author: weihao(isweihao@zju.edu.cn), M.S at Zhejiang University
+// Author: sameeragarwal@google.com (Sameer Agarwal)
 
-#include <iostream>
-#include "tceres/internal/eigen.h"
-#include "tceres/internal/macros.h"
+#ifndef CERES_PUBLIC_CRS_MATRIX_H_
+#define CERES_PUBLIC_CRS_MATRIX_H_
+
+#include <vector>
 #include "tceres/internal/port.h"
 #include "tceres/internal/disable_warnings.h"
-#include "tceres/internal/manual_constructor.h"
-#include "tceres/internal/fixed_array.h"
-#include "tceres/internal/scoped_ptr.h"
-#include "tceres/context.h"
-#include "tceres/covariance.h"
-#include "tceres/fpclassify.h"
-#include "tceres/jet.h"
-#include "tceres/rotation.h"
-#include "tceres/types.h"
-#include "tceres/crs_matrix.h"
-#include "tceres/cost_function.h"
-#include "tceres/loss_function.h"
-#include "tceres/local_parameterization.h"
-#include "tceres/sized_cost_function.h"
-#include "tceres/evaluation_callback.h"
-#include "tceres/internal/autodiff.h"
-#include "tceres/autodiff_cost_function.h"
-#include "tceres/autodiff_local_parameterization.h"
 
-int main(int argc, char** argv)
-{
-  std::cout << "Hello World VIO\n";
-  return 0;
-}
+namespace tceres {
+
+// A compressed row sparse matrix used primarily for communicating the
+// Jacobian matrix to the user.
+struct CERES_EXPORT CRSMatrix {
+  CRSMatrix() : num_rows(0), num_cols(0) {}
+
+  int num_rows;
+  int num_cols;
+
+  // A compressed row matrix stores its contents in three arrays,
+  // rows, cols and values.
+  //
+  // rows is a num_rows + 1 sized array that points into the cols and
+  // values array. For each row i:
+  //
+  // cols[rows[i]] ... cols[rows[i + 1] - 1] are the indices of the
+  // non-zero columns of row i.
+  //
+  // values[rows[i]] .. values[rows[i + 1] - 1] are the values of the
+  // corresponding entries.
+  //
+  // cols and values contain as many entries as there are non-zeros in
+  // the matrix.
+  //
+  // e.g, consider the 3x4 sparse matrix
+  //
+  //  [ 0 10  0  4 ]
+  //  [ 0  2 -3  2 ]
+  //  [ 1  2  0  0 ]
+  //
+  // The three arrays will be:
+  //
+  //
+  //            -row0-  ---row1---  -row2-
+  //  rows   = [ 0,      2,          5,     7]
+  //  cols   = [ 1,  3,  1,  2,  3,  0,  1]
+  //  values = [10,  4,  2, -3,  2,  1,  2]
+
+  std::vector<int> cols;
+  std::vector<int> rows;
+  std::vector<double> values;
+};
+
+}  // namespace ceres
+
+#include "tceres/internal/reenable_warnings.h"
+
+#endif  // CERES_PUBLIC_CRS_MATRIX_H_

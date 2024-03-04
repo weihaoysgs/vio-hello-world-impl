@@ -462,6 +462,6 @@ class CERES_EXPORT Covariance {
 
 }  // namespace ceres
 
-#include "ceres/internal/reenable_warnings.h"
+#include "tceres/internal/reenable_warnings.h"
 
 #endif  // CERES_PUBLIC_COVARIANCE_H_

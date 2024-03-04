@@ -509,6 +509,6 @@ CERES_EXPORT bool IsDenseLinearAlgebraLibraryTypeAvailable(
 
 }  // namespace ceres
 
-#include "ceres/internal/reenable_warnings.h"
+#include "tceres/internal/reenable_warnings.h"
 
 #endif  // CERES_PUBLIC_TYPES_H_
