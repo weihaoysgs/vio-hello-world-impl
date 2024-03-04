@@ -14,6 +14,8 @@ add_library(tiny_ceres
         internal/tceres/linear_operator.cc
         internal/tceres/triplet_sparse_matrix.cc
         internal/tceres/sparse_matrix.cc
+        internal/tceres/program.cc
+        internal/tceres/compressed_row_sparse_matrix.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
