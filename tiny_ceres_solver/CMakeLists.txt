@@ -11,13 +11,16 @@ add_library(tiny_ceres
         internal/tceres/residual_block_utils.cc
         internal/tceres/loss_function.cc
         internal/tceres/local_parameterization.cc
+        internal/tceres/linear_operator.cc
+        internal/tceres/triplet_sparse_matrix.cc
+        internal/tceres/sparse_matrix.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
 
 set(TEST_SOURCES small_blas_test array_utils_test loss_function_test
         residual_block_utils_test residual_block_test householder_vector_test
-        local_parameterization_test)
+        local_parameterization_test triplet_sparse_matrix_test)
 
 foreach (test_src ${TEST_SOURCES})
     add_executable(${test_src} internal/tceres/${test_src}.cc)

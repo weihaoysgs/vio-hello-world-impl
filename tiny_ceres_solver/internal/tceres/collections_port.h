@@ -75,7 +75,7 @@
 // price to pay is slower speed for some operations.
 #if defined(CERES_NO_UNORDERED_MAP)
 
-namespace ceres {
+namespace tceres {
 namespace internal {
 
 template<typename K, typename V>

@@ -66,6 +66,10 @@
 #include "tceres/sized_cost_function.h"
 #include "tceres/stringprintf.h"
 #include "tceres/types.h"
+#include "tceres/casts.h"
+#include "tceres/map_util.h"
+#include "tceres/stl_util.h"
+#include "tceres/sparse_matrix.h"
 
 class CostOne : public tceres::CostFunction
 {
@@ -80,5 +84,6 @@ int main(int argc, char** argv)
   CostFunction* cost_function = new CostOne;
   LossFunction* loss_function = new HuberLoss(1.0);
   auto* residual_block = new ResidualBlock(cost_function, loss_function, parameter_blocks, 1);
+  std::cout << "hello world\n";
   return 0;
 }
