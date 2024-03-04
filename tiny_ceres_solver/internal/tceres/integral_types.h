@@ -28,48 +28,64 @@
 //
 // Author: keir@google.com (Keir Mierle)
 //
-// A simple example of using the Ceres minimizer.
-//
-// Minimize 0.5 (10 - x)^2 using analytic jacobian matrix.
-/// This file is part of VIO-Hello-World
-/// Copyright (C) 2023 ZJU
-/// You should have received a copy of the GNU General Public License,
-/// see <https://www.gnu.org/licenses/> for more details
-/// Author: weihao(isweihao@zju.edu.cn), M.S at Zhejiang University
+// Portable typedefs for various fixed-size integers. Uses template
+// metaprogramming instead of fragile compiler defines.
 
-#include <iostream>
+#ifndef CERES_INTERNAL_INTEGRAL_TYPES_H_
+#define CERES_INTERNAL_INTEGRAL_TYPES_H_
 
-#include "tceres/autodiff_cost_function.h"
-#include "tceres/autodiff_local_parameterization.h"
-#include "tceres/context.h"
-#include "tceres/cost_function.h"
-#include "tceres/covariance.h"
-#include "tceres/crs_matrix.h"
-#include "tceres/evaluation_callback.h"
-#include "tceres/fpclassify.h"
-#include "tceres/internal/autodiff.h"
-#include "tceres/internal/disable_warnings.h"
-#include "tceres/internal/eigen.h"
-#include "tceres/internal/fixed_array.h"
-#include "tceres/internal/macros.h"
-#include "tceres/internal/manual_constructor.h"
-#include "tceres/internal/port.h"
-#include "tceres/internal/scoped_ptr.h"
-#include "tceres/jet.h"
-#include "tceres/local_parameterization.h"
-#include "tceres/loss_function.h"
-#include "tceres/rotation.h"
-#include "tceres/sized_cost_function.h"
-#include "tceres/stringprintf.h"
-#include "tceres/types.h"
-#include "tceres/collections_port.h"
-#include "tceres/integral_types.h"
-int main(int argc, char** argv)
-{
-  using namespace tceres::internal;
-  std::string result = StringPrintf("%d %s\n", 10, "hello");
-  SStringPrintf(&result, "%d %s\n", 10, "hello");
-  StringAppendF(&result, "%d %s\n", 20, "there");
-  std::cout << result;
-  return 0;
-}
+namespace tceres {
+namespace internal {
+
+// Compile time ternary on types.
+template<bool kCondition, typename kTrueType, typename kFalseType>
+struct Ternary {
+  typedef kTrueType type;
+};
+template<typename kTrueType, typename kFalseType>
+struct Ternary<false, kTrueType, kFalseType> {
+  typedef kFalseType type;
+};
+
+#define CERES_INTSIZE(TYPE) \
+    typename Ternary<sizeof(TYPE) * 8 == kBits, TYPE,
+
+template<int kBits>
+struct Integer {
+  typedef
+      CERES_INTSIZE(char)
+      CERES_INTSIZE(short)
+      CERES_INTSIZE(int)
+      CERES_INTSIZE(long int)
+      CERES_INTSIZE(long long)
+      void>::type >::type >::type >::type >::type
+      type;
+};
+
+template<int kBits>
+struct UnsignedInteger {
+  typedef
+      CERES_INTSIZE(unsigned char)
+      CERES_INTSIZE(unsigned short)
+      CERES_INTSIZE(unsigned int)
+      CERES_INTSIZE(unsigned long int)
+      CERES_INTSIZE(unsigned long long)
+      void>::type >::type >::type >::type >::type
+      type;
+};
+
+#undef CERES_INTSIZE
+
+typedef Integer< 8>::type int8;
+typedef Integer<32>::type int32;
+typedef Integer<64>::type int64;
+
+typedef UnsignedInteger< 8>::type uint8;
+typedef UnsignedInteger<16>::type uint16;
+typedef UnsignedInteger<32>::type uint32;
+typedef UnsignedInteger<64>::type uint64;
+
+}  // namespace internal
+}  // namespace ceres
+
+#endif  // CERES_INTERNAL_INTEGRAL_TYPES_H_
