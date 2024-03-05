@@ -1,7 +1,64 @@
+' https://blog.csdn.net/m0_37989980/article/details/104470064
+' https://blog.csdn.net/lanchunhui/article/details/49557083
 @startuml
-Class01 <|-- Class02
-Class03 *-- Class04
-Class05 o-- Class06
-Class07 .. Class08
-Class09 -- Class10
+
+class ParameterBlock {
+  - HashSet<ResidualBlock*> residual_blocks_
+  - LocalParameterization* local_parameterization_;
+}
+class ResidualBlock {
+  - scoped_array<ParameterBlock*> parameter_blocks_;
+  - const CostFunction* cost_function_;
+  - const LossFunction* loss_function_;
+}
+class Program {
+  - std::vector<ParameterBlock*> parameter_blocks_;
+  - std::vector<ResidualBlock*> residual_blocks_;
+}
+class TripletSparseMatrix
+class QuaternionParameterization
+class Evaluator
+class Problem
+class ProblemImpl
+class Solver
+
+interface LossFunction
+interface CostFunction {
+  + void set_num_residuals(int num_residuals)
+  + std::vector<int32>* mutable_parameter_block_sizes()
+  - std::vector<int32> parameter_block_sizes_;
+  - int num_residuals_;
+}
+interface SparseMatrix
+interface LinearOperator
+interface LocalParameterization {
+  + virtual bool Plus(const double* x, const double* delta, double* x_plus_delta) const = 0;
+  + virtual bool ComputeJacobian(const double* x, double* jacobian) const = 0;
+}
+
+' interface impl
+SparseMatrix <|.. TripletSparseMatrix
+LocalParameterization <|.. QuaternionParameterization
+
+LinearOperator <|-- SparseMatrix
+
+
+' ## assocation（konws a）##
+' An object knows about the existence of another object, 
+' and the object holds a pointer or reference to the other object.
+' ResdidualBlock have a LossFunction* or &LossFunction
+ResidualBlock --> LossFunction 
+ResidualBlock --> CostFunction
+ParameterBlock --> LocalParameterization
+
+' Aggregation
+ParameterBlock *--> ResidualBlock
+ResidualBlock  *--> ParameterBlock
+Program        *--> ResidualBlock
+Program        *--> ParameterBlock
+
+' dependency
+Program ..> TripletSparseMatrix
+
+
 @enduml

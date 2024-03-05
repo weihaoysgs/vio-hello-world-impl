@@ -5,3 +5,4 @@
 ## Need to be Test
 - compressed_row_sparse_matrix_test.cc
 - program_test.cc
+- block_sparse_matrix_test.cc

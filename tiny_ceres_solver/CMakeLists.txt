@@ -17,6 +17,14 @@ add_library(tiny_ceres
         internal/tceres/program.cc
         internal/tceres/compressed_row_sparse_matrix.cc
         internal/tceres/wall_time.cc
+        internal/tceres/context.cc
+        internal/tceres/context_impl.cc
+        internal/tceres/problem.cc
+        internal/tceres/problem_impl.cc
+        internal/tceres/scratch_evaluate_preparer.cc
+        internal/tceres/block_structure.cc
+        internal/tceres/block_sparse_matrix.cc
+        internal/tceres/block_evaluate_preparer.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
