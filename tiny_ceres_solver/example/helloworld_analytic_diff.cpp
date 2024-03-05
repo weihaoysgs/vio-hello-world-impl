@@ -70,6 +70,9 @@
 #include "tceres/map_util.h"
 #include "tceres/stl_util.h"
 #include "tceres/sparse_matrix.h"
+#include "tceres/mutex.h"
+#include "tceres/wall_time.h"
+#include "tceres/execution_summary.h"
 
 class CostOne : public tceres::CostFunction
 {

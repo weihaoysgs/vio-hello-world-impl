@@ -16,6 +16,7 @@ add_library(tiny_ceres
         internal/tceres/sparse_matrix.cc
         internal/tceres/program.cc
         internal/tceres/compressed_row_sparse_matrix.cc
+        internal/tceres/wall_time.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
