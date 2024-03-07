@@ -21,6 +21,7 @@ class Evaluator
 class Problem
 class ProblemImpl
 class Solver
+class CompressedRowSparseMatrix
 
 interface LossFunction
 interface CostFunction {
@@ -38,6 +39,7 @@ interface LocalParameterization {
 
 ' interface impl
 SparseMatrix <|.. TripletSparseMatrix
+SparseMatrix <|.. CompressedRowSparseMatrix
 LocalParameterization <|.. QuaternionParameterization
 
 LinearOperator <|-- SparseMatrix

@@ -75,7 +75,12 @@
 #include "tceres/types.h"
 #include "tceres/wall_time.h"
 #include "tceres/block_structure.h"
+#include "tceres/evaluator.h"
 #include "tceres/block_sparse_matrix.h"
+#include "tceres/dense_jacobian_writer.h"
+#include "tceres/dynamic_compressed_row_sparse_matrix.h"
+#include "tceres/dynamic_compressed_row_finalizer.h"
+#include "tceres/program_evaluator.h"
 // A CostFunction implementing analytically derivatives for the
 // function f(x) = 10 - x.
 class QuadraticCostFunction : public tceres::SizedCostFunction<1 /* number of residuals */, 1 /* size of first parameter */>

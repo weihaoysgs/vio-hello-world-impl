@@ -25,13 +25,22 @@ add_library(tiny_ceres
         internal/tceres/block_structure.cc
         internal/tceres/block_sparse_matrix.cc
         internal/tceres/block_evaluate_preparer.cc
+        internal/tceres/dense_sparse_matrix.cc
+        internal/tceres/block_jacobian_writer.cc
+        internal/tceres/dynamic_compressed_row_jacobian_writer.cc
+        internal/tceres/compressed_row_jacobian_writer.cc
+        internal/tceres/thread_token_provider.cc
+        internal/tceres/evaluator.cc
+        internal/tceres/dynamic_compressed_row_sparse_matrix.cc
+        internal/tceres/evaluator_test_utils.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
 
 set(TEST_SOURCES small_blas_test array_utils_test loss_function_test
         residual_block_utils_test residual_block_test householder_vector_test
-        local_parameterization_test triplet_sparse_matrix_test)
+        local_parameterization_test triplet_sparse_matrix_test
+        evaluator_test problem_test)
 
 foreach (test_src ${TEST_SOURCES})
     add_executable(${test_src} internal/tceres/${test_src}.cc)
