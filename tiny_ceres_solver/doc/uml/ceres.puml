@@ -17,13 +17,33 @@ class Program {
 }
 class TripletSparseMatrix
 class QuaternionParameterization
-class Evaluator
-class Problem
-class ProblemImpl
+class Problem {
+  - scoped_ptr<ProblemImpl> problem_impl_;
+  + void AddParameterBlock(double* values, int size);
+  + void AddParameterBlock(double* values, int size, LocalParameterization* local_parameterization);
+  + ResidualBlockId AddResidualBlock(CostFunction* cost_function,
+                                   LossFunction* loss_function, double* x0, double* x1);
+}
+class ProblemImpl {
+  + ResidualBlockId AddResidualBlock(CostFunction* cost_function,
+      LossFunction* loss_function, const std::vector<double*>& parameter_blocks);
+}
+' class Solver
+' class CompressedRowSparseMatrix
+class LineSearchMinimizer
+class TrustRegionMinimizer
+class CoordinateDescentMinimizer
+class DoglegStrategy
+class LevenbergMarquardtStrategy
+class DenseSparseMatrix
+class BlockSparseMatrix
+class DenseQRSolver
 class Solver
-class CompressedRowSparseMatrix
+class SchurComplementSolver
 
+interface Evaluator
 interface LossFunction
+interface EvaluationCallback
 interface CostFunction {
   + void set_num_residuals(int num_residuals)
   + std::vector<int32>* mutable_parameter_block_sizes()
@@ -36,31 +56,89 @@ interface LocalParameterization {
   + virtual bool Plus(const double* x, const double* delta, double* x_plus_delta) const = 0;
   + virtual bool ComputeJacobian(const double* x, double* jacobian) const = 0;
 }
+interface Context
+interface Minimizer
+interface TrustRegionStrategy
+interface LinearSolver
+interface BlockSparseMatrixSolver<BlockSparseMatrix> {
+
+}
+interface TypedLinearSolver  <<MatrixType>>
+interface DenseSparseMatrixSolver<DenseSparseMatrix> {
+
+}
+
+
+enum LinearSolverType {
+  + DENSE_NORMAL_CHOLESKY
+  + DENSE_QR
+  + SPARSE_NORMAL_CHOLESKY
+  + DENSE_SCHUR
+  + SPARSE_SCHUR
+  + ITERATIVE_SCHUR
+  + CGNR
+}
+
+enum TrustRegionStrategyType {
+  + LEVENBERG_MARQUARDT
+  + DOGLEG
+}
 
 ' interface impl
-SparseMatrix <|.. TripletSparseMatrix
-SparseMatrix <|.. CompressedRowSparseMatrix
+SparseMatrix          <|.. TripletSparseMatrix
+' SparseMatrix          <|.. CompressedRowSparseMatrix
+SparseMatrix          <|.. DenseSparseMatrix
+SparseMatrix          <|.. BlockSparseMatrix
 LocalParameterization <|.. QuaternionParameterization
+Context               <|.. ContextImpl
+Minimizer               <|.. LineSearchMinimizer
+Minimizer               <|.. TrustRegionMinimizer
+Minimizer               <|.. CoordinateDescentMinimizer
+TrustRegionStrategy     <|.. DoglegStrategy
+TrustRegionStrategy     <|.. LevenbergMarquardtStrategy
 
-LinearOperator <|-- SparseMatrix
+' template
+' TypedLinearSolver       <|.. DenseSparseMatrixSolver
+' DenseSparseMatrixSolver *- DenseSparseMatrix
+
+' TypedLinearSolver       <|.. BlockSparseMatrixSolver
+' BlockSparseMatrixSolver *- BlockSparseMatrix
+
+' inherit(fathre:son)
+LinearOperator              <|-- SparseMatrix
+LinearSolver                <|-- TypedLinearSolver
+DenseSparseMatrixSolver     <|-- DenseQRSolver
+BlockSparseMatrixSolver     <|-- SchurComplementSolver
+TypedLinearSolver           <|-- BlockSparseMatrixSolver
+TypedLinearSolver           <|-- DenseSparseMatrixSolver
 
 
-' ## assocation（konws a）##
-' An object knows about the existence of another object, 
-' and the object holds a pointer or reference to the other object.
-' ResdidualBlock have a LossFunction* or &LossFunction
+' Assocation(have a pointer representation other object)
 ResidualBlock --> LossFunction 
 ResidualBlock --> CostFunction
 ParameterBlock --> LocalParameterization
+Evaluator --> EvaluationCallback
+LinearSolver --> LinearSolverType
+Evaluator --> ContextImpl
+ProblemImpl --> Program
+Problem --> ProblemImpl
+TrustRegionMinimizer --> TrustRegionStrategy
+DoglegStrategy --> LinearSolver
+LevenbergMarquardtStrategy --> LinearSolver
+TrustRegionStrategy --> TrustRegionStrategyType
 
 ' Aggregation
 ParameterBlock *--> ResidualBlock
 ResidualBlock  *--> ParameterBlock
 Program        *--> ResidualBlock
 Program        *--> ParameterBlock
+ProblemImpl    *--> ParameterBlock
+ProblemImpl    *--> LocalParameterization
 
 ' dependency
 Program ..> TripletSparseMatrix
-
+ProblemImpl ..> Evaluator
+Solver ..> Problem
+Solver ..> Minimizer
 
 @enduml
