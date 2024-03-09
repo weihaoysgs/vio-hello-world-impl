@@ -33,6 +33,9 @@ add_library(tiny_ceres
         internal/tceres/evaluator.cc
         internal/tceres/dynamic_compressed_row_sparse_matrix.cc
         internal/tceres/evaluator_test_utils.cc
+        internal/tceres/solver.cc
+        internal/tceres/types.cc
+        internal/tceres/parameter_block_ordering.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
@@ -40,7 +43,9 @@ target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
 set(TEST_SOURCES small_blas_test array_utils_test loss_function_test
         residual_block_utils_test residual_block_test householder_vector_test
         local_parameterization_test triplet_sparse_matrix_test
-        evaluator_test problem_test)
+        evaluator_test problem_test parameter_block_ordering_test
+        graph_algorithms_test
+)
 
 foreach (test_src ${TEST_SOURCES})
     add_executable(${test_src} internal/tceres/${test_src}.cc)

@@ -81,6 +81,10 @@
 #include "tceres/dynamic_compressed_row_sparse_matrix.h"
 #include "tceres/dynamic_compressed_row_finalizer.h"
 #include "tceres/program_evaluator.h"
+#include "tceres/iteration_callback.h"
+#include "tceres/ordered_groups.h"
+#include "tceres/solver.h"
+
 // A CostFunction implementing analytically derivatives for the
 // function f(x) = 10 - x.
 class QuadraticCostFunction : public tceres::SizedCostFunction<1 /* number of residuals */, 1 /* size of first parameter */>
@@ -131,5 +135,11 @@ int main(int argc, char** argv)
   tceres::CostFunction* cost_function = new QuadraticCostFunction;
   problem.AddResidualBlock(cost_function, NULL, &x);
 
+  tceres::Solver::Options options;
+  options.linear_solver_type = tceres::DENSE_SCHUR;
+  options.trust_region_strategy_type = tceres::DOGLEG;
+  options.minimizer_type = tceres::TRUST_REGION;
+  tceres::Solver::Summary summary;
+  tceres::Solve(options, &problem, &summary);
   return 0;
 }
