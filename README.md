@@ -1,9 +1,9 @@
 # vio-hello-world-impl
 
-- [vio-hello-world-impl](#vio-hello-world-impl)
-  * [Feature Extraction](#feature-extraction)
-    + [Harris Features](#harris-features)
-    + [ORB Features](#orb-features)
+
+* [Feature Extraction](#feature-extraction)
+  + [Harris Features](#harris-features)
+  + [ORB Features](#orb-features)
 
 ## Feature Extraction
 
