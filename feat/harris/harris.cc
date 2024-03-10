@@ -248,7 +248,7 @@ static void cornerEigenValsVecs(const cv::Mat& src, cv::Mat& eigenv, int block_s
     }
   }
 
-  boxFilter(cov, cov, cov.depth(), cv::Size(block_size, block_size), cv::Point(-1, -1), false, borderType);
+  cv::boxFilter(cov, cov, cov.depth(), cv::Size(block_size, block_size), cv::Point(-1, -1), false, borderType);
 
   if (op_type == MINEIGENVAL)
     feat::calcMinEigenVal(cov, eigenv);

@@ -25,7 +25,7 @@ cv::Mat openCVMethod(const cv::Mat& image, int max_kps_num, double kps_min_dista
     auto y = pt.y;
     cv::circle(draw_image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), -1);
   }
-  cv::putText(draw_image, "OpenCV", cv::Point2i(50, 50), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0, 0, 255));
+  cv::putText(draw_image, "", cv::Point2i(50, 50), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0, 0, 255));
   return draw_image;
 }
 
@@ -44,7 +44,7 @@ cv::Mat harrisDetector(const cv::Mat& image, int max_kps_num, double kps_min_dis
     auto y = pt.y;
     cv::circle(draw_image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), -1);
   }
-  cv::putText(draw_image, "Impl", cv::Point2i(50, 50), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0, 0, 255));
+  cv::putText(draw_image, "", cv::Point2i(50, 50), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0, 0, 255));
   return draw_image;
 }
 
@@ -55,14 +55,19 @@ int main(int argc, char** argv)
   ::google::ParseCommandLineFlags(&argc, &argv, true);
 
   cv::Mat gray_image = cv::imread(FLAGS_image_path, cv::IMREAD_GRAYSCALE);
+
   int max_kps_num = FLAGS_max_kps_num;
   double kps_min_distance = FLAGS_kps_min_distance;
   double kps_quality_level = FLAGS_kps_quality_level;
+
   LOG_ASSERT(gray_image.empty() == false) << " Image is empty, please check you image path.";
+
   cv::Mat opencv_harris = openCVMethod(gray_image, max_kps_num, kps_min_distance, kps_quality_level);
   cv::Mat self_harris = harrisDetector(gray_image, max_kps_num, kps_min_distance, kps_quality_level);
+
   cv::imshow("opencv_harris", opencv_harris);
   cv::imshow("self_harris", self_harris);
   cv::waitKey(0);
+
   return 0;
 }

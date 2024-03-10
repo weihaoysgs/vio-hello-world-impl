@@ -5,6 +5,7 @@
 
 namespace com {
 
+template <int = 0>
 double WallTimeInSeconds()
 {
   timeval time_val;
