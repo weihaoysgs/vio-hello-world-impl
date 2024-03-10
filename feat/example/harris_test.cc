@@ -1,11 +1,11 @@
-#include "feature_extraction/harris/harris.h"
+#include "feat/harris/harris.h"
 
 #include "common/wall_time.h"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 #include "opencv2/opencv.hpp"
 
-DEFINE_string(image_path, "../feature_extraction/data/euroc01.png", "image file path");
+DEFINE_string(image_path, "../feat/data/euroc01.png", "image file path");
 DEFINE_int32(max_kps_num, 500, "max detector features num");
 DEFINE_double(kps_min_distance, 30, "min kp distance");
 DEFINE_double(kps_quality_level, 0.01, "qualityLevel of kp");

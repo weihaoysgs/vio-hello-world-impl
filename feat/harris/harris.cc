@@ -1,4 +1,4 @@
-#include "feature_extraction/harris/harris.h"
+#include "feat/harris/harris.h"
 
 namespace feat {
 enum

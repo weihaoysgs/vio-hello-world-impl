@@ -29,4 +29,4 @@ set(THIRD_PARTY_LIBS
 enable_testing()
 
 add_subdirectory(tiny_ceres_solver)
-add_subdirectory(feature_extraction)
+add_subdirectory(feat)
