@@ -10,11 +10,13 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(Glog REQUIRED)
 find_package(GTest REQUIRED)
 find_package(GFlags REQUIRED)
-
+find_package(OpenCV 4 REQUIRED)
 include_directories(
         ${GLOG_INCLUDE_DIRS}
         ${GTEST_INCLUDE_DIRS}
         ${GFLAGS_INCLUDE_DIRS}
+        ${OpenCV_INCLUDE_DIRS}
+        ${PROJECT_SOURCE_DIR}
 )
 
 set(THIRD_PARTY_LIBS
@@ -27,3 +29,4 @@ set(THIRD_PARTY_LIBS
 enable_testing()
 
 add_subdirectory(tiny_ceres_solver)
+add_subdirectory(feature_extraction)
