@@ -25,6 +25,7 @@ cv::Mat openCVMethod(const cv::Mat& image, int max_kps_num, double kps_min_dista
     auto y = pt.y;
     cv::circle(draw_image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), -1);
   }
+  cv::putText(draw_image, "OpenCV", cv::Point2i(50, 50), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0, 0, 255));
   return draw_image;
 }
 
@@ -43,6 +44,7 @@ cv::Mat harrisDetector(const cv::Mat& image, int max_kps_num, double kps_min_dis
     auto y = pt.y;
     cv::circle(draw_image, cv::Point2f(x, y), 2, cv::Scalar(0, 255, 0), -1);
   }
+  cv::putText(draw_image, "Impl", cv::Point2i(50, 50), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0, 0, 255));
   return draw_image;
 }
 
