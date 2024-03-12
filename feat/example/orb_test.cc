@@ -1,3 +1,11 @@
+// Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+// Everyone is permitted to copy and distribute verbatim copies
+// of this license document, but changing it is not allowed.
+// This file is part of vio-hello-world Copyright (C) 2023 ZJU
+// You should have received a copy of the GNU General Public License
+// along with vio-hello-world. If not, see <https://www.gnu.org/licenses/>.
+// Author: weihao(isweihao@zju.edu.cn), M.S at Zhejiang University
+
 #include "common/draw_utils.h"
 #include "common/wall_time.h"
 #include "feat/orb/orb_feature.h"
