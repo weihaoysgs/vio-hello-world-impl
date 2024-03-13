@@ -14,44 +14,40 @@
 
 DEFINE_string(image_path, "../feat/data/euroc01.png", "image file path");
 
-cv::Mat ORBImpl(const cv::Mat& image)
-{
+cv::Mat ORBImpl(const cv::Mat& image) {
   auto orb = feat::ORB::create(1000);
   std::vector<cv::KeyPoint> keypoints;
   cv::Mat descriptors;
   cv::Mat roi(image.size(), CV_8UC1, cv::Scalar(255));
 
-  double start_time = com::WallTimeInSeconds();
-  orb->detectAndCompute(image, roi, keypoints, descriptors);
-  double cost_time = com::WallTimeInSeconds() - start_time;
-  LOG(INFO) << "Impl ORB cost " << cost_time << " s.";
+  com::EvaluateAndCall(
+      [&]() { orb->detectAndCompute(image, roi, keypoints, descriptors); },
+      "ORBImpl", 20);
 
   return com::DrawKeyPoints(image, keypoints, "");
 }
 
-cv::Mat OpenCVORB(const cv::Mat& image)
-{
+cv::Mat OpenCVORB(const cv::Mat& image) {
   auto orb = cv::ORB::create(1000);
   std::vector<cv::KeyPoint> keypoints;
   cv::Mat descriptors;
   cv::Mat roi(image.size(), CV_8UC1, cv::Scalar(255));
 
-  double start_time = com::WallTimeInSeconds();
-  orb->detectAndCompute(image, roi, keypoints, descriptors);
-  double cost_time = com::WallTimeInSeconds() - start_time;
-  LOG(INFO) << "OpenCV ORB cost " << cost_time << " s.";
+  com::EvaluateAndCall(
+      [&]() { orb->detectAndCompute(image, roi, keypoints, descriptors); },
+      "OpenCVORB", 20);
 
   return com::DrawKeyPoints(image, keypoints, "");
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   ::google::InitGoogleLogging("test_orb_feature");
   FLAGS_stderrthreshold = google::INFO;
   ::google::ParseCommandLineFlags(&argc, &argv, true);
 
   cv::Mat gray_image = cv::imread(FLAGS_image_path, cv::IMREAD_GRAYSCALE);
-  LOG_ASSERT(gray_image.empty() == false) << " Image is empty, please check you image path.";
+  LOG_ASSERT(gray_image.empty() == false)
+      << " Image is empty, please check you image path.";
 
   cv::Mat orb_impl_result = ORBImpl(gray_image);
   cv::Mat cv_impl_result = OpenCVORB(gray_image);
