@@ -45,11 +45,22 @@ add_library(tiny_ceres
         internal/tceres/conjugate_gradients_solver.cc
         internal/tceres/detect_structure.cc
         internal/tceres/lapack.cc
+        internal/tceres/file.cc
+        internal/tceres/linear_least_squares_problems.cc
+        internal/tceres/test_util.cc
+        internal/tceres/polynomial.cc
+        internal/tceres/function_sample.cc
+        internal/tceres/dogleg_strategy.cc
 # Important
         internal/tceres/linear_solver.cc
         internal/tceres/schur_complement_solver.cc
         internal/tceres/eigensparse.cc
         internal/tceres/sparse_cholesky.cc
+        internal/tceres/minimizer.cc
+        internal/tceres/trust_region_strategy.cc
+        internal/tceres/line_search.cc
+        internal/tceres/coordinate_descent_minimizer.cc
+        internal/tceres/trust_region_minimizer.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
@@ -61,7 +72,7 @@ set(TEST_SOURCES small_blas_test array_utils_test loss_function_test
         graph_algorithms_test block_random_access_diagonal_matrix_test
         block_random_access_sparse_matrix_test conjugate_gradients_solver_test
         detect_structure_test block_random_access_dense_matrix_test
-        invert_psd_matrix_test 
+        invert_psd_matrix_test
 )
 
 foreach (test_src ${TEST_SOURCES})

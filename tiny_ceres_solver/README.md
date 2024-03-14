@@ -8,6 +8,10 @@
 - block_sparse_matrix_test.cc
 - dense_sparse_matrix_test.cc
 - dynamic_compressed_row_sparse_matrix_test.cc
+- trust_region_minimizer_test.cc
+- polynomial_test.cc
+- dogleg_strategy_test.cc
+- minimizer_test.cc
 
 ## About `config.h` file
 - thread_token_provider.h
