@@ -36,6 +36,20 @@ add_library(tiny_ceres
         internal/tceres/solver.cc
         internal/tceres/types.cc
         internal/tceres/parameter_block_ordering.cc
+        internal/tceres/trust_region_step_evaluator.cc
+        internal/tceres/block_random_access_matrix.cc
+        internal/tceres/block_random_access_diagonal_matrix.cc
+        internal/tceres/schur_eliminator.cc
+        internal/tceres/block_random_access_dense_matrix.cc
+        internal/tceres/block_random_access_sparse_matrix.cc
+        internal/tceres/conjugate_gradients_solver.cc
+        internal/tceres/detect_structure.cc
+        internal/tceres/lapack.cc
+# Important
+        internal/tceres/linear_solver.cc
+        internal/tceres/schur_complement_solver.cc
+        internal/tceres/eigensparse.cc
+        internal/tceres/sparse_cholesky.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
@@ -44,7 +58,10 @@ set(TEST_SOURCES small_blas_test array_utils_test loss_function_test
         residual_block_utils_test residual_block_test householder_vector_test
         local_parameterization_test triplet_sparse_matrix_test
         evaluator_test problem_test parameter_block_ordering_test
-        graph_algorithms_test
+        graph_algorithms_test block_random_access_diagonal_matrix_test
+        block_random_access_sparse_matrix_test conjugate_gradients_solver_test
+        detect_structure_test block_random_access_dense_matrix_test
+        invert_psd_matrix_test 
 )
 
 foreach (test_src ${TEST_SOURCES})

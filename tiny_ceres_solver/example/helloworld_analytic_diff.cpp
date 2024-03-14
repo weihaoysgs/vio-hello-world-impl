@@ -84,7 +84,8 @@
 #include "tceres/iteration_callback.h"
 #include "tceres/ordered_groups.h"
 #include "tceres/solver.h"
-
+#include "tceres/linear_solver.h"
+#include "tceres/minimizer.h"
 // A CostFunction implementing analytically derivatives for the
 // function f(x) = 10 - x.
 class QuadraticCostFunction : public tceres::SizedCostFunction<1 /* number of residuals */, 1 /* size of first parameter */>

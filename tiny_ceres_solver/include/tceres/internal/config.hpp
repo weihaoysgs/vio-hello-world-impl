@@ -97,4 +97,7 @@
 // with underscore prefixed versions (e.g. j0() -> _j0()).
 // #define CERES_MSVC_USE_UNDERSCORE_PREFIXED_BESSEL_FUNCTIONS
 
+// Add by weihao
+#define CERES_NO_LAPACK
+
 #endif  // CERES_PUBLIC_INTERNAL_CONFIG_H_
