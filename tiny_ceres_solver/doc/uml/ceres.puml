@@ -5,6 +5,7 @@
 class ParameterBlock {
   - HashSet<ResidualBlock*> residual_blocks_
   - LocalParameterization* local_parameterization_;
+  - std::map<double*, ParameterBlock*> parameter_block_map_;
 }
 class ResidualBlock {
   - scoped_array<ParameterBlock*> parameter_blocks_;

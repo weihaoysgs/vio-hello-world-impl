@@ -1,0 +1,55 @@
+@startuml
+title ProblemImpl::AddResidualBlock
+note right
+AddResidualBlock (CostFunction* cost_function, 
+            LossFunction* loss_function, 
+            const vector<double*>& parameter_blocks)
+end note
+start
+:检查 cost_function 定义时参数块的大小
+和传入的实际参数块的大小是否一致 ;
+note right
+  此时的 cost_function 知道残差的计算方式，
+  有多少个参数块，以及每个参数块的大小，
+  但是具体的参数值是在 parameter_blocks 
+  中进行存储的
+end note
+:检查传入的参数块是否有重复;
+:遍历所有的参数块,对于每个参数块调用InternalAddParameterBlock()
+经过合法性检查之后 new 一个 ParameterBlock 将其插
+入到 ProblemImpl::parameter_block_map_ 中去
+同时也要将该参数块push_back到Program::parameter_blocks_中去;
+note right
+  parameter_block_map_ 是一个 
+  std::map<double*,ParameterBlock> 的容器
+  存储原始指针和使用其构造的ParameterBlock
+   的对应关系. Program::parameter_blocks_
+   是vector<ParameterBlock*>parameter_blocks_.
+   这里有一点需要注意的是，可能用户在使用的过程中已经
+   提前添加了所有的参数块，所以这里可能会出现参数块已经
+   存在的现象，此时 Ceres 会判断两次添加的参数块的每个
+   size 是否一致，不一致则会报错，所以如果参数块不带有
+   旋转的话，用户可以偷懒不提前调用 AddParameterBlock()
+   添加参数块。
+end note
+: new 一个 ResidualBlock;
+: 如果 enable_fast_removal,那么还要遍历每一个 ParameterBlock
+为每个ParameterBlock添加 ResidualBlock, 其存储在一个 Hash 表中.
+同时如果 enable_fast_removal 也要将其插入到 
+ProblemImpl::HashSet<ResidualBlock*> residual_block_set_中;
+note right
+HashSet<ResidualBlock*> residual_blocks_ 
+存储该参数块涉及到哪几个 ResidualBlock
+end note
+:最后则是将 new 的 ResidualBlock 插入到 Program::residual_blocks_
+中去;
+note right
+实际上，最终新建的 ParameterBlock 和 ResidualBlock 都是插入到了
+Program 的两个成员变量中去了，分别是
+ std::vector<ParameterBlock*> parameter_blocks_;
+  std::vector<ResidualBlock*> residual_blocks_;
+end note
+:最终程序返回热一个 ResidualBlock raw 指针;
+stop
+
+@enduml
