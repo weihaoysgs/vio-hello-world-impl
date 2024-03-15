@@ -91,5 +91,10 @@ foreach (test_src ${TEST_SOURCES})
     add_test(${test_src} ${test_src})
 endforeach (test_src)
 
-add_executable(helloworld_analytic_diff example/helloworld_analytic_diff.cpp)
-target_link_libraries(helloworld_analytic_diff tiny_ceres)
+set(EXE_EXAMPLE
+    helloworld_analytic_diff curve_fitting_analytic
+)
+foreach (exe_node ${EXE_EXAMPLE})
+    add_executable(${exe_node} example/${exe_node}.cc)
+    target_link_libraries(${exe_node} tiny_ceres)
+endforeach ()

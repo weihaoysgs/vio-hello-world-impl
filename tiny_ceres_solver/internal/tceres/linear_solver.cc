@@ -101,7 +101,7 @@ LinearSolver* LinearSolver::Create(const LinearSolver::Options& options) {
 
     case DENSE_SCHUR:
     {
-      LOG(ERROR) << "Dense SCHUR";
+      // LOG(ERROR) << "Dense SCHUR";
       return new DenseSchurComplementSolver(options);
     }
 

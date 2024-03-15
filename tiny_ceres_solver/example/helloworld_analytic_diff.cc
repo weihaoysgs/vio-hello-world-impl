@@ -38,57 +38,10 @@
 /// Author: weihao(isweihao@zju.edu.cn), M.S at Zhejiang University
 
 #include <iostream>
-
-#include "tceres/autodiff_cost_function.h"
-#include "tceres/autodiff_local_parameterization.h"
-#include "tceres/casts.h"
-#include "tceres/collections_port.h"
-#include "tceres/context.h"
-#include "tceres/cost_function.h"
-#include "tceres/covariance.h"
-#include "tceres/crs_matrix.h"
-#include "tceres/evaluation_callback.h"
-#include "tceres/execution_summary.h"
-#include "tceres/fpclassify.h"
-#include "tceres/integral_types.h"
-#include "tceres/internal/autodiff.h"
-#include "tceres/internal/disable_warnings.h"
-#include "tceres/internal/eigen.h"
-#include "tceres/internal/fixed_array.h"
-#include "tceres/internal/macros.h"
-#include "tceres/internal/manual_constructor.h"
-#include "tceres/internal/port.h"
-#include "tceres/internal/scoped_ptr.h"
-#include "tceres/jet.h"
-#include "tceres/local_parameterization.h"
-#include "tceres/loss_function.h"
-#include "tceres/map_util.h"
-#include "tceres/mutex.h"
-#include "tceres/parameter_block.h"
-#include "tceres/problem_impl.h"
-#include "tceres/residual_block.h"
-#include "tceres/rotation.h"
 #include "tceres/sized_cost_function.h"
-#include "tceres/sparse_matrix.h"
-#include "tceres/stl_util.h"
-#include "tceres/stringprintf.h"
-#include "tceres/types.h"
-#include "tceres/wall_time.h"
-#include "tceres/block_structure.h"
-#include "tceres/evaluator.h"
-#include "tceres/block_sparse_matrix.h"
-#include "tceres/dense_jacobian_writer.h"
-#include "tceres/dynamic_compressed_row_sparse_matrix.h"
-#include "tceres/dynamic_compressed_row_finalizer.h"
-#include "tceres/program_evaluator.h"
-#include "tceres/iteration_callback.h"
-#include "tceres/ordered_groups.h"
 #include "tceres/solver.h"
-#include "tceres/linear_solver.h"
-#include "tceres/minimizer.h"
-#include "tceres/trust_region_minimizer.h"
-#include "tceres/trust_region_strategy.h"
-#include "tceres/numeric_diff_options.h"
+#include "tceres/problem.h"
+
 // A CostFunction implementing analytically derivatives for the
 // function f(x) = 10 - x.
 class QuadraticCostFunction : public tceres::SizedCostFunction<1 /* number of residuals */, 1 /* size of first parameter */>
@@ -125,7 +78,6 @@ class QuadraticCostFunction : public tceres::SizedCostFunction<1 /* number of re
 };
 int main(int argc, char** argv)
 {
-  using namespace tceres::internal;
   google::InitGoogleLogging(argv[0]);
 
   // The variable to solve for with its initial value. It will be
