@@ -88,6 +88,7 @@
 #include "tceres/minimizer.h"
 #include "tceres/trust_region_minimizer.h"
 #include "tceres/trust_region_strategy.h"
+#include "tceres/numeric_diff_options.h"
 // A CostFunction implementing analytically derivatives for the
 // function f(x) = 10 - x.
 class QuadraticCostFunction : public tceres::SizedCostFunction<1 /* number of residuals */, 1 /* size of first parameter */>
@@ -144,5 +145,8 @@ int main(int argc, char** argv)
   options.minimizer_type = tceres::TRUST_REGION;
   tceres::Solver::Summary summary;
   tceres::Solve(options, &problem, &summary);
+  std::cout << summary.BriefReport() << "\n";
+  std::cout << "x : " << initial_x
+            << " -> " << x << "\n";
   return 0;
 }

@@ -51,6 +51,11 @@ add_library(tiny_ceres
         internal/tceres/polynomial.cc
         internal/tceres/function_sample.cc
         internal/tceres/dogleg_strategy.cc
+        internal/tceres/callbacks.cc
+        internal/tceres/schur_templates.cc
+        internal/tceres/is_close.cc
+        internal/tceres/gradient_checker.cc
+#        internal/tceres/solver_utils.cc
 # Important
         internal/tceres/linear_solver.cc
         internal/tceres/schur_complement_solver.cc
@@ -61,6 +66,10 @@ add_library(tiny_ceres
         internal/tceres/line_search.cc
         internal/tceres/coordinate_descent_minimizer.cc
         internal/tceres/trust_region_minimizer.cc
+        internal/tceres/preprocessor.cc
+        internal/tceres/reorder_program.cc
+        internal/tceres/trust_region_preprocessor.cc
+        internal/tceres/gradient_checking_cost_function.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
@@ -72,7 +81,8 @@ set(TEST_SOURCES small_blas_test array_utils_test loss_function_test
         graph_algorithms_test block_random_access_diagonal_matrix_test
         block_random_access_sparse_matrix_test conjugate_gradients_solver_test
         detect_structure_test block_random_access_dense_matrix_test
-        invert_psd_matrix_test
+        invert_psd_matrix_test trust_region_preprocessor_test
+        gradient_checking_cost_function_test
 )
 
 foreach (test_src ${TEST_SOURCES})
