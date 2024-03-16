@@ -92,7 +92,7 @@ foreach (test_src ${TEST_SOURCES})
 endforeach (test_src)
 
 set(EXE_EXAMPLE
-    helloworld_analytic_diff curve_fitting_analytic
+    helloworld_analytic_diff curve_fitting_analytic ba_problem_analytic
 )
 foreach (exe_node ${EXE_EXAMPLE})
     add_executable(${exe_node} example/${exe_node}.cc)

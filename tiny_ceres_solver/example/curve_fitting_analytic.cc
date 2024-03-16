@@ -11,6 +11,7 @@
 #include "tceres/sized_cost_function.h"
 #include "tceres/solver.h"
 #include "tceres/stringprintf.h"
+#include "tceres/parameter_block.h"
 
 class CurveFittingCostFunction : public tceres::SizedCostFunction<1, 3>
 {
@@ -73,6 +74,9 @@ int main(int argc, char** argv) {
 
   double abc[3] = {ae, be, ce};
   tceres::Problem problem;
+  // this step is not necessary
+  problem.AddParameterBlock(abc, 3);
+
   for (int i = 0; i < N; ++i) {
     tceres::CostFunction* cost_function = new CurveFittingCostFunction(
         sample_data[i].first, sample_data[i].second);
@@ -86,7 +90,7 @@ int main(int argc, char** argv) {
   options.linear_solver_type = tceres::DENSE_SCHUR;
   options.minimizer_type = tceres::TRUST_REGION;
   tceres::Solve(options, &problem, &summary);
-  std::cout << summary.BriefReport();
+  std::cout << summary.FullReport();
   std::cout << tceres::internal::StringPrintf("\nreal abc: %.3f %.3f %.3f", ar,
                                               br, cr);
   std::cout << tceres::internal::StringPrintf("\nestimate abc: %.3f %.3f %.3f",

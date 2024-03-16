@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(vio-hello-world)
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-std=c++17 -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE  "-std=c++17 -O3 -fopenmp -pthread")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -fopenmp -pthread")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
