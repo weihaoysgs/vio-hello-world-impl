@@ -28,9 +28,7 @@ note right
    这里有一点需要注意的是，可能用户在使用的过程中已经
    提前添加了所有的参数块，所以这里可能会出现参数块已经
    存在的现象，此时 Ceres 会判断两次添加的参数块的每个
-   size 是否一致，不一致则会报错，所以如果参数块不带有
-   旋转的话，用户可以偷懒不提前调用 AddParameterBlock()
-   添加参数块。
+   size 是否一致，不一致则会报错。
 end note
 : new 一个 ResidualBlock;
 : 如果 enable_fast_removal,那么还要遍历每一个 ParameterBlock

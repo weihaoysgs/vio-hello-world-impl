@@ -1,0 +1,47 @@
+@startuml
+title Ceres Solver TrustRegion PreProcess Flow  
+note right
+ Preprocess(const Solver::Options& options,
+            ProblemImpl* problem,
+            PreprocessedProblem* pp)
+end note
+start
+:首先检查 Program 中的所有 ParameterBlock 的初始值是否合理，如果不合理
+程序最终无法得到一个可行合理的解;
+:为 PreprocessedProblem 的成员变量 reduced_program* 开辟内存空间并
+初始化，主要是调用的 Program 的拷贝构造函数，同时调用 RemoveFixedBlocks()
+函数去移除常量参数块;
+note right
+  在 RemoveFixedBlocks() 函数中，首先会将所有的参数块标记为 unused,标记方式为
+  设置每个参数块的 index 为 -1. 然后遍历每个残差块，遍历每个残差块涉及的参数块，
+  如果参数块不为 Constant 则表示该参数块在优化问题中用到且为优化变量，则设置改参数
+  块的 index = 1.如果发现该 ResidualBlock 的 ParameterBlocks 全部为 Constant
+  则计算残差，添加到 fixed_cost。最后遍历所有的 Parameter，将此时 index==-1的全部删除
+  简单来说该函数有两个职责，一个是清除某些只涉及到 Constant ParameterBlocks
+  的 ResidualBlock 另一个则是清除没有使用到的多余的 ParameterBlock
+end note
+:SetupLinearSolver() 配置并创建线性求解器对象。如果我们在 Solver::Options 中并不传入 
+ParameterBlockOrdering 的参数配置，则 Ceres 会自己调用CreateDefaultLinearSolverOrdering()
+创建一个默认的，将其全部添加到 group 0 中去（一般不传入）。然后 Ceres 会调用 
+ReorderProgram() 去提升系统的缓存一致性;
+note right
+  在 ReorderProgram() 函数中，函数会根据线性求解器类型做不同操作，这里我们只分析
+  基于 Schur 的部分。其实也主要是调用 ReorderProgramForSchurTypeLinearSolver()
+  函数进行全部的处理，在 group 只有 1 的情况下，会调用 ComputeStableSchurOrdering()
+  去将整个优化问题中的可以 marg 和 reserve 的变量计算出来，结果保存在
+  vector<ParameterBlock*>* ordering 中，前 independent_set_size 为最大独立顶点
+  例如BA中的3D点(marg)，后面的则是固定的参数块和位姿等(reserve)。然后重新对所有的参数块
+  进行分组。将 Program->parameter_blocks_ 和计算得到的 ordering 交换内存空间。重新
+  设置 SetParameterOffsetsAndIndex()，因为参数块的顺序已经发生了改变。
+end note
+:SetupEvaluator()新建一个 Evaluator, 模板类型为 
+  Evaluator<ProgramEvaluator<BlockEvaluatePreparer, BlockJacobianWriter>>，不同
+  的线性求解器具有不同的 Evaluator 配置;
+:SetupInnerIterationMinimizer(), If the user requested inner iterations, then find an inner
+iteration ordering as needed and configure and create a CoordinateDescentMinimizer object 
+to perform the inner iterations. 默认情况下为 false;
+:SetupMinimizerOptions()，根据不同的 Trust Region 参数配置，新建一个优化器对象，
+可以是 DOGLEG，也
+可以是 LM;
+stop
+@enduml
