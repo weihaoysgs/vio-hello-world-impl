@@ -242,5 +242,37 @@ TEST(StableIndependentSet, BreakTies) {
   }
 }
 
+TEST(BASchur, BATest) {
+  Graph<int> graph;
+  graph.AddVertex(1);
+  graph.AddVertex(2);
+
+  graph.AddVertex(3);
+  graph.AddVertex(4);
+  graph.AddVertex(5);
+  graph.AddVertex(6);
+  graph.AddVertex(7);
+  graph.AddVertex(8);
+
+  graph.AddVertex(9);
+
+  graph.AddEdge(1, 3);
+  graph.AddEdge(1, 4);
+  graph.AddEdge(1, 5);
+  graph.AddEdge(1, 6);
+  graph.AddEdge(2, 5);
+  graph.AddEdge(2, 6);
+  graph.AddEdge(2, 7);
+  graph.AddEdge(2, 8);
+
+  vector<int> ordering;
+  int independent_set_size = IndependentSetOrdering(graph, &ordering);
+  sort(ordering.begin(), ordering.begin() + independent_set_size);
+  sort(ordering.begin() + independent_set_size, ordering.end());
+  std::cout << "size: " << independent_set_size << std::endl;
+  for (auto id: ordering)
+    std::cout << id << " ";
+  std::cout << std::endl;
+}
 }  // namespace internal
 }  // namespace ceres

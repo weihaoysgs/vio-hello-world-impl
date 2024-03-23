@@ -32,7 +32,7 @@
 
 #include "tceres/trust_region_strategy.h"
 #include "tceres/dogleg_strategy.h"
-// #include "tceres/levenberg_marquardt_strategy.h"
+#include "tceres/levenberg_marquardt_strategy.h"
 
 namespace tceres {
 namespace internal {
@@ -42,8 +42,8 @@ TrustRegionStrategy::~TrustRegionStrategy() {}
 TrustRegionStrategy* TrustRegionStrategy::Create(const Options& options) {
   switch (options.trust_region_strategy_type) {
     // TODO changed by weihao
-    // case LEVENBERG_MARQUARDT:
-    //   return new LevenbergMarquardtStrategy(options);
+    case LEVENBERG_MARQUARDT:
+      return new LevenbergMarquardtStrategy(options);
     case DOGLEG:
       return new DoglegStrategy(options);
     default:
