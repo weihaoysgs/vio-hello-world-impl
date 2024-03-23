@@ -86,9 +86,11 @@ int main(int argc, char** argv) {
   tceres::Solver::Summary summary;
   tceres::Solver::Options options;
   options.minimizer_progress_to_stdout = true;
-  options.trust_region_strategy_type = tceres::DOGLEG;
+  options.trust_region_strategy_type = tceres::LEVENBERG_MARQUARDT;
   options.linear_solver_type = tceres::DENSE_SCHUR;
   options.minimizer_type = tceres::TRUST_REGION;
+  options.check_gradients = true;
+  options.gradient_check_relative_precision = 1e-5;
   tceres::Solve(options, &problem, &summary);
   std::cout << summary.FullReport();
   std::cout << tceres::internal::StringPrintf("\nreal abc: %.3f %.3f %.3f", ar,

@@ -169,8 +169,8 @@ int main(int argc, char** argv) {
     //     new tceres::slam::PoseLocalParameterization();
     tceres::LocalParameterization* local_parameterization =
         new tceres::ProductParameterization(
-            new tceres::QuaternionParameterization,
-            new tceres::IdentityParameterization(3));
+            new tceres::IdentityParameterization(3),new tceres::EigenQuaternionParameterization
+            );
 
     poses_params.emplace(pose_id++,
                          tceres::slam::PoseParameterBlock(pose.Qwc, pose.twc));
@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
       Eigen::Vector3d pt_j = camera_poses[j].feature_ids_.find(i)->second;
       tceres::CostFunction* cost_function =
           new BundleAdjustmentCostFunction(pt_i, pt_j);
-      tceres::ResidualBlockId residual_block = problem.AddResidualBlock(
+      problem.AddResidualBlock(
           cost_function, nullptr, poses_params.at(0).values(),
           poses_params.at(j).values(),
           inv_depths_params.at(inv_depth_id - 1).values());
@@ -214,10 +214,12 @@ int main(int argc, char** argv) {
   tceres::Solver::Summary summary;
   tceres::Solver::Options options;
   options.minimizer_progress_to_stdout = true;
-  options.trust_region_strategy_type = tceres::DOGLEG;
+  options.trust_region_strategy_type = tceres::LEVENBERG_MARQUARDT;
   options.linear_solver_type = tceres::DENSE_SCHUR;
   options.minimizer_type = tceres::TRUST_REGION;
-  options.max_num_iterations = 10;
+  options.max_num_iterations = 100;
+  options.check_gradients = true;
+  options.gradient_check_relative_precision = 1e-6;
   tceres::Solve(options, &problem, &summary);
   std::cout << summary.FullReport();
   std::cout << "\nCompare MonoBA results after opt..." << std::endl;

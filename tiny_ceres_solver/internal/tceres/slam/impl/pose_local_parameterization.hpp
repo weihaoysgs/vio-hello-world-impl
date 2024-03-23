@@ -33,18 +33,19 @@ bool IdentityPlus(const double* x, const double* delta, double* x_plus_delta) {
 // TODO
 bool PoseLocalParameterization::Plus(const double* x, const double* delta,
                                      double* x_plus_delta) const {
-  int x_cursor = 0;
-  int delta_cursor = 0;
-  if (!QuaternionPlus(x + x_cursor, delta + delta_cursor,
-                      x_plus_delta + x_cursor)) {
-    return false;
-  }
-  delta_cursor += 3;
-  x_cursor += 4;
-  if (!IdentityPlus(x + x_cursor, delta + delta_cursor,
-                    x_plus_delta + x_cursor)) {
-    return false;
-  }
+  Eigen::Map<const Eigen::Vector3d> _p(x);
+  Eigen::Map<const Eigen::Quaterniond> _q(x + 3);
+
+  Eigen::Map<const Eigen::Vector3d> dp(delta);
+
+  Eigen::Quaterniond dq = deltaQ(Eigen::Map<const Eigen::Vector3d>(delta + 3));
+
+  Eigen::Map<Eigen::Vector3d> p(x_plus_delta);
+  Eigen::Map<Eigen::Quaterniond> q(x_plus_delta + 3);
+
+  p = _p + dp;
+  q = (_q * dq).normalized();
+
   return true;
 }
 

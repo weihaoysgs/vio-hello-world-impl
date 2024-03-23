@@ -31,11 +31,7 @@
 
 Implementation of optical flow tracking
 
-<div align="center">
-
-<img src="./images/feat_tracker_result.png.png" width = 35%>
-
-</div>
+<div align="center"><img src="./images/feat_tracker_result.png" style="zoom:48%;" /></div>
 
 ## Triangulate
 
