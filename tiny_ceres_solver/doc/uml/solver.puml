@@ -1,0 +1,15 @@
+@startuml
+title Ceres Solver Step  
+start
+:首先进行一系列的求解参数的合法性检查，包括基本的命令行参数和
+TrustRegion 以及 LineSearch 方法参数的合理性,不合理直接 return;
+:是否需要检查梯度，或者说检查雅可比是否正确，可在 Options 中
+配置参数 check_grident,如果需要则通过拷贝构造新建一个 ProblemImpl;
+:预处理;
+note right
+  parameter_block_map_ 是一个 
+end note
+: new 一个 ResidualBlock;
+:最终程序返回热一个 ResidualBlock raw 指针;
+stop
+@enduml

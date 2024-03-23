@@ -70,6 +70,7 @@ add_library(tiny_ceres
         internal/tceres/reorder_program.cc
         internal/tceres/trust_region_preprocessor.cc
         internal/tceres/gradient_checking_cost_function.cc
+        internal/tceres/levenberg_marquardt_strategy.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
@@ -98,3 +99,5 @@ foreach (exe_node ${EXE_EXAMPLE})
     add_executable(${exe_node} example/${exe_node}.cc)
     target_link_libraries(${exe_node} tiny_ceres)
 endforeach ()
+
+add_subdirectory(example/ba_example)

@@ -7,6 +7,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+include_directories(${PROJECT_SOURCE_DIR}/tiny_ceres_solver/include)
+include_directories(${PROJECT_SOURCE_DIR}/tiny_ceres_solver/internal)
+
 find_package(Glog REQUIRED)
 find_package(GTest REQUIRED)
 find_package(GFlags REQUIRED)
@@ -30,3 +33,4 @@ enable_testing()
 
 add_subdirectory(tiny_ceres_solver)
 add_subdirectory(feat)
+add_subdirectory(nlls)

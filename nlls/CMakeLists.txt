@@ -1,0 +1,2 @@
+add_executable(gauss_newton_method gauss_newton_method.cpp)
+target_link_libraries(gauss_newton_method tiny_ceres)

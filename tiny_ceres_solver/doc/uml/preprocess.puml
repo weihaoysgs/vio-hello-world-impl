@@ -1,0 +1,31 @@
+' https://blog.csdn.net/m0_37989980/article/details/104470064
+' https://blog.csdn.net/lanchunhui/article/details/49557083
+@startuml
+
+interface Preprocess {
+  + static Preprocessor* Create(MinimizerType minimizer_type);
+  + virtual bool Preprocess(const Solver::Options& options,
+                          ProblemImpl* problem,
+                          PreprocessedProblem* pp) = 0;
+}
+
+class TrustRegionPreprocessor
+struct PreprocessedProblem {
+  + ProblemImpl* problem;
+  + scoped_ptr<ProblemImpl> gradient_checking_problem;
+  + scoped_ptr<Program> reduced_program;
+  + scoped_ptr<LinearSolver> linear_solver;
+  + scoped_ptr<IterationCallback> logging_callback;
+  + scoped_ptr<IterationCallback> state_updating_callback;
+  + shared_ptr<Evaluator> evaluator;
+  + shared_ptr<CoordinateDescentMinimizer> inner_iteration_minimizer;
+  + std::vector<double*> removed_parameter_blocks;
+  + Vector reduced_parameters;
+  + double fixed_cost;
+}
+
+Preprocess          <|.. TrustRegionPreprocessor
+' dependency
+Preprocess ..> PreprocessedProblem
+Preprocess ..> ProblemImpl
+@enduml
