@@ -10,7 +10,7 @@ class PoseParametersBlock
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  PoseParametersBlock() {}
+  PoseParametersBlock() = default;
 
   PoseParametersBlock(const int id, const Sophus::SE3d &T) {
     id_ = id;

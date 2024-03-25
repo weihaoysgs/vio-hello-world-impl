@@ -8,7 +8,7 @@ class PointXYZParametersBlock
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  PointXYZParametersBlock() {}
+  PointXYZParametersBlock() = default;
 
   PointXYZParametersBlock(const int id, const Eigen::Vector3d &X) {
     id_ = id;
