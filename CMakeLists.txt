@@ -9,6 +9,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 include_directories(${PROJECT_SOURCE_DIR}/tiny_ceres_solver/include)
 include_directories(${PROJECT_SOURCE_DIR}/tiny_ceres_solver/internal)
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/Sophus)
+add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/backward-cpp)
 
 find_package(Glog REQUIRED)
 find_package(GTest REQUIRED)
@@ -33,4 +35,5 @@ enable_testing()
 
 add_subdirectory(tiny_ceres_solver)
 add_subdirectory(feat)
-add_subdirectory(nlls)
+add_subdirectory(backend)
+add_subdirectory(geometry)
