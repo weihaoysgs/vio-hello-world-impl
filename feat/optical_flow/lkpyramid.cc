@@ -1462,8 +1462,8 @@ void feat::calcOpticalFlowPyrLK(
     cv::InputOutputArray _nextPts, cv::OutputArray _status,
     cv::OutputArray _err, cv::Size winSize, int maxLevel,
     cv::TermCriteria criteria, int flags, double minEigThreshold) {
-  cv::Ptr<cv::SparsePyrLKOpticalFlow> optflow =
-      cv::SparsePyrLKOpticalFlow::create(winSize, maxLevel, criteria, flags,
+  cv::Ptr<feat::SparsePyrLKOpticalFlow> optflow =
+      feat::SparsePyrLKOpticalFlow::create(winSize, maxLevel, criteria, flags,
                                          minEigThreshold);
   optflow->calc(_prevImg, _nextImg, _prevPts, _nextPts, _status, _err);
 }
