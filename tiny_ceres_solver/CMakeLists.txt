@@ -1,8 +1,3 @@
-include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/internal
-)
-
 add_library(tiny_ceres
         internal/tceres/stringprintf.cc
         internal/tceres/corrector.cc
@@ -55,7 +50,6 @@ add_library(tiny_ceres
         internal/tceres/schur_templates.cc
         internal/tceres/is_close.cc
         internal/tceres/gradient_checker.cc
-#        internal/tceres/solver_utils.cc
 # Important
         internal/tceres/linear_solver.cc
         internal/tceres/schur_complement_solver.cc
@@ -100,4 +94,4 @@ foreach (exe_node ${EXE_EXAMPLE})
     target_link_libraries(${exe_node} tiny_ceres)
 endforeach ()
 
-add_subdirectory(example/ba_example)
+#add_subdirectory(example/ba_example)

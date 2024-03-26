@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
         image_transport
 )
 include_directories(${catkin_INCLUDE_DIRS})
+set(CATKIN_ENABLE_TESTING OFF)
 
 add_library(vio_hw
         src/map_point.cpp
@@ -19,16 +20,17 @@ add_library(vio_hw
         internal/feat/feat.cpp
 )
 
-target_link_libraries(vio_hw ${THIRD_PARTY_LIBS} feature_extraction)
+target_link_libraries(vio_hw
+  ${THIRD_PARTY_LIBS}
+  feature_extraction
+  tiny_ceres
+  feature_tracking
+  ${OpenCV_LIBS}
+  ${catkin_LIBRARIES}
+)
 
 add_executable(hello_world_vio node/hello_world_vio.cpp)
 add_backward(hello_world_vio)
 target_link_libraries(hello_world_vio
-        tiny_ceres
-        feature_extraction
-        feature_tracking
-        ${THIRD_PARTY_LIBS}
-        ${OpenCV_LIBS}
-        ${catkin_LIBRARIES}
         vio_hw
 )
