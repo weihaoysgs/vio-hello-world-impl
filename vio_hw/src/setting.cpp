@@ -1,4 +1,4 @@
-#include "vio_hw/vio/setting.hpp"
+#include "vio_hw/internal/setting.hpp"
 
 namespace viohw {
 
@@ -8,8 +8,10 @@ Setting::Setting(const std::string& config_file_path) {
       << "Config file open failed, please check your confi file path.";
   cv::FileNode cameras = fs["Camera"];
   cv::FileNode imu = fs["IMU"];
+  cv::FileNode slam = fs["SLAM"];
   readCameraParams(cameras);
   readIMUParams(imu);
+  readSLAMParams(slam);
 }
 
 void Setting::readCameraParams(const cv::FileNode& cameras) {
@@ -53,5 +55,13 @@ void Setting::readCameraParams(const cv::FileNode& cameras) {
 void Setting::readIMUParams(const cv::FileNode& node) {
   node["topic"] >> imu_topic_;
   std::cout << "IMU topic: " << imu_topic_ << std::endl;
+}
+void Setting::readSLAMParams(const cv::FileNode& node) {
+  node["stereo.mode"] >> stereo_mode_;
+  node["use.imu"] >> use_imu_;
+  node["force.realtime"] >> force_realtime_;
+  std::cout << "Stereo Mode: " << stereo_mode_ << std::endl;
+  std::cout << "Use IMU: " << use_imu_ << std::endl;
+  std::cout << "Force Realtime: " << force_realtime_ << std::endl;
 }
 }  // namespace viohw

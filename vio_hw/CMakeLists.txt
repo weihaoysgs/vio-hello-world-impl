@@ -3,6 +3,8 @@ find_package(catkin REQUIRED COMPONENTS
         rospy
         std_msgs
         sensor_msgs
+        cv_bridge
+        image_transport
 )
 include_directories(${catkin_INCLUDE_DIRS})
 
@@ -10,6 +12,10 @@ add_library(vio_hw
         src/map_point.cpp
         src/world_manager.cpp
         src/setting.cpp
+        src/camera_calibration.cpp
+        src/frame.cpp
+        src/visual_frontend.cpp
+        src/map_manager.cpp
 )
 
 target_link_libraries(vio_hw ${THIRD_PARTY_LIBS})

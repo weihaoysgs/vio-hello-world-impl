@@ -18,6 +18,10 @@ Camera:
 IMU:
   topic: "/imu0"
 
+SLAM:
+  stereo.mode: 1
+  use.imu: 1
+  force.realtime: 1
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )
 body_T_cam0: !!opencv-matrix

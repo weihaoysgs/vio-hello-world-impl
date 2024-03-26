@@ -6,6 +6,7 @@
 // along with vio-hello-world. If not, see <https://www.gnu.org/licenses/>.
 // Author: weihao(isweihao@zju.edu.cn), M.S at Zhejiang University
 
+#include <cv_bridge/cv_bridge.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <ros/ros.h>
@@ -19,7 +20,7 @@
 #include "feat/harris/harris.h"
 #include "tceres/problem.h"
 #include "tceres/solver.h"
-#include "vio_hw/vio/world_manager.hpp"
+#include "vio_hw/internal/world_manager.hpp"
 
 DEFINE_string(config_file_path, "../vio_hw/params/euroc_stereo_imu.yaml",
               "config file path");
@@ -28,19 +29,19 @@ class SensorManager
 {
  public:
   explicit SensorManager(viohw::WorldManager *slam_manager)
-      : slam_(slam_manager), nh_("~") {
+      : slam_world_(slam_manager), nh_("~") {
     LOG(INFO) << "Sensor Manager is create.";
 
-    sub_left_img_ = nh_.subscribe(slam_->getParams()->topic_left_right_[0], 2,
+    sub_left_img_ = nh_.subscribe(slam_world_->getParams()->topic_left_right_[0], 2,
                                   &SensorManager::subLeftImage, this);
-    sub_right_img_ = nh_.subscribe(slam_->getParams()->topic_left_right_[1], 2,
+    sub_right_img_ = nh_.subscribe(slam_world_->getParams()->topic_left_right_[1], 2,
                                    &SensorManager::subRightImage, this);
-    sub_imu_ = nh_.subscribe(slam_->getParams()->imu_topic_, 10,
+    sub_imu_ = nh_.subscribe(slam_world_->getParams()->imu_topic_, 10,
                              &SensorManager::subIMU, this);
     std::printf("sub image0 topic :%s, img topic %s, imu topic %s",
-                slam_->getParams()->topic_left_right_[0].c_str(),
-                slam_->getParams()->topic_left_right_[1].c_str(),
-                slam_->getParams()->imu_topic_.c_str());
+                slam_world_->getParams()->topic_left_right_[0].c_str(),
+                slam_world_->getParams()->topic_left_right_[1].c_str(),
+                slam_world_->getParams()->imu_topic_.c_str());
   };
 
   ~SensorManager() = default;
@@ -59,13 +60,46 @@ class SensorManager
     std::lock_guard<std::mutex> lock(imu_mutex_);
     imu_buf_.push(imu);
   }
+  cv::Mat getGrayImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg) {
+    // Get and prepare images
+    cv_bridge::CvImageConstPtr ptr;
+    try {
+      ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
+    }
+    catch (cv_bridge::Exception &e) {
+      ROS_ERROR("\n\n\ncv_bridge exeception: %s\n\n\n", e.what());
+    }
 
+    return ptr->image;
+  }
   void syncProcess() {
     LOG(INFO) << "Start the measurement reader thread";
     while (true) {
-      std::printf(
-          "sync process, img0 size: %ld, img1 size: %ld, imu size: %ld\n",
-          img0_buf_.size(), img1_buf_.size(), imu_buf_.size());
+      if (slam_world_->getParams()->stereo_mode_) {
+        cv::Mat image0, image1;
+        std::lock_guard<std::mutex> lock(img_mutex_);
+        if (!img0_buf_.empty() && !img1_buf_.empty()) {
+          double time0 = img0_buf_.front()->header.stamp.toSec();
+          double time1 = img1_buf_.front()->header.stamp.toSec();
+          // sync tolerance
+          if (time0 < time1 - 0.015) {
+            img0_buf_.pop();
+            LOG(WARNING) << "Throw img0 -- Sync error : " << (time0 - time1);
+          } else if (time0 > time1 + 0.015) {
+            img1_buf_.pop();
+            LOG(WARNING) << "Throw img1 -- Sync error : " << (time0 - time1);
+          } else {
+            image0 = getGrayImageFromMsg(img0_buf_.front());
+            image1 = getGrayImageFromMsg(img1_buf_.front());
+            img0_buf_.pop();
+            img1_buf_.pop();
+
+            if (!image0.empty() && !image1.empty()) {
+              slam_world_->addNewStereoImages(time0, image0, image1);
+            }
+          }
+        }
+      }
       std::chrono::milliseconds dura(100);
       std::this_thread::sleep_for(dura);
     }
@@ -76,7 +110,7 @@ class SensorManager
   std::queue<sensor_msgs::ImageConstPtr> img1_buf_;
   std::queue<sensor_msgs::ImuConstPtr> imu_buf_;
   std::mutex img_mutex_, imu_mutex_;
-  viohw::WorldManager *slam_;
+  viohw::WorldManager *slam_world_;
   ros::Subscriber sub_left_img_, sub_right_img_, sub_imu_;
   ros::NodeHandle nh_;
 };
