@@ -1,16 +1,24 @@
 #include "vio_hw/internal/world_manager.hpp"
 
+#include "common/draw_utils.h"
+#include "vio_hw/internal/feat/good_feature_impl.hpp"
+
 namespace viohw {
 WorldManager::WorldManager(std::shared_ptr<Setting>& setting)
-    : params_(setting) {}
+    : params_(setting) {
+  feature_extractor_ =
+      FeatureBase::Create(GoodFeature2Tracker::getDefaultOptions());
+}
 
 void WorldManager::run() {
   cv::Mat img_left, img_right;
   double cur_time;
   while (true) {
     if (getNewImage(img_left, img_right, cur_time)) {
-      cv::imshow("image0", img_left);
-      cv::imshow("image1", img_right);
+      std::vector<cv::KeyPoint> kps;
+      feature_extractor_->detect(img_left, kps);
+
+      cv::imshow("image0", com::DrawKeyPoints(img_left, kps));
       cv::waitKey(1);
     }
     std::chrono::milliseconds dura(1);

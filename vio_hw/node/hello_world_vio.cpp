@@ -100,7 +100,7 @@ class SensorManager
           }
         }
       }
-      std::chrono::milliseconds dura(100);
+      std::chrono::milliseconds dura(1);
       std::this_thread::sleep_for(dura);
     }
   }

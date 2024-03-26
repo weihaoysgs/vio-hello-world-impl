@@ -1,7 +1,3 @@
-//
-// Created by weihao on 24-3-25.
-//
-
 #ifndef VIO_HELLO_WORLD_WORLD_MANAGER_HPP
 #define VIO_HELLO_WORLD_WORLD_MANAGER_HPP
 
@@ -9,6 +5,7 @@
 #include <thread>
 
 #include "vio_hw/internal/setting.hpp"
+#include "vio_hw/internal/feat/feature.hpp"
 
 namespace viohw {
 class WorldManager
@@ -26,6 +23,8 @@ class WorldManager
   std::queue<double> img_time_queen_;
   std::mutex img_mutex_;
   bool is_new_img_available_ = false;
+
+  std::shared_ptr<FeatureBase> feature_extractor_;
 };
 }  // namespace viohw
 #endif  // VIO_HELLO_WORLD_WORLD_MANAGER_HPP

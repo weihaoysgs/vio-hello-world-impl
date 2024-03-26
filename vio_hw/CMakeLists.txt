@@ -16,9 +16,10 @@ add_library(vio_hw
         src/frame.cpp
         src/visual_frontend.cpp
         src/map_manager.cpp
+        internal/feat/feat.cpp
 )
 
-target_link_libraries(vio_hw ${THIRD_PARTY_LIBS})
+target_link_libraries(vio_hw ${THIRD_PARTY_LIBS} feature_extraction)
 
 add_executable(hello_world_vio node/hello_world_vio.cpp)
 add_backward(hello_world_vio)
