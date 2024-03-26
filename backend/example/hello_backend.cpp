@@ -1,3 +1,11 @@
+// Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+// Everyone is permitted to copy and distribute verbatim copies
+// of this license document, but changing it is not allowed.
+// This file is part of vio-hello-world Copyright (C) 2023 ZJU
+// You should have received a copy of the GNU General Public License
+// along with vio-hello-world. If not, see <https://www.gnu.org/licenses/>.
+// Author: weihao(isweihao@zju.edu.cn), M.S at Zhejiang University
+
 #include "backend/cost_function/reprojection_se3_factor.hpp"
 #include "backend/parameter_block/point_parameter_block.hpp"
 #include "backend/parameter_block/se3_parameter_block.hpp"
