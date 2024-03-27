@@ -4,9 +4,11 @@
 #include <chrono>
 #include <thread>
 
-#include "vio_hw/internal/setting.hpp"
 #include "vio_hw/internal/feat/feature.hpp"
+#include "vio_hw/internal/setting.hpp"
+#include "vio_hw/internal/tracker/tracker_base.hpp"
 #include "vio_hw/internal/viz/visualization_base.hpp"
+#include "common/draw_utils.h"
 
 namespace viohw {
 class WorldManager
@@ -27,6 +29,7 @@ class WorldManager
 
   std::shared_ptr<FeatureBase> feature_extractor_;
   std::shared_ptr<VisualizationBase> viz_;
+  std::shared_ptr<TrackerBase> tracker_;
 };
 }  // namespace viohw
 #endif  // VIO_HELLO_WORLD_WORLD_MANAGER_HPP

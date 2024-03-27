@@ -1,6 +1,7 @@
 #ifndef VIO_HELLO_WORLD_ORBCV_SLAM_IMPL_HPP
 #define VIO_HELLO_WORLD_ORBCV_SLAM_IMPL_HPP
 
+#include "feat/orb/orb_feature.h"
 #include "vio_hw/internal/feat/feature.hpp"
 
 namespace viohw {
@@ -8,16 +9,13 @@ namespace viohw {
 class ORBCVExtractor : public FeatureBase
 {
  public:
-  ORBCVExtractor() = default;
-  virtual bool detect(const cv::Mat &image, std::vector<cv::KeyPoint> &kps,
-                      cv::Mat mask = cv::Mat(), cv::Mat desc = cv::Mat());
-};
+  explicit ORBCVExtractor(const FeatureBase::FeatureExtractorOptions &options);
+  bool detect(const cv::Mat &image, std::vector<cv::KeyPoint> &kps,
+              cv::Mat mask = cv::Mat(), cv::Mat desc = cv::Mat()) override;
 
-inline bool ORBCVExtractor::detect(const cv::Mat &image,
-                                   std::vector<cv::KeyPoint> &kps, cv::Mat mask,
-                                   cv::Mat) {
-  return true;
-}
+ private:
+  cv::Ptr<feat::ORB> orb_;
+};
 
 }  // namespace viohw
 #endif

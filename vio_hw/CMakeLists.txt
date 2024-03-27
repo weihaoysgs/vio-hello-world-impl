@@ -11,14 +11,11 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 set(CATKIN_ENABLE_TESTING OFF)
 
-#option(VIS_WITH_RVIZ "Enable visualization with RViz" ON)
-#option(VIS_WITH_PANGOLIN "Enable visualization with Pangolin" OFF)
-#if(VIS_WITH_RVIZ)
-#    add_definitions(-DVIS_WITH_RVIZ)
-#endif()
-#if(VIS_WITH_PANGOLIN)
-#    add_definitions(-DVIS_WITH_PANGOLIN)
-#endif()
+# if you want to using your opencv, delete the OpenCV_LIBS of ros(noetic,melodic)
+# attention please, the cv_bridge will using OpenCV of ros default, if not
+# you need to change the cmake file of cv_bridge in your system
+# file(GLOB_RECURSE OLD_OPENCV "/usr/lib/x86_64-linux-gnu/libopencv_*")
+# list(REMOVE_ITEM catkin_LIBRARIES ${OLD_OPENCV})
 
 set(SOURCE_FILES
         src/map_point.cpp
@@ -29,10 +26,16 @@ set(SOURCE_FILES
         src/visual_frontend.cpp
         src/map_manager.cpp
         src/feat/feat.cpp
+        src/feat/good_feature_impl.cpp
+        src/feat/orb_cv_impl.cpp
+        src/feat/orb_slam_impl.cpp
         src/viz/visualization_base.cpp
         src/viz/rviz_visualization.cpp
         src/viz/camera_visualizer.cpp
         src/viz/pangolin_visualization.cpp
+        src/tracker/tracker_base.cpp
+        src/tracker/lightglue_impl.cpp
+        src/tracker/optical_flow_impl.cpp
 )
 
 add_library(vio_hw ${SOURCE_FILES})

@@ -1,16 +1,17 @@
 #include "vio_hw/internal/world_manager.hpp"
 
-#include "common/draw_utils.h"
-#include "vio_hw/internal/feat/good_feature_impl.hpp"
-
 namespace viohw {
+
 WorldManager::WorldManager(std::shared_ptr<Setting>& setting)
     : params_(setting) {
-  feature_extractor_ =
-      FeatureBase::Create(GoodFeature2Tracker::getDefaultOptions());
+  auto feature_options = FeatureBase::getDefaultOptions();
+  feature_extractor_ = FeatureBase::Create(feature_options);
 
-  VisualizationBase::VisualizationOption viz_option{VisualizationBase::PANGOLIN};
+  VisualizationBase::VisualizationOption viz_option{
+      VisualizationBase::PANGOLIN};
   viz_ = VisualizationBase::Create(viz_option);
+  TrackerBase::TrackerOption tracker_option{TrackerBase::LIGHT_GLUE};
+  tracker_ = TrackerBase::Create(tracker_option);
 }
 
 void WorldManager::run() {
@@ -24,6 +25,11 @@ void WorldManager::run() {
       cv::imshow("image0", com::DrawKeyPoints(img_left, kps));
       cv::waitKey(1);
       viz_->addTrajectory(Eigen::Matrix3d::Identity(), Eigen::Vector3d::Zero());
+      tracker_->trackerAndMatcher(cv::Mat(), cv::Mat(), cv::Mat(), cv::Mat(),
+                                  cv::Mat());
+      Eigen::Matrix<double, 259, Eigen::Dynamic> mock;
+      std::vector<cv::DMatch> matchers;
+      tracker_->trackerAndMatcher(mock, mock, matchers, true);
     }
     std::chrono::milliseconds dura(1);
     std::this_thread::sleep_for(dura);
