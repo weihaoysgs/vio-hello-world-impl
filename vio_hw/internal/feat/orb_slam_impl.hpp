@@ -13,9 +13,9 @@ class ORBSLAMExtractor : public FeatureBase
                       cv::Mat mask = cv::Mat(), cv::Mat desc = cv::Mat());
 };
 
-bool ORBSLAMExtractor::detect(const cv::Mat &image,
-                              std::vector<cv::KeyPoint> &kps, cv::Mat mask,
-                              cv::Mat desc) {
+inline bool ORBSLAMExtractor::detect(const cv::Mat &image,
+                                     std::vector<cv::KeyPoint> &kps,
+                                     cv::Mat mask, cv::Mat desc) {
   return true;
 }
 
