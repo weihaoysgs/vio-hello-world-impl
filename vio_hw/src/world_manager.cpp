@@ -8,6 +8,9 @@ WorldManager::WorldManager(std::shared_ptr<Setting>& setting)
     : params_(setting) {
   feature_extractor_ =
       FeatureBase::Create(GoodFeature2Tracker::getDefaultOptions());
+
+  VisualizationBase::VisualizationOption viz_option{VisualizationBase::PANGOLIN};
+  viz_ = VisualizationBase::Create(viz_option);
 }
 
 void WorldManager::run() {
@@ -20,6 +23,7 @@ void WorldManager::run() {
 
       cv::imshow("image0", com::DrawKeyPoints(img_left, kps));
       cv::waitKey(1);
+      viz_->addTrajectory(Eigen::Matrix3d::Identity(), Eigen::Vector3d::Zero());
     }
     std::chrono::milliseconds dura(1);
     std::this_thread::sleep_for(dura);
