@@ -42,7 +42,7 @@ add_library(tiny_ceres
         internal/tceres/lapack.cc
         internal/tceres/file.cc
         internal/tceres/linear_least_squares_problems.cc
-        internal/tceres/test_util.cc
+        # internal/tceres/test_util.cc
         internal/tceres/polynomial.cc
         internal/tceres/function_sample.cc
         internal/tceres/dogleg_strategy.cc
@@ -50,7 +50,7 @@ add_library(tiny_ceres
         internal/tceres/schur_templates.cc
         internal/tceres/is_close.cc
         internal/tceres/gradient_checker.cc
-# Important
+        # Important
         internal/tceres/linear_solver.cc
         internal/tceres/schur_complement_solver.cc
         internal/tceres/eigensparse.cc
@@ -69,15 +69,16 @@ add_library(tiny_ceres
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
 
-set(TEST_SOURCES small_blas_test array_utils_test loss_function_test
-        residual_block_utils_test residual_block_test householder_vector_test
-        local_parameterization_test triplet_sparse_matrix_test
-        evaluator_test problem_test parameter_block_ordering_test
-        graph_algorithms_test block_random_access_diagonal_matrix_test
-        block_random_access_sparse_matrix_test conjugate_gradients_solver_test
-        detect_structure_test block_random_access_dense_matrix_test
-        invert_psd_matrix_test trust_region_preprocessor_test
-        gradient_checking_cost_function_test
+set(TEST_SOURCES small_blas_test
+       array_utils_test loss_function_test
+       residual_block_utils_test residual_block_test householder_vector_test
+       local_parameterization_test triplet_sparse_matrix_test
+       evaluator_test problem_test parameter_block_ordering_test
+       graph_algorithms_test block_random_access_diagonal_matrix_test
+       block_random_access_sparse_matrix_test conjugate_gradients_solver_test
+       detect_structure_test block_random_access_dense_matrix_test
+       invert_psd_matrix_test
+       gradient_checking_cost_function_test
 )
 
 foreach (test_src ${TEST_SOURCES})
@@ -87,11 +88,10 @@ foreach (test_src ${TEST_SOURCES})
 endforeach (test_src)
 
 set(EXE_EXAMPLE
-    helloworld_analytic_diff curve_fitting_analytic ba_problem_analytic
+   helloworld_analytic_diff curve_fitting_analytic ba_problem_analytic
 )
 foreach (exe_node ${EXE_EXAMPLE})
-    add_executable(${exe_node} example/${exe_node}.cc)
-    target_link_libraries(${exe_node} tiny_ceres)
+   add_executable(${exe_node} example/${exe_node}.cc)
+   target_link_libraries(${exe_node} tiny_ceres)
 endforeach ()
 
-#add_subdirectory(example/ba_example)

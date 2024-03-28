@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8...3.22)
 project(vio-hello-world)
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -fopenmp")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -fopenmp -fPIC")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 # Unless you know what you are doing, please comment out the following statement
@@ -26,6 +26,8 @@ set(THIRD_PARTY_LIBS
         glog
         gflags
 )
+
+enable_testing()
 
 add_subdirectory(tiny_ceres_solver)
 add_subdirectory(feat)
