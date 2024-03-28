@@ -15,6 +15,8 @@ class Frame
 
   Frame();
   Frame(std::shared_ptr<CameraCalibration> pcalib_left, const size_t ncellsize);
+  Frame(std::shared_ptr<CameraCalibration> pcalib_left);
+  Frame(std::shared_ptr<CameraCalibration> pcalib_left,std::shared_ptr<CameraCalibration> pcalib_right);
   Frame(std::shared_ptr<CameraCalibration> pcalib_left,
         std::shared_ptr<CameraCalibration> pcalib_right,
         const size_t ncellsize);

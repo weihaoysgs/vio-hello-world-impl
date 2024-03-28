@@ -32,16 +32,19 @@ class SensorManager
       : slam_world_(slam_manager), nh_("~") {
     LOG(INFO) << "Sensor Manager is create.";
 
-    sub_left_img_ = nh_.subscribe(slam_world_->getParams()->topic_left_right_[0], 2,
-                                  &SensorManager::subLeftImage, this);
-    sub_right_img_ = nh_.subscribe(slam_world_->getParams()->topic_left_right_[1], 2,
-                                   &SensorManager::subRightImage, this);
-    sub_imu_ = nh_.subscribe(slam_world_->getParams()->imu_topic_, 10,
-                             &SensorManager::subIMU, this);
-    std::printf("sub image0 topic :%s, img topic %s, imu topic %s",
-                slam_world_->getParams()->topic_left_right_[0].c_str(),
-                slam_world_->getParams()->topic_left_right_[1].c_str(),
-                slam_world_->getParams()->imu_topic_.c_str());
+    sub_left_img_ = nh_.subscribe(
+        slam_world_->getParams()->cam_setting_.topic_left_right_[0], 2,
+        &SensorManager::subLeftImage, this);
+    sub_right_img_ = nh_.subscribe(
+        slam_world_->getParams()->cam_setting_.topic_left_right_[1], 2,
+        &SensorManager::subRightImage, this);
+    sub_imu_ = nh_.subscribe(slam_world_->getParams()->imu_setting_.imu_topic_,
+                             10, &SensorManager::subIMU, this);
+    std::printf(
+        "sub image0 topic :%s, img topic %s, imu topic %s",
+        slam_world_->getParams()->cam_setting_.topic_left_right_[0].c_str(),
+        slam_world_->getParams()->cam_setting_.topic_left_right_[1].c_str(),
+        slam_world_->getParams()->imu_setting_.imu_topic_.c_str());
   };
 
   ~SensorManager() = default;
@@ -75,7 +78,7 @@ class SensorManager
   void syncProcess() {
     LOG(INFO) << "Start the measurement reader thread";
     while (true) {
-      if (slam_world_->getParams()->stereo_mode_) {
+      if (slam_world_->getParams()->slam_setting_.stereo_mode_) {
         cv::Mat image0, image1;
         std::lock_guard<std::mutex> lock(img_mutex_);
         if (!img0_buf_.empty() && !img1_buf_.empty()) {

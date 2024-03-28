@@ -1,37 +1,31 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 2.8...3.22)
 project(vio-hello-world)
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -fopenmp -pthread -fPIC")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -fopenmp")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+# Unless you know what you are doing, please comment out the following statement
+add_definitions("-w")
 
-include_directories(${PROJECT_SOURCE_DIR}/tiny_ceres_solver/include)
-include_directories(${PROJECT_SOURCE_DIR}/tiny_ceres_solver/internal)
-include_directories(${PROJECT_SOURCE_DIR}/thirdparty/Sophus)
-add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/backward-cpp)
-
-find_package(Glog REQUIRED)
-find_package(GTest REQUIRED)
-find_package(GFlags REQUIRED)
-find_package(OpenCV 4 REQUIRED)
 include_directories(
-        ${GLOG_INCLUDE_DIRS}
-        ${GTEST_INCLUDE_DIRS}
-        ${GFLAGS_INCLUDE_DIRS}
-        ${OpenCV_INCLUDE_DIRS}
+        ${PROJECT_SOURCE_DIR}/tiny_ceres_solver/include
+        ${PROJECT_SOURCE_DIR}/tiny_ceres_solver/internal
+        ${PROJECT_SOURCE_DIR}/thirdparty/Sophus
         ${PROJECT_SOURCE_DIR}
 )
 
-set(THIRD_PARTY_LIBS
-        ${GTEST_BOTH_LIBRARIES}
-        ${GLOG_LIBRARIES}
-        ${GFLAGS_LIBRARIES}
-        pthread
-)
+add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/backward-cpp)
 
-enable_testing()
+find_package(OpenCV 4 REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
+set(THIRD_PARTY_LIBS
+        gtest
+        gtest_main
+        glog
+        gflags
+)
 
 add_subdirectory(tiny_ceres_solver)
 add_subdirectory(feat)

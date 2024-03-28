@@ -1,3 +1,5 @@
+option(CATKIN_ENABLE_TESTING OFF)
+
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         rospy
@@ -8,8 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 include_directories(${catkin_INCLUDE_DIRS})
-
-set(CATKIN_ENABLE_TESTING OFF)
 
 # if you want to using your opencv, delete the OpenCV_LIBS of ros(noetic,melodic)
 # attention please, the cv_bridge will using OpenCV of ros default, if not
@@ -41,7 +41,6 @@ set(SOURCE_FILES
 add_library(vio_hw ${SOURCE_FILES})
 
 target_link_libraries(vio_hw
-        ${THIRD_PARTY_LIBS}
         feature_extraction
         tiny_ceres
         feature_tracking

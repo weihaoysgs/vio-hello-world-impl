@@ -15,13 +15,26 @@ Camera:
   left.distortion.coefficient: [-0.28340811, 0.07395907, 0.00019359, 1.76187114e-05]
   right.distortion.coefficient: [-0.28368365, 0.07451284, -0.00010473, -3.555907e-05]
 
+FeatureAndTracker:
+  max.kps.num: 200
+  max.kps.distance: 30
+  kp.quality.level: 0.001 # only for gftt feature
+  use.clahe: 1
+  clahe.val: 3
+
 IMU:
   topic: "/imu0"
+  acc_n: 0.1
+  acc_w: 0.2
+  gyr_n: 0.3
+  gyr_w: 0.4
 
 SLAM:
   stereo.mode: 1
   use.imu: 1
   force.realtime: 1
+  use.Rviz: 1
+  use.Pangolin: 0
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )
 body_T_cam0: !!opencv-matrix
