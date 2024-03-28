@@ -68,6 +68,9 @@ class Setting
   SLAMSetting slam_setting_;
 };
 
+typedef std::shared_ptr<Setting> SettingPtr;
+typedef std::shared_ptr<const Setting> SettingConstPtr;
+
 // clang-format off
 inline std::ostream& operator<<(std::ostream& os,
                                 const Setting::IMUSetting& setting) {

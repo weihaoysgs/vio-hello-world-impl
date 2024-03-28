@@ -6,8 +6,10 @@
 
 #include "vio_hw/internal/feat/feature.hpp"
 #include "vio_hw/internal/frame.hpp"
+#include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/setting.hpp"
 #include "vio_hw/internal/tracker/tracker_base.hpp"
+#include "vio_hw/internal/visual_frontend.hpp"
 #include "vio_hw/internal/viz/visualization_base.hpp"
 
 namespace viohw {
@@ -30,12 +32,14 @@ class WorldManager
   bool is_new_img_available_ = false;
   int frame_id_ = -1;
 
-  const std::shared_ptr<Setting> params_;
-  std::shared_ptr<FeatureBase> feature_extractor_;
+  FeatureBasePtr feature_extractor_;
+  TrackerBasePtr tracker_;
+  FramePtr current_frame_;
+  MapManagerPtr map_manager_;
+  VisualFrontEndConstPtr visual_frontend_;
   std::shared_ptr<VisualizationBase> viz_;
-  std::shared_ptr<TrackerBase> tracker_;
-  std::shared_ptr<Frame> current_frame_;
   std::shared_ptr<CameraCalibration> calib_model_left_, calib_model_right_;
+  const std::shared_ptr<Setting> params_;
 };
 }  // namespace viohw
 #endif  // VIO_HELLO_WORLD_WORLD_MANAGER_HPP

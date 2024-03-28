@@ -38,6 +38,9 @@ class TrackerBase
   static std::shared_ptr<TrackerBase> Create(const TrackerOption &options);
 };
 
+typedef std::shared_ptr<TrackerBase> TrackerBasePtr;
+typedef std::shared_ptr<const TrackerBase> TrackerBaseConstPtr;
+
 }  // namespace viohw
 
 #endif  // VIO_HELLO_WORLD_TRACKER_BASE_HPP

@@ -16,7 +16,8 @@ class Frame
   Frame();
   Frame(std::shared_ptr<CameraCalibration> pcalib_left, const size_t ncellsize);
   Frame(std::shared_ptr<CameraCalibration> pcalib_left);
-  Frame(std::shared_ptr<CameraCalibration> pcalib_left,std::shared_ptr<CameraCalibration> pcalib_right);
+  Frame(std::shared_ptr<CameraCalibration> pcalib_left,
+        std::shared_ptr<CameraCalibration> pcalib_right);
   Frame(std::shared_ptr<CameraCalibration> pcalib_left,
         std::shared_ptr<CameraCalibration> pcalib_right,
         const size_t ncellsize);
@@ -172,6 +173,9 @@ class Frame
   mutable std::mutex kps_mutex_, pose_mutex_;
   mutable std::mutex grid_mutex_, cokfs_mutex_;
 };
+
+typedef std::shared_ptr<Frame> FramePtr;
+typedef std::shared_ptr<const Frame> FrameConstPtr;
 
 }  // namespace viohw
 

@@ -42,5 +42,9 @@ class FeatureBase
     return feature_extractor_options;
   }
 };
+
+typedef std::shared_ptr<FeatureBase> FeatureBasePtr;
+typedef std::shared_ptr<const FeatureBase> FeatureBaseConstPtr;
+
 }  // namespace viohw
 #endif  // VIO_HELLO_WORLD_FEATURE_HPP

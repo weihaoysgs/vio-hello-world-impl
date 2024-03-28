@@ -5,21 +5,35 @@ namespace viohw {
 WorldManager::WorldManager(std::shared_ptr<Setting>& setting)
     : params_(setting) {
   setupCalibration();
+
+  // create feature extractor
   auto feature_options = FeatureBase::getDefaultOptions();
   feature_extractor_ = FeatureBase::Create(feature_options);
 
+  // create visualization
   VisualizationBase::VisualizationOption viz_option{
       VisualizationBase::PANGOLIN};
   viz_ = VisualizationBase::Create(viz_option);
+
+  // create feature tracker
   TrackerBase::TrackerOption tracker_option{TrackerBase::LIGHT_GLUE};
   tracker_ = TrackerBase::Create(tracker_option);
 
   // TODO: for [ncellsize] param
+  // create current frame
   if (!params_->slam_setting_.stereo_mode_) {
     current_frame_.reset(new Frame(calib_model_left_, 35));
   } else {
     current_frame_.reset(new Frame(calib_model_left_, calib_model_right_, 35));
   }
+
+  // create map manager
+  map_manager_.reset(
+      new MapManager(params_, current_frame_, feature_extractor_, tracker_));
+
+  // create visual frontend
+  visual_frontend_.reset(
+      new VisualFrontEnd(params_, current_frame_, map_manager_, tracker_));
 }
 
 void WorldManager::run() {
@@ -28,19 +42,6 @@ void WorldManager::run() {
   while (true) {
     if (getNewImage(img_left, img_right, cur_time)) {
       frame_id_++;
-
-      // std::vector<cv::KeyPoint> kps;
-      // feature_extractor_->detect(img_left, kps);
-      //
-      // cv::imshow("image0", com::DrawKeyPoints(img_left, kps));
-      // cv::waitKey(1);
-      // viz_->addTrajectory(Eigen::Matrix3d::Identity(),
-      // Eigen::Vector3d::Zero()); tracker_->trackerAndMatcher(cv::Mat(),
-      // cv::Mat(), cv::Mat(), cv::Mat(),
-      //                             cv::Mat());
-      // Eigen::Matrix<double, 259, Eigen::Dynamic> mock;
-      // std::vector<cv::DMatch> matchers;
-      // tracker_->trackerAndMatcher(mock, mock, matchers, true);
     }
     std::chrono::milliseconds dura(1);
     std::this_thread::sleep_for(dura);
