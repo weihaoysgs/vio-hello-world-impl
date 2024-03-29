@@ -9,7 +9,7 @@
 
 namespace viohw {
 
-class MotionModel
+class ConstantMotionModel
 {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

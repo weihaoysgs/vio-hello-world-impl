@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <memory>
 #include <opencv2/opencv.hpp>
+
 #include "common/print_tools.hpp"
 
 namespace viohw {
@@ -34,6 +35,11 @@ class Setting
     double feature_quality_level_;
     bool use_clahe_;
     double clahe_val_;
+    bool klt_use_prior_;
+    bool track_keyframetoframe_;
+    int klt_win_size_;
+    int klt_pyr_level_;
+    bool use_brief_;
   };
 
   struct IMUSetting
@@ -86,11 +92,17 @@ inline std::ostream& operator<<(std::ostream& os,
 inline std::ostream& operator<<(
     std::ostream& os, const Setting::FeatureAndTrackerSetting& setting) {
   os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
+  os << std::boolalpha;
   os << std::right << std::setw(20) << "Max.Feature.Num: " << std::left << std::setw(10) <<  setting.max_feature_num_ << std::endl
      << std::right << std::setw(20) << "Max.Feature.Dis: " << std::left << std::setw(10) <<  setting.max_feature_dis_ << std::endl
      << std::right << std::setw(20) << "Quality.Level: "   << std::left << std::setw(10) <<  setting.feature_quality_level_ << std::endl
      << std::right << std::setw(20) << "Use.CLAHE: "       << std::left << std::setw(10) <<  (setting.use_clahe_ ? "true" : "false") << std::endl
-     << std::right << std::setw(20) << "CLAHE.Val: "       << std::left << std::setw(10) <<  setting.clahe_val_;
+     << std::right << std::setw(20) << "CLAHE.Val: "       << std::left << std::setw(10) <<  setting.clahe_val_ << std::endl
+     << std::right << std::setw(20) << "KLT.Pyra.Level: "  << std::left << std::setw(10) <<  setting.klt_pyr_level_ << std::endl
+     << std::right << std::setw(20) << "KLT.Win.Size: "    << std::left << std::setw(10) <<  setting.klt_win_size_ << std::endl
+     << std::right << std::setw(20) << "KLT.Use.Prior: "   << std::left << std::setw(10) <<  setting.klt_use_prior_ << std::endl
+     << std::right << std::setw(20) << "Use.Brief: "       << std::left << std::setw(10) <<  setting.use_brief_ << std::endl
+     << std::right << std::setw(20) << "Track.KF2Frame: "  << std::left << std::setw(10) <<  setting.track_keyframetoframe_ ;
   return os;
 }
 

@@ -14,10 +14,12 @@ Setting::Setting(const std::string& config_file_path) {
   readIMUParams(imu);
   readSLAMParams(slam);
   readFeatureTrackerParams(feat_tracker);
+  std::cout << BLUE << "-------------[Params Start]----------" << TAIL << std::endl;
   std::cout << cam_setting_ << "\n";
   std::cout << imu_setting_ << "\n";
   std::cout << slam_setting_ << "\n";
   std::cout << feat_tracker_setting_ << "\n";
+  std::cout << BLUE << "-------------[Params End]------------" << TAIL << std::endl;
 }
 
 void Setting::readCameraParams(const cv::FileNode& cameras) {
@@ -53,5 +55,10 @@ void Setting::readFeatureTrackerParams(const cv::FileNode& node) {
   node["kp.quality.level"] >> feat_tracker_setting_.feature_quality_level_;
   node["use.clahe"] >> feat_tracker_setting_.use_clahe_;
   node["clahe.val"] >> feat_tracker_setting_.clahe_val_;
+  node["klt.use.prior"] >> feat_tracker_setting_.klt_use_prior_;
+  node["track.keyframetoframe"] >> feat_tracker_setting_.track_keyframetoframe_;
+  node["klt.win.size"] >> feat_tracker_setting_.klt_win_size_;
+  node["klt.pyr.level"] >> feat_tracker_setting_.klt_pyr_level_;
+  node["use.brief"] >> feat_tracker_setting_.use_brief_;
 }
 }  // namespace viohw

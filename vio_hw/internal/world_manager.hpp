@@ -7,6 +7,7 @@
 #include "vio_hw/internal/feat/feature.hpp"
 #include "vio_hw/internal/frame.hpp"
 #include "vio_hw/internal/map_manager.hpp"
+#include "vio_hw/internal/mapping.hpp"
 #include "vio_hw/internal/setting.hpp"
 #include "vio_hw/internal/tracker/tracker_base.hpp"
 #include "vio_hw/internal/visual_frontend.hpp"
@@ -22,6 +23,7 @@ class WorldManager
   void addNewStereoImages(double time, cv::Mat &im0, cv::Mat &im1);
   bool getNewImage(cv::Mat &iml, cv::Mat &imr, double &time);
   void setupCalibration();
+  void createKeyframe(const cv::Mat &im, const cv::Mat &imraw);
 
  private:
   std::queue<cv::Mat> img_left_queen_, img_right_queen_;
@@ -36,7 +38,9 @@ class WorldManager
   TrackerBasePtr tracker_;
   FramePtr current_frame_;
   MapManagerPtr map_manager_;
-  VisualFrontEndConstPtr visual_frontend_;
+  VisualFrontEndPtr visual_frontend_;
+  MappingPtr mapping_;
+
   std::shared_ptr<VisualizationBase> viz_;
   std::shared_ptr<CameraCalibration> calib_model_left_, calib_model_right_;
   const std::shared_ptr<Setting> params_;

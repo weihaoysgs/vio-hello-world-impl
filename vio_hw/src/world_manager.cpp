@@ -2,8 +2,8 @@
 
 namespace viohw {
 
-WorldManager::WorldManager(std::shared_ptr<Setting>& setting)
-    : params_(setting) {
+WorldManager::WorldManager(std::shared_ptr<Setting>& setting) : params_(setting) {
+
   setupCalibration();
 
   // create feature extractor
@@ -11,12 +11,11 @@ WorldManager::WorldManager(std::shared_ptr<Setting>& setting)
   feature_extractor_ = FeatureBase::Create(feature_options);
 
   // create visualization
-  VisualizationBase::VisualizationOption viz_option{
-      VisualizationBase::PANGOLIN};
+  VisualizationBase::VisualizationOption viz_option{VisualizationBase::PANGOLIN};
   viz_ = VisualizationBase::Create(viz_option);
 
   // create feature tracker
-  TrackerBase::TrackerOption tracker_option{TrackerBase::LIGHT_GLUE};
+  TrackerBase::TrackerOption tracker_option{TrackerBase::OPTICAL_FLOW};
   tracker_ = TrackerBase::Create(tracker_option);
 
   // TODO: for [ncellsize] param
@@ -28,12 +27,16 @@ WorldManager::WorldManager(std::shared_ptr<Setting>& setting)
   }
 
   // create map manager
-  map_manager_.reset(
-      new MapManager(params_, current_frame_, feature_extractor_, tracker_));
+  map_manager_.reset(new MapManager(params_, current_frame_, feature_extractor_, tracker_));
 
   // create visual frontend
-  visual_frontend_.reset(
-      new VisualFrontEnd(params_, current_frame_, map_manager_, tracker_));
+  visual_frontend_.reset(new VisualFrontEnd(params_, current_frame_, map_manager_, tracker_));
+
+  // create mapping thread, and mapping will create sub thread for Estimator and LoopClosing
+  mapping_.reset(new Mapping(params_, map_manager_, current_frame_));
+
+  com::printHelloWorldVIO();
+  com::printFZ();
 }
 
 void WorldManager::run() {
@@ -42,14 +45,19 @@ void WorldManager::run() {
   while (true) {
     if (getNewImage(img_left, img_right, cur_time)) {
       frame_id_++;
+      current_frame_->updateFrame(frame_id_, cur_time);
+
+      bool is_kf = visual_frontend_->VisualTracking(img_left, cur_time);
+      if (is_kf) {
+        LOG(INFO) << "Keyframe create";
+      }
     }
     std::chrono::milliseconds dura(1);
     std::this_thread::sleep_for(dura);
   }
 }
 
-void WorldManager::addNewStereoImages(const double time, cv::Mat& im0,
-                                      cv::Mat& im1) {
+void WorldManager::addNewStereoImages(const double time, cv::Mat& im0, cv::Mat& im1) {
   std::lock_guard<std::mutex> lock(img_mutex_);
   img_left_queen_.push(im0);
   img_right_queen_.push(im1);

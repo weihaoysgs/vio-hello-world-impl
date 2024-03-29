@@ -36,6 +36,7 @@ set(SOURCE_FILES
         src/tracker/tracker_base.cpp
         src/tracker/lightglue_impl.cpp
         src/tracker/optical_flow_impl.cpp
+        src/mapping.cpp
 )
 
 add_library(vio_hw ${SOURCE_FILES})
