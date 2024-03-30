@@ -1,0 +1,14 @@
+title: WeihaoDocTest
+lang: en
+description: HelloWorld!
+
+remote_theme: rundocs/jekyll-rtd-theme
+
+readme_index:
+  with_frontmatter: true
+
+exclude:
+  - Makefile
+  - CNAME
+  - Gemfile
+  - Gemfile.lock
