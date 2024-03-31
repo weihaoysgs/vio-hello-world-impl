@@ -45,18 +45,23 @@ void MapManager::AddKeyframe() {  // Create a copy of Cur. Frame shared_ptr for 
 }
 
 void MapManager::ExtractKeypoints(const cv::Mat& im, const cv::Mat& im_raw) {
-  std::vector<Keypoint> kps = current_frame_->getKeypoints();
+  std::vector<viohw::Keypoint> kps = current_frame_->getKeypoints();
 
   // TODO brief calculate
   if (param_->feat_tracker_setting_.use_brief_) {
     //.................
   }
 
+  cv::Mat mask = cv::Mat(im.rows, im.cols, CV_8UC1, cv::Scalar(255));
+  for (auto& pt : kps) {
+    cv::circle(mask, pt.px_, param_->feat_tracker_setting_.max_feature_dis_, 0, -1);
+  }
+
   int num_need_detect = param_->feat_tracker_setting_.max_feature_num_ - kps.size();
   if (num_need_detect > 0) {
     std::vector<cv::KeyPoint> new_kps;
     feature_extractor_->setMaxKpsNumber(num_need_detect);
-    feature_extractor_->detect(im, new_kps);
+    feature_extractor_->detect(im, new_kps, mask);
     if (!new_kps.empty()) {
       std::vector<cv::Point2f> desc_pts;
       cv::KeyPoint::convert(new_kps, desc_pts);
@@ -131,13 +136,32 @@ void MapManager::AddMapPoint(const cv::Mat& desc) {
 }
 
 // Remove a MP obs from cur Frame
-void MapManager::RemoveObsFromCurFrameById(const int lmid)
-{
+void MapManager::RemoveObsFromCurFrameById(const int lmid) {
   // Remove cur obs
   current_frame_->RemoveKeypointById(lmid);
 
   // Set MP as not obs
   // TODO
+}
+
+std::shared_ptr<Frame> MapManager::GetKeyframe(const int kfid) const {
+  std::lock_guard<std::mutex> lock(kf_mutex_);
+
+  auto it = map_kfs_.find(kfid);
+  if (it == map_kfs_.end()) {
+    return nullptr;
+  }
+  return it->second;
+}
+
+std::shared_ptr<MapPoint> MapManager::GetMapPoint(const int lmid) const {
+  std::lock_guard<std::mutex> lock(lm_mutex_);
+
+  auto it = map_lms_.find(lmid);
+  if (it == map_lms_.end()) {
+    return nullptr;
+  }
+  return it->second;
 }
 
 }  // namespace viohw

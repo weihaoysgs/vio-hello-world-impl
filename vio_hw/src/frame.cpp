@@ -185,4 +185,16 @@ void Frame::RemoveKeypointById(const int lmid) {
   }
   mapkps_.erase(lmid);
 }
+
+Keypoint Frame::GetKeypointById(const int lmid) const
+{
+  std::lock_guard<std::mutex> lock(kps_mutex_);
+
+  auto it = mapkps_.find(lmid);
+  if( it == mapkps_.end() ) {
+    return Keypoint();
+  }
+
+  return it->second;
+}
 }  // namespace viohw

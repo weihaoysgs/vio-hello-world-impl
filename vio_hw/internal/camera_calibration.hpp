@@ -36,6 +36,7 @@
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/imgproc.hpp>
 #include <sophus/se3.hpp>
+#include <glog/logging.h>
 #include <string>
 namespace viohw {
 

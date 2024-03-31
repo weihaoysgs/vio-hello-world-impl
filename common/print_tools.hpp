@@ -63,7 +63,7 @@ struct dependent_false : std::false_type
 };
 
 inline void printHelloWorldVIO() {
-  std::cout << BLUE
+  std::cout << BLUE  << std::endl
             << "  _   _      _ _        __        __         _     _  __     _____ ___  \n"
                " | | | | ___| | | ___   \\ \\      / ___  _ __| | __| | \\ \\   / |_ _/ _ \\ \n"
                " | |_| |/ _ | | |/ _ \\   \\ \\ /\\ / / _ \\| '__| |/ _` |  \\ \\ / / | | | | |\n"

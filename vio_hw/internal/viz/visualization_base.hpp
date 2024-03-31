@@ -39,6 +39,9 @@ class VisualizationBase
 
 };
 
+typedef std::shared_ptr<VisualizationBase> VisualizationBasePtr;
+typedef std::shared_ptr<const VisualizationBase> VisualizationBaseConstPtr;
+
 }  // namespace viohw
 
 #endif  // VIO_HELLO_WORLD_VISUALIZATION_BASE_HPP

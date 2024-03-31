@@ -32,6 +32,7 @@ class Frame
   void ComputeKeypoint(const cv::Point2f &pt, Keypoint &kp);
   void UpdateKeypoint(const int lmid, const cv::Point2f &pt);
   void RemoveKeypointById(const int lmid);
+  Keypoint GetKeypointById(const int lmid) const;
   // For using frame in ordered containers
   bool operator<(const Frame &f) const { return id_ < f.id_; }
 

@@ -29,7 +29,8 @@ class MapManager
   void AddKeypointsToFrame(const std::vector<cv::Point2f> &vpts, const std::vector<cv::Mat> &vdescs,
                            Frame &frame);
   void RemoveObsFromCurFrameById(const int lmid);
-
+  std::shared_ptr<Frame> GetKeyframe(const int kfid) const;
+  std::shared_ptr<MapPoint> GetMapPoint(const int lmid) const;
  private:
   int lm_id_, kf_id_;
   int num_lms_, num_kfs_;

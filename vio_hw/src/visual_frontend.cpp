@@ -3,8 +3,9 @@
 namespace viohw {
 
 VisualFrontEnd::VisualFrontEnd(viohw::SettingPtr state, viohw::FramePtr frame,
-                               viohw::MapManagerPtr map, viohw::TrackerBasePtr tracker)
-    : param_(state), current_frame_(frame), map_manager_(map), tracker_(tracker) {
+                               viohw::MapManagerPtr map, viohw::TrackerBasePtr tracker,
+                               VisualizationBasePtr viz)
+    : param_(state), current_frame_(frame), map_manager_(map), tracker_(tracker), viz_(viz) {
   use_clahe_ = param_->feat_tracker_setting_.use_clahe_;
 
   if (use_clahe_) {
@@ -31,17 +32,31 @@ bool VisualFrontEnd::VisualTracking(cv::Mat& image, double time) {
 }
 
 bool VisualFrontEnd::TrackerMono(cv::Mat& image, double time) {
+  // preprocess
   PreProcessImage(image);
 
+  // first frame is keyframe
   if (current_frame_->id_ == 0) {
     return true;
   }
 
+  // tracking from frame to frame
   KLTTracking();
-  // Only For Test.
-  return true;
 
-  return false;
+  // outlier filter
+  Epipolar2d2dFiltering();
+
+  // show tracking result to ui
+  ShowTrackingResult();
+
+  // compute current visual frontend pose
+  ComputePose();
+
+  // update motion model
+  UpdateMotionModel();
+
+  // check is new keyframe
+  return CheckIsNewKeyframe();
 }
 
 void VisualFrontEnd::PreProcessImage(cv::Mat& img_raw) {
@@ -119,5 +134,79 @@ void VisualFrontEnd::KLTTracking() {
     }
   }
 }
+
+void VisualFrontEnd::Epipolar2d2dFiltering() {
+  // Get prev KF
+  auto pkf = map_manager_->GetKeyframe(current_frame_->kfid_);
+
+  if (pkf == nullptr) {
+    LOG(FATAL) << "ERROR! Previous Kf does not exist yet (epipolar2d2d()).";
+  }
+
+  // Get cur. Frame nb kps
+  size_t nbkps = current_frame_->nbkps_;
+
+  if (nbkps < 8) {
+    LOG(WARNING) << "Not enough kps to compute Essential Matrix";
+    return;
+  }
+  std::vector<int> vkpsids;
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > vkfbvs, vcurbvs;
+  std::vector<cv::Point2f> vkf_px, vcur_px;
+
+  for (const auto& it : current_frame_->mapkps_) {
+    auto& kp = it.second;
+
+    // Get the prev. KF related kp if it exists
+    auto kf_kp = pkf->GetKeypointById(kp.lmid_);
+
+    if (kf_kp.lmid_ != kp.lmid_) {
+      continue;
+    }
+    vkfbvs.push_back(kf_kp.bv_);
+    vcurbvs.push_back(kp.bv_);
+    vkf_px.push_back(kf_kp.px_);
+    vcur_px.push_back(kp.px_);
+    vkpsids.push_back(kp.lmid_);
+    // TODO
+  }
+  std::vector<uchar> inliers;
+  cv::findFundamentalMat(vkf_px, vcur_px, cv::FM_RANSAC, 3, 0.99, inliers);
+  assert(vkf_px.size() == vcur_px.size() && vcur_px.size() == inliers.size());
+  for (size_t i = 0; i < inliers.size(); i++) {
+    if (!inliers[i]) {
+      map_manager_->RemoveObsFromCurFrameById(vkpsids[i]);
+    }
+  }
+}
+
+void VisualFrontEnd::ShowTrackingResult() {
+  cv::Mat draw_tracker_image;
+  cv::cvtColor(cur_img_, draw_tracker_image, cv::COLOR_GRAY2BGR);
+  // Get prev KF
+  auto pkf = map_manager_->GetKeyframe(current_frame_->kfid_);
+  std::vector<cv::Point2f> vkf_px, vcur_px;
+  for (const auto& it : current_frame_->mapkps_) {
+    auto& kp = it.second;
+    // Get the prev. KF related kp if it exists
+    auto kf_kp = pkf->GetKeypointById(kp.lmid_);
+    if (kf_kp.lmid_ != kp.lmid_) {
+      continue;
+    }
+    vkf_px.push_back(kf_kp.px_);
+    vcur_px.push_back(kp.px_);
+    cv::arrowedLine(draw_tracker_image, kp.px_, kf_kp.px_, cv::Scalar(0, 255, 0), 2, 8, 0, 0.3);
+    cv::circle(draw_tracker_image, kf_kp.px_, 2, cv::Scalar(0, 255, 0), -1);
+  }
+  // cv::imshow("tracker", draw_tracker_image);
+  // cv::waitKey(1);
+  viz_->showTrackerResultImage(draw_tracker_image);
+}
+
+bool VisualFrontEnd::CheckIsNewKeyframe() { return true; }
+
+void VisualFrontEnd::ComputePose() {}
+
+void VisualFrontEnd::UpdateMotionModel() {}
 
 }  // namespace viohw

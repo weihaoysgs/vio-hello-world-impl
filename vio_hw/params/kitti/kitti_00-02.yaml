@@ -1,0 +1,75 @@
+%YAML 1.0
+---
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters.
+#--------------------------------------------------------------------------------------------
+
+Camera:
+  topic.left.right: [ "/cam0/image_raw", "/cam1/image_raw" ]
+  model.left.right: [ "pinhole","pinhole" ]
+  left.resolution: [ 1241, 376 ]
+  right.resolution: [ 1241, 376 ]
+  left.K: [718.856, 718.856, 607.1928, 185.2157]
+  right.K: [718.856, 718.856, 607.1928, 185.2157]
+  left.distortion.coefficient: [0.0, 0.0, 0.0, 0.0]
+  right.distortion.coefficient: [0.0, 0.0, 0.0, 0.0]
+
+FeatureAndTracker:
+  feature.Type: 0
+  tracker.Type: 0
+  # common params
+  max.kps.num: 500
+  max.kps.distance: 20
+  use.clahe: 1
+  clahe.val: 3
+  track.keyframetoframe: 0
+  use.brief: 1
+  # param for gftt
+  kp.quality.level: 0.001
+  # param for KLT
+  klt.use.prior: 1
+  klt.win.size: 9
+  klt.pyr.level: 3
+
+  klt.max.iter: 30
+  klt.max.px.precision: 0.01
+  klt.max.fb.dist: 0.5
+  klt.err: 30.
+
+IMU:
+  topic: "/imu0"
+  acc_n: 0.1
+  acc_w: 0.2
+  gyr_n: 0.3
+  gyr_w: 0.4
+
+SLAM:
+  stereo.mode: 1
+  use.imu: 1
+  force.realtime: 1
+  use.Rviz: 1
+  use.Pangolin: 0
+
+# Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )
+Extrinsic:
+  camera.num: 2
+  body_T_cam0: !!opencv-matrix
+    rows: 4
+    cols: 4
+    dt: d
+    data: [1., 0., 0., 0.,
+           0., 1., 0., 0.,
+           0., 0., 1., 0.,
+           0., 0., 0., 1.]
+
+  body_T_cam1: !!opencv-matrix
+    rows: 4
+    cols: 4
+    dt: d
+    data: [1., 0., 0., 0.537165718864418,
+           0., 1., 0., 0.,
+           0., 0., 1., 0.,
+           0., 0., 0., 1.]
+
+

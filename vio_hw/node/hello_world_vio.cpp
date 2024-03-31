@@ -22,7 +22,7 @@
 #include "tceres/solver.h"
 #include "vio_hw/internal/world_manager.hpp"
 
-DEFINE_string(config_file_path, "../vio_hw/params/euroc_stereo_imu.yaml",
+DEFINE_string(config_file_path, "../vio_hw/params/euroc/euroc_stereo_imu.yaml",
               "config file path");
 
 class SensorManager

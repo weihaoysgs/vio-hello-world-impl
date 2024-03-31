@@ -15,7 +15,7 @@ WorldManager::WorldManager(std::shared_ptr<Setting>& setting) : params_(setting)
   feature_extractor_ = FeatureBase::Create(feature_options);
 
   // create visualization
-  VisualizationBase::VisualizationOption viz_option{VisualizationBase::PANGOLIN};
+  VisualizationBase::VisualizationOption viz_option{VisualizationBase::RVIZ};
   viz_ = VisualizationBase::Create(viz_option);
 
   // create feature tracker
@@ -34,13 +34,13 @@ WorldManager::WorldManager(std::shared_ptr<Setting>& setting) : params_(setting)
   map_manager_.reset(new MapManager(params_, current_frame_, feature_extractor_, tracker_));
 
   // create visual frontend
-  visual_frontend_.reset(new VisualFrontEnd(params_, current_frame_, map_manager_, tracker_));
+  visual_frontend_.reset(new VisualFrontEnd(params_, current_frame_, map_manager_, tracker_, viz_));
 
   // create mapping thread, and mapping will create sub thread for Estimator and LoopClosing
   mapping_.reset(new Mapping(params_, map_manager_, current_frame_));
 
   com::printHelloWorldVIO();
-  com::printFZ();
+  com::printKeyboard();
 }
 
 void WorldManager::run() {
@@ -142,7 +142,7 @@ void WorldManager::setupCalibration() {
     // TODO: Change this and directly add the extrinsic parameters within the
     // constructor (maybe set default parameters on extrinsic with identity /
     // zero)
-    // calib_model_right_->setupExtrinsic(params_->T_left_right_);
+    calib_model_right_->setupExtrinsic(params_->extrinsic_setting_.T_left_right_);
   }
 }
 }  // namespace viohw

@@ -18,7 +18,7 @@ void OpticalFlowImpl::trackerAndMatcher(const std::vector<cv::Mat> &vprevpyr,
   assert(vprevpyr.size() == vcurpyr.size());
 
   if (vkps.empty()) {
-    // std::cout << "\n \t >>> No kps were provided to kltTracking()!\n";
+    LOG(WARNING) << ">>>No kps were provided to kltTracking()!<<<";
     return;
   }
 

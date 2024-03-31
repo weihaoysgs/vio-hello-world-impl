@@ -6,6 +6,7 @@
 #include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/setting.hpp"
 #include "vio_hw/internal/tracker/tracker_base.hpp"
+#include "vio_hw/internal/viz/visualization_base.hpp"
 
 namespace viohw {
 class VisualFrontEnd
@@ -21,7 +22,7 @@ class VisualFrontEnd
 
   // construction function
   VisualFrontEnd(SettingPtr setting, FramePtr frame, MapManagerPtr manager,
-                 TrackerBasePtr tracker);
+                 TrackerBasePtr tracker, VisualizationBasePtr viz);
 
   // tracking left image
   bool TrackerMono(cv::Mat &image, double time);
@@ -35,11 +36,27 @@ class VisualFrontEnd
   // optical flow tracking for frame before and after
   void KLTTracking();
 
+  // filter outlier via epipolar constraint
+  void Epipolar2d2dFiltering();
+
+  // draw tracker result and show in ui
+  void ShowTrackingResult();
+
+  // check current frame is keyframe
+  bool CheckIsNewKeyframe();
+
+  // compute visual frontend pose
+  void ComputePose();
+
+  // update motion model, IMU or Constant model
+  void UpdateMotionModel();
+
  private:
   MapManagerPtr map_manager_;
   FramePtr current_frame_;
   SettingPtr param_;
   TrackerBasePtr tracker_;
+  VisualizationBasePtr viz_;
 
   ConstantMotionModel motion_model_;
 

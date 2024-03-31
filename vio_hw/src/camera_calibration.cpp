@@ -43,18 +43,16 @@ CameraCalibration::CameraCalibration(const std::string &model, double fx,
       img_w_(img_w),
       img_h_(img_h),
       img_size_(img_w, img_h) {
-  std::cout << "\n Setting up camera, model selected : " << model << "\n";
+  // std::cout << "\n Setting up camera, model selected : " << model << "\n";
 
   if (model == "pinhole") {
     model_ = Pinhole;
-    std::cout << "\nPinhole Camera Model created\n";
+    // std::cout << "\nPinhole Camera Model created\n";
   } else if (model == "fisheye") {
     model_ = Fisheye;
-    std::cout << "\nFisheye Camera Model selected";
+    // std::cout << "\nFisheye Camera Model selected";
   } else {
-    std::cout << "\nNo supported camera model provided!";
-    std::cout << "\nChoosee between: pinhole / fisheye";
-    exit(-1);
+    LOG(FATAL) << "No supported camera model provided!, Choose between: pinhole / fisheye";
   }
 
   K_ << fx_, 0., cx_, 0., fy_, cy_, 0., 0., 1.;
@@ -72,11 +70,11 @@ CameraCalibration::CameraCalibration(const std::string &model, double fx,
   cv::eigen2cv(Tc0ci_.rotationMatrix(), Rcv_c0ci_);
   cv::eigen2cv(Tc0ci_.translation(), tcv_c0ci_);
 
-  std::cout << "\n Camera Calibration set as : \n\n";
-  std::cout << "\n K = \n" << K_;
-  std::cout << "\n\n D = " << D_.transpose();
-
-  std::cout << "\n opt K = \n" << Kcv_;
+  // std::cout << "\n Camera Calibration set as : \n\n";
+  // std::cout << "\n K = \n" << K_;
+  // std::cout << "\n\n D = " << D_.transpose();
+  //
+  // std::cout << "\n opt K = \n" << Kcv_;
 
   const int nborder = 5;
   roi_rect_ = cv::Rect(cv::Point2i(nborder, nborder),
@@ -136,10 +134,10 @@ void CameraCalibration::setUndistMap(const double alpha) {
   // Setup roi mask / rect
   setROIMask(roi_rect_);
 
-  std::cout << "\n Undist Camera Calibration set as : \n\n";
-  std::cout << "\n K = \n" << K_;
-  std::cout << "\n\n D = " << D_.transpose();
-  std::cout << "\n\n ROI = " << roi_rect_;
+  // std::cout << "\n Undist Camera Calibration set as : \n\n";
+  // std::cout << "\n K = \n" << K_;
+  // std::cout << "\n\n D = " << D_.transpose();
+  // std::cout << "\n\n ROI = " << roi_rect_;
 }
 
 void CameraCalibration::setUndistStereoMap(const cv::Mat &R, const cv::Mat &P,
@@ -213,9 +211,9 @@ void CameraCalibration::setupExtrinsic(const Sophus::SE3d &Tc0ci) {
   cv::eigen2cv(Tcic0_.rotationMatrix(), Rcv_cic0_);
   cv::eigen2cv(Tcic0_.translation(), tcv_cic0_);
 
-  std::cout << "\n Camera Extrinsic : \n\n";
-  std::cout << "\n Rc0ci = \n" << Tc0ci_.rotationMatrix();
-  std::cout << "\n\n tc0ci = " << Tc0ci_.translation().transpose();
+  // std::cout << "\n Camera Extrinsic : \n\n";
+  // std::cout << "\n Rc0ci = \n" << Tc0ci_.rotationMatrix();
+  // std::cout << "\n\n tc0ci = " << Tc0ci_.translation().transpose();
 
   Eigen::Vector3d tc0ci = Tc0ci_.translation();
   if ((fabs(tc0ci.x()) > fabs(tc0ci.y()) && tc0ci.x() < 0) ||
