@@ -126,6 +126,7 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "hello_world_vio");
 
   auto params = std::make_shared<viohw::Setting>(FLAGS_config_file_path);
+  std::cout << *params << std::endl;
   viohw::WorldManager world_manager(params);
   // Start the SLAM thread
   std::thread estimate_thread(&viohw::WorldManager::run, &world_manager);

@@ -4,22 +4,21 @@ namespace viohw {
 
 Setting::Setting(const std::string& config_file_path) {
   cv::FileStorage fs(config_file_path, cv::FileStorage::READ);
-  LOG_IF(FATAL, !fs.isOpened())
-      << "Config file open failed, please check your confi file path.";
+  LOG_IF(FATAL, !fs.isOpened()) << "Config file open failed, please check your confi file path.";
+  Init(fs);
+}
+
+void Setting::Init(const cv::FileStorage& fs) {
   cv::FileNode cameras = fs["Camera"];
   cv::FileNode imu = fs["IMU"];
   cv::FileNode slam = fs["SLAM"];
   cv::FileNode feat_tracker = fs["FeatureAndTracker"];
+  cv::FileNode extrinsic = fs["Extrinsic"];
   readCameraParams(cameras);
   readIMUParams(imu);
   readSLAMParams(slam);
   readFeatureTrackerParams(feat_tracker);
-  std::cout << BLUE << "-------------[Params Start]----------" << TAIL << std::endl;
-  std::cout << cam_setting_ << "\n";
-  std::cout << imu_setting_ << "\n";
-  std::cout << slam_setting_ << "\n";
-  std::cout << feat_tracker_setting_ << "\n";
-  std::cout << BLUE << "-------------[Params End]------------" << TAIL << std::endl;
+  readExtrinsicParams(extrinsic);
 }
 
 void Setting::readCameraParams(const cv::FileNode& cameras) {
@@ -60,5 +59,28 @@ void Setting::readFeatureTrackerParams(const cv::FileNode& node) {
   node["klt.win.size"] >> feat_tracker_setting_.klt_win_size_;
   node["klt.pyr.level"] >> feat_tracker_setting_.klt_pyr_level_;
   node["use.brief"] >> feat_tracker_setting_.use_brief_;
+
+  node["klt.max.iter"] >> feat_tracker_setting_.klt_max_iter_;
+  node["klt.max.px.precision"] >> feat_tracker_setting_.klt_max_px_precision_;
+  node["klt.max.fb.dist"] >> feat_tracker_setting_.klt_max_fb_dist_;
+  node["klt.err"] >> feat_tracker_setting_.klt_err_;
+}
+
+void Setting::readExtrinsicParams(const cv::FileNode& node) {
+  cv::Mat cvTbc0, cvTbc1;
+  Eigen::Matrix4d Tbc0, Tbc1;
+
+  node["body_T_cam0"] >> cvTbc0;
+  node["body_T_cam1"] >> cvTbc1;
+
+  cv::cv2eigen(cvTbc0, Tbc0);
+  cv::cv2eigen(cvTbc1, Tbc1);
+
+  extrinsic_setting_.T_left_right_ = Sophus::SE3d(Tbc0.inverse() * Tbc1);
+  extrinsic_setting_.Tc0c1_ = Sophus::SE3d(Tbc0.inverse() * Tbc1);
+  extrinsic_setting_.Tbc0_ = Sophus::SE3d(Tbc0);
+  extrinsic_setting_.Tbc1_ = Sophus::SE3d(Tbc1);
+
+  node["camera.num"] >> extrinsic_setting_.camera_num_;
 }
 }  // namespace viohw

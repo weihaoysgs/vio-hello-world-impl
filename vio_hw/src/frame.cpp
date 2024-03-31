@@ -91,4 +91,98 @@ std::vector<Keypoint> Frame::getKeypoints() const {
   }
   return v;
 }
+
+void Frame::AddKeypoint(const Keypoint &kp) {
+  std::lock_guard<std::mutex> lock(kps_mutex_);
+
+  if (mapkps_.count(kp.lmid_)) {
+    LOG(WARNING) << "WEIRD!  Trying to add a KP with an already existing lmid... Not gonna do it!";
+    return;
+  }
+
+  mapkps_.emplace(kp.lmid_, kp);
+  // TODO
+  // addKeypointToGrid(kp);
+
+  nbkps_++;
+  if (kp.is3d_) {
+    nb3dkps_++;
+  } else {
+    nb2dkps_++;
+  }
+}
+
+void Frame::AddKeypoint(const cv::Point2f &pt, const int lmid) {
+  Keypoint kp = ComputeKeypoint(pt, lmid);
+
+  AddKeypoint(kp);
+}
+
+void Frame::AddKeypoint(const cv::Point2f &pt, const int lmid, const cv::Mat &desc) {
+  Keypoint kp = ComputeKeypoint(pt, lmid);
+  kp.desc_ = desc;
+
+  AddKeypoint(kp);
+}
+
+Keypoint Frame::ComputeKeypoint(const cv::Point2f &pt, const int lmid) {
+  Keypoint kp;
+  kp.lmid_ = lmid;
+  this->ComputeKeypoint(pt, kp);
+  return kp;
+}
+
+void Frame::ComputeKeypoint(const cv::Point2f &pt, Keypoint &kp) {
+  kp.px_ = pt;
+  kp.unpx_ = pcalib_leftcam_->undistortImagePoint(pt);
+
+  Eigen::Vector3d hunpx(kp.unpx_.x, kp.unpx_.y, 1.);
+  kp.bv_ = pcalib_leftcam_->iK_ * hunpx;
+  kp.bv_.normalize();
+}
+
+void Frame::UpdateKeypoint(const int lmid, const cv::Point2f &pt) {
+  std::lock_guard<std::mutex> lock(kps_mutex_);
+
+  auto it = mapkps_.find(lmid);
+  if (it == mapkps_.end()) {
+    return;
+  }
+
+  Keypoint upkp = it->second;
+
+  if (upkp.is_stereo_) {
+    nb_stereo_kps_--;
+    upkp.is_stereo_ = false;
+  }
+
+  ComputeKeypoint(pt, upkp);
+
+  // TODO
+  // updateKeypointInGrid(it->second, upkp);
+  it->second = upkp;
+}
+
+void Frame::RemoveKeypointById(const int lmid) {
+  std::lock_guard<std::mutex> lock(kps_mutex_);
+
+  auto it = mapkps_.find(lmid);
+  if (it == mapkps_.end()) {
+    return;
+  }
+
+  // TODO
+  // removeKeypointFromGrid(it->second);
+
+  if (it->second.is3d_) {
+    nb3dkps_--;
+  } else {
+    nb2dkps_--;
+  }
+  nbkps_--;
+  if (it->second.is_stereo_) {
+    nb_stereo_kps_--;
+  }
+  mapkps_.erase(lmid);
+}
 }  // namespace viohw

@@ -11,11 +11,9 @@ void LightGlueImpl::trackerAndMatcher(
   std::cout << "LightGlueImpl::trackerAndMatcher\n";
 }
 
-void LightGlueImpl::trackerAndMatcher(cv::InputArray prevImg,
-                                      cv::InputArray nextImg,
-                                      cv::InputArray prevPts,
-                                      cv::InputOutputArray nextPts,
-                                      cv::OutputArray status) {
+void LightGlueImpl::trackerAndMatcher(const std::vector<cv::Mat> &vprevpyr, const std::vector<cv::Mat> &vcurpyr,
+                                      int nwinsize, int nbpyrlvl, float ferr, float fmax_fbklt_dist, std::vector<cv::Point2f> &vkps,
+                                      std::vector<cv::Point2f> &vpriorkps, std::vector<bool> &vkpstatus) {
   LOG(WARNING) << "Nothing todo in LightGlueImpl\n";
 }
 }  // namespace viohw

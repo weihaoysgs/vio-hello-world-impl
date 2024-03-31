@@ -8,8 +8,10 @@
 #include <atomic>
 #include <iomanip>
 #include <memory>
+#include <opencv2/core.hpp>
+#include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
-
+#include "sophus/se3.hpp"
 #include "common/print_tools.hpp"
 
 namespace viohw {
@@ -17,6 +19,8 @@ class Setting
 {
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  // camera related parameters
   struct CameraSetting
   {
     std::string name_ = "{CameraSetting}";
@@ -27,6 +31,7 @@ class Setting
     std::vector<float> left_k_, right_k_, left_dist_coeff_, right_dist_coeff_;
   };
 
+  // feature extraction and tracking related parameters
   struct FeatureAndTrackerSetting
   {
     std::string name_ = "{FeatureTrackerSetting}";
@@ -39,9 +44,26 @@ class Setting
     bool track_keyframetoframe_;
     int klt_win_size_;
     int klt_pyr_level_;
+    int klt_max_iter_;
+    float klt_max_px_precision_;
+    float klt_max_fb_dist_;
+    float klt_err_;
     bool use_brief_;
   };
 
+  // extrinsic parameters
+  struct ExtrinsicSetting
+  {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+    std::string name_ = "{ExtrinsicSetting}";
+    int camera_num_ = 2;
+    Sophus::SE3d Tbc0_, Tbc1_;
+    Sophus::SE3d Tbc2_, Tbc3_;
+    Sophus::SE3d Tc0c1_;
+    Sophus::SE3d T_left_right_;
+  };
+
+  // IMU parameters
   struct IMUSetting
   {
     std::string name_ = "{IMUSetting}";
@@ -50,6 +72,7 @@ class Setting
     double gyr_n_, gyr_w_;
   };
 
+  // slam parameters
   struct SLAMSetting
   {
     std::string name_ = "{SLAMSetting}";
@@ -60,23 +83,44 @@ class Setting
     bool use_pangolin_;
   };
 
+  // explicit construction function
   explicit Setting(const std::string& config_file_path);
+
+  // delete default construction
   Setting() = delete;
+
+  // default de-construction function
   ~Setting() = default;
+
+  // read all parameters
+  void Init(const cv::FileStorage& fs);
+
+  // read camera related params
   void readCameraParams(const cv::FileNode& node);
+
+  // read imu related params
   void readIMUParams(const cv::FileNode& node);
+
+  // read slam related params
   void readSLAMParams(const cv::FileNode& node);
+
+  // read feature & tracker related params
   void readFeatureTrackerParams(const cv::FileNode& node);
+
+  // read extrinsic params
+  void readExtrinsicParams(const cv::FileNode& node);
 
   CameraSetting cam_setting_;
   FeatureAndTrackerSetting feat_tracker_setting_;
   IMUSetting imu_setting_;
   SLAMSetting slam_setting_;
+  ExtrinsicSetting extrinsic_setting_;
 };
 
 typedef std::shared_ptr<Setting> SettingPtr;
 typedef std::shared_ptr<const Setting> SettingConstPtr;
 
+// Overloaded operators <<
 // clang-format off
 inline std::ostream& operator<<(std::ostream& os,
                                 const Setting::IMUSetting& setting) {
@@ -89,6 +133,15 @@ inline std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os,
+                                const Setting::ExtrinsicSetting& setting) {
+  os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
+  os << std::right << std::setw(20) << "Camera.Num: "       << std::left << std::setw(10) << setting.camera_num_ << std::endl
+     << std::right << std::setw(20) << "Tbc0: "             << std::endl << setting.Tbc0_.matrix3x4().array() << std::endl
+     << std::right << std::setw(20) << "Tbc1: "             << std::endl << setting.Tbc1_.matrix3x4().array();
+  return os;
+}
+
 inline std::ostream& operator<<(
     std::ostream& os, const Setting::FeatureAndTrackerSetting& setting) {
   os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
@@ -96,13 +149,17 @@ inline std::ostream& operator<<(
   os << std::right << std::setw(20) << "Max.Feature.Num: " << std::left << std::setw(10) <<  setting.max_feature_num_ << std::endl
      << std::right << std::setw(20) << "Max.Feature.Dis: " << std::left << std::setw(10) <<  setting.max_feature_dis_ << std::endl
      << std::right << std::setw(20) << "Quality.Level: "   << std::left << std::setw(10) <<  setting.feature_quality_level_ << std::endl
-     << std::right << std::setw(20) << "Use.CLAHE: "       << std::left << std::setw(10) <<  (setting.use_clahe_ ? "true" : "false") << std::endl
+     << std::right << std::setw(20) << "Use.CLAHE: "       << std::left << std::setw(10) <<  setting.use_clahe_ << std::endl
      << std::right << std::setw(20) << "CLAHE.Val: "       << std::left << std::setw(10) <<  setting.clahe_val_ << std::endl
      << std::right << std::setw(20) << "KLT.Pyra.Level: "  << std::left << std::setw(10) <<  setting.klt_pyr_level_ << std::endl
      << std::right << std::setw(20) << "KLT.Win.Size: "    << std::left << std::setw(10) <<  setting.klt_win_size_ << std::endl
      << std::right << std::setw(20) << "KLT.Use.Prior: "   << std::left << std::setw(10) <<  setting.klt_use_prior_ << std::endl
      << std::right << std::setw(20) << "Use.Brief: "       << std::left << std::setw(10) <<  setting.use_brief_ << std::endl
-     << std::right << std::setw(20) << "Track.KF2Frame: "  << std::left << std::setw(10) <<  setting.track_keyframetoframe_ ;
+     << std::right << std::setw(20) << "Track.KF2Frame: "  << std::left << std::setw(10) <<  setting.track_keyframetoframe_ << std::endl
+     << std::right << std::setw(20) << "KLT.Max.Iter: "    << std::left << std::setw(10) <<  setting.klt_max_iter_ << std::endl
+     << std::right << std::setw(20) << "KLT.Max.Px.Prec: " << std::left << std::setw(10) <<  setting.klt_max_px_precision_ << std::endl
+     << std::right << std::setw(20) << "KLT.Max.FB.Dis: "  << std::left << std::setw(10) <<  setting.klt_max_fb_dist_ << std::endl
+     << std::right << std::setw(20) << "KLT.Err: "         << std::left << std::setw(10) <<  setting.klt_err_;
   return os;
 }
 
@@ -159,6 +216,19 @@ inline std::ostream& operator<<(std::ostream& os,
   }
   return os;
 }
+
+inline std::ostream& operator<<(std::ostream& os,
+                                const Setting& setting) {
+  os << BLUE << "-------------[Params Start]----------" << TAIL << std::endl;
+  os << setting.cam_setting_ << "\n";
+  os << setting.imu_setting_ << "\n";
+  os << setting.slam_setting_ << "\n";
+  os << setting.feat_tracker_setting_ << "\n";
+  os << setting.extrinsic_setting_ << "\n";
+  os << BLUE << "-------------[Params End]------------" << TAIL << std::endl;
+  return os;
+}
+
 // clang-format on
 }  // namespace viohw
 

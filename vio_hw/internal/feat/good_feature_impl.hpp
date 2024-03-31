@@ -15,7 +15,6 @@ class GoodFeature2Tracker : public FeatureBase
               cv::Mat mask = cv::Mat(), cv::Mat desc = cv::Mat()) override;
 
  private:
-  int max_kps_num_;
   int kps_min_distance_;
   float kps_quality_level_;
 };

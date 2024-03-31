@@ -12,9 +12,9 @@ struct Keypoint
 
   int lmid_;
 
-  cv::Point2f px_;
-  cv::Point2f unpx_;
-  Eigen::Vector3d bv_;
+  cv::Point2f px_;      // pixel coordinate
+  cv::Point2f unpx_;    // un-distortion pixel coordinate
+  Eigen::Vector3d bv_;  // normalized plane coordinate
 
   int scale_;
   float angle_;
@@ -27,15 +27,10 @@ struct Keypoint
   cv::Point2f runpx_;
   Eigen::Vector3d rbv_;
 
-  bool is_retracked_;
+  bool is_re_tracked_;
 
   Keypoint()
-      : lmid_(-1),
-        scale_(0),
-        angle_(-1.),
-        is3d_(false),
-        is_stereo_(false),
-        is_retracked_(false) {}
+      : lmid_(-1), scale_(0), angle_(-1.), is3d_(false), is_stereo_(false), is_re_tracked_(false) {}
 
   // For using kps in ordered containers
   bool operator<(const Keypoint &kp) const { return lmid_ < kp.lmid_; }

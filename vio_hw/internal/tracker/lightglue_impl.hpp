@@ -10,13 +10,11 @@ class LightGlueImpl : public TrackerBase
   LightGlueImpl() = default;
   void trackerAndMatcher(Eigen::Matrix<double, 259, Eigen::Dynamic> &features0,
                          Eigen::Matrix<double, 259, Eigen::Dynamic> &features1,
-                         std::vector<cv::DMatch> &matches,
-                         bool outlier_rejection) override;
+                         std::vector<cv::DMatch> &matches, bool outlier_rejection) override;
 
-  void trackerAndMatcher(cv::InputArray prevImg, cv::InputArray nextImg,
-                                 cv::InputArray prevPts,
-                                 cv::InputOutputArray nextPts,
-                                 cv::OutputArray status) override;
+  void trackerAndMatcher(const std::vector<cv::Mat> &, const std::vector<cv::Mat> &, int, int,
+                         float, float, std::vector<cv::Point2f> &, std::vector<cv::Point2f> &,
+                         std::vector<bool> &) override;
 };
 
 }  // namespace viohw

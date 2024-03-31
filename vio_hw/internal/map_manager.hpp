@@ -19,10 +19,16 @@ class MapManager
   MapManager(SettingPtr state, FramePtr pframe, FeatureBasePtr pfeatextract,
              TrackerBasePtr ptracker);
   ~MapManager() = default;
-  void CreateKeyframe(const cv::Mat& im, const cv::Mat& im_raw);
+  void CreateKeyframe(const cv::Mat &im, const cv::Mat &im_raw);
   void PrepareFrame();
   void AddKeyframe();
-  void ExtractKeypoints(const cv::Mat& im, const cv::Mat& imraw);
+  void ExtractKeypoints(const cv::Mat &im, const cv::Mat &im_raw);
+  void AddMapPoint();
+  void AddMapPoint(const cv::Mat &desc);
+  void AddKeypointsToFrame(const std::vector<cv::Point2f> &vpts, Frame &frame);
+  void AddKeypointsToFrame(const std::vector<cv::Point2f> &vpts, const std::vector<cv::Mat> &vdescs,
+                           Frame &frame);
+  void RemoveObsFromCurFrameById(const int lmid);
 
  private:
   int lm_id_, kf_id_;

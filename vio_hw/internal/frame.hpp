@@ -1,6 +1,8 @@
 #ifndef VIO_HELLO_WORLD_FRAME_HPP
 #define VIO_HELLO_WORLD_FRAME_HPP
 
+#include <glog/logging.h>
+
 #include <unordered_set>
 
 #include "sophus/se3.hpp"
@@ -13,124 +15,25 @@ class Frame
  public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  Frame();
+  Frame() = default;
   Frame(std::shared_ptr<CameraCalibration> pcalib_left, const size_t ncellsize);
-  Frame(std::shared_ptr<CameraCalibration> pcalib_left);
+
   Frame(std::shared_ptr<CameraCalibration> pcalib_left,
-        std::shared_ptr<CameraCalibration> pcalib_right);
-  Frame(std::shared_ptr<CameraCalibration> pcalib_left,
-        std::shared_ptr<CameraCalibration> pcalib_right,
-        const size_t ncellsize);
+        std::shared_ptr<CameraCalibration> pcalib_right, const size_t ncellsize);
   Frame(const Frame &F);
 
   void updateFrame(const int id, const double img_time);
 
   std::vector<Keypoint> getKeypoints() const;
-  std::vector<Keypoint> getKeypoints2d() const;
-  std::vector<Keypoint> getKeypoints3d() const;
-  std::vector<Keypoint> getKeypointsStereo() const;
-
-  std::vector<cv::Point2f> getKeypointsPx() const;
-  std::vector<cv::Point2f> getKeypointsUnPx() const;
-  std::vector<Eigen::Vector3d> getKeypointsBv() const;
-  std::vector<int> getKeypointsId() const;
-  std::vector<cv::Mat> getKeypointsDesc() const;
-
-  Keypoint getKeypointById(const int lmid) const;
-
-  std::vector<Keypoint> getKeypointsByIds(const std::vector<int> &vlmids) const;
-
-  void computeKeypoint(const cv::Point2f &pt, Keypoint &kp);
-  Keypoint computeKeypoint(const cv::Point2f &pt, const int lmid);
-
-  void addKeypoint(const Keypoint &kp);
-  void addKeypoint(const cv::Point2f &pt, const int lmid);
-  void addKeypoint(const cv::Point2f &pt, const int lmid, const cv::Mat &desc);
-  void addKeypoint(const cv::Point2f &pt, const int lmid, const int scale);
-  void addKeypoint(const cv::Point2f &pt, const int lmid, const cv::Mat &desc,
-                   const int scale);
-  void addKeypoint(const cv::Point2f &pt, const int lmid, const cv::Mat &desc,
-                   const int scale, const float angle);
-
-  void updateKeypoint(const cv::Point2f &pt, Keypoint &kp);
-  void updateKeypoint(const int lmid, const cv::Point2f &pt);
-  void updateKeypointDesc(const int lmid, const cv::Mat &desc);
-  void updateKeypointAngle(const int lmid, const float angle);
-
-  bool updateKeypointId(const int prevlmid, const int newlmid, const bool is3d);
-
-  void computeStereoKeypoint(const cv::Point2f &pt, Keypoint &kp);
-  void updateKeypointStereo(const int lmid, const cv::Point2f &pt);
-
-  void removeKeypoint(const Keypoint &kp);
-  void removeKeypointById(const int lmid);
-
-  void removeStereoKeypoint(const Keypoint &kp);
-  void removeStereoKeypointById(const int lmid);
-
-  void addKeypointToGrid(const Keypoint &kp);
-  void removeKeypointFromGrid(const Keypoint &kp);
-  void updateKeypointInGrid(const Keypoint &prevkp, const Keypoint &newkp);
-  std::vector<Keypoint> getKeypointsFromGrid(const cv::Point2f &pt) const;
-  int getKeypointCellIdx(const cv::Point2f &pt) const;
-
-  std::vector<Keypoint> getSurroundingKeypoints(const Keypoint &kp) const;
-  std::vector<Keypoint> getSurroundingKeypoints(const cv::Point2f &pt) const;
-
-  void turnKeypoint3d(const int lmid);
-
-  bool isObservingKp(const int lmid) const;
-
-  Sophus::SE3d getTcw() const;
-  Sophus::SE3d getTwc() const;
-
-  Eigen::Matrix3d getRcw() const;
-  Eigen::Matrix3d getRwc() const;
-
-  Eigen::Vector3d gettcw() const;
-  Eigen::Vector3d gettwc() const;
-
-  void setTwc(const Sophus::SE3d &Twc);
-  void setTcw(const Sophus::SE3d &Tcw);
-
-  void setTwc(const Eigen::Matrix3d &Rwc, Eigen::Vector3d &twc);
-  void setTcw(const Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw);
-
-  std::set<int> getCovisibleKfSet() const;
-
-  std::map<int, int> getCovisibleKfMap() const;
-  void updateCovisibleKfMap(const std::map<int, int> &cokfs);
-  void addCovisibleKf(const int kfid);
-  void removeCovisibleKf(const int kfid);
-  void decreaseCovisibleKf(const int kfid);
-
-  cv::Point2f projCamToImageDist(const Eigen::Vector3d &pt) const;
-  cv::Point2f projCamToImage(const Eigen::Vector3d &pt) const;
-
-  cv::Point2f projCamToRightImageDist(const Eigen::Vector3d &pt) const;
-  cv::Point2f projCamToRightImage(const Eigen::Vector3d &pt) const;
-
-  cv::Point2f projDistCamToImage(const Eigen::Vector3d &pt) const;
-  cv::Point2f projDistCamToRightImage(const Eigen::Vector3d &pt) const;
-
-  Eigen::Vector3d projCamToWorld(const Eigen::Vector3d &pt) const;
-  Eigen::Vector3d projWorldToCam(const Eigen::Vector3d &pt) const;
-
-  cv::Point2f projWorldToImage(const Eigen::Vector3d &pt) const;
-  cv::Point2f projWorldToImageDist(const Eigen::Vector3d &pt) const;
-
-  cv::Point2f projWorldToRightImage(const Eigen::Vector3d &pt) const;
-  cv::Point2f projWorldToRightImageDist(const Eigen::Vector3d &pt) const;
-
-  bool isInImage(const cv::Point2f &pt) const;
-  bool isInRightImage(const cv::Point2f &pt) const;
-
-  void displayFrameInfo();
-
+  void AddKeypoint(const Keypoint &kp);
+  void AddKeypoint(const cv::Point2f &pt, const int lmid);
+  void AddKeypoint(const cv::Point2f &pt, const int lmid, const cv::Mat &desc);
+  Keypoint ComputeKeypoint(const cv::Point2f &pt, const int lmid);
+  void ComputeKeypoint(const cv::Point2f &pt, Keypoint &kp);
+  void UpdateKeypoint(const int lmid, const cv::Point2f &pt);
+  void RemoveKeypointById(const int lmid);
   // For using frame in ordered containers
   bool operator<(const Frame &f) const { return id_ < f.id_; }
-
-  void reset();
 
   // Frame info
   int id_, kfid_;

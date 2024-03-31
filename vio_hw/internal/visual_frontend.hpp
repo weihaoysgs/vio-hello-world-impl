@@ -32,6 +32,9 @@ class VisualFrontEnd
   // preprocess image, build pyramid for tracking and apply clahe
   void PreProcessImage(cv::Mat &image);
 
+  // optical flow tracking for frame before and after
+  void KLTTracking();
+
  private:
   MapManagerPtr map_manager_;
   FramePtr current_frame_;
@@ -45,8 +48,13 @@ class VisualFrontEnd
   std::vector<cv::Mat> cur_pyr_, prev_pyr_;
   std::vector<cv::Mat> kf_pyr_;
 
-  cv::Size klt_win_size_;
+  int klt_win_size_;
   bool use_clahe_ = false;
+  bool klt_use_prior_;
+  int klt_pyr_level_;
+  float klt_err_;
+  float klt_max_fb_dist_;
+  bool track_keyframetoframe_;
 };
 
 typedef std::shared_ptr<VisualFrontEnd> VisualFrontEndPtr;

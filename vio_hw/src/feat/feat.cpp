@@ -7,8 +7,11 @@
 
 namespace viohw {
 
-std::shared_ptr<FeatureBase> FeatureBase::Create(
-    const FeatureExtractorOptions& options) {
+FeatureBase::FeatureBase() {
+  brief_desc_extractor_ = cv::xfeatures2d::BriefDescriptorExtractor::create();
+}
+
+std::shared_ptr<FeatureBase> FeatureBase::Create(const FeatureExtractorOptions& options) {
   switch (options.feature_type_) {
     case FeatureType::ORB_CV: {
       LOG(INFO) << "Create Feature Extractor with [ORB_CV]";
@@ -31,6 +34,44 @@ std::shared_ptr<FeatureBase> FeatureBase::Create(
       LOG(FATAL) << "Please select correct feature detector method.";
     }
   }
+}
+
+std::vector<cv::Mat> FeatureBase::DescribeBRIEF(const cv::Mat& im,
+                                                const std::vector<cv::Point2f>& vpts) {
+  if (vpts.empty()) {
+    return {};
+  }
+  assert(brief_desc_extractor_ != nullptr);
+  std::vector<cv::KeyPoint> vkps;
+  size_t nbkps = vpts.size();
+  vkps.reserve(nbkps);
+  std::vector<cv::Mat> vdescs;
+  vdescs.reserve(nbkps);
+
+  cv::KeyPoint::convert(vpts, vkps);
+
+  cv::Mat descs;
+  brief_desc_extractor_->compute(im, vkps, descs);
+
+  if (vkps.empty()) {
+    return std::vector<cv::Mat>(nbkps, cv::Mat());
+  }
+  size_t k = 0;
+  for (size_t i = 0; i < nbkps; i++) {
+    if (k < vkps.size()) {
+      if (vkps[k].pt == vpts[i]) {
+        // vdescs.push_back(descs.row(k).clone());
+        vdescs.push_back(descs.row(k));
+        k++;
+      } else {
+        vdescs.push_back(cv::Mat());
+      }
+    } else {
+      vdescs.push_back(cv::Mat());
+    }
+  }
+  assert(vdescs.size() == vpts.size());
+  return vdescs;
 }
 
 }  // namespace viohw

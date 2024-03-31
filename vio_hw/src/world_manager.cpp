@@ -3,11 +3,15 @@
 namespace viohw {
 
 WorldManager::WorldManager(std::shared_ptr<Setting>& setting) : params_(setting) {
-
   setupCalibration();
 
   // create feature extractor
-  auto feature_options = FeatureBase::getDefaultOptions();
+  FeatureBase::FeatureExtractorOptions feature_options{
+      .feature_type_ = FeatureBase::HARRIS,
+      .max_kps_num_ = params_->feat_tracker_setting_.max_feature_num_,
+      .kps_max_distance_ = params_->feat_tracker_setting_.max_feature_dis_,
+      .kps_quality_level_ =
+          static_cast<float>(params_->feat_tracker_setting_.feature_quality_level_)};
   feature_extractor_ = FeatureBase::Create(feature_options);
 
   // create visualization
