@@ -34,6 +34,8 @@ class RvizVisualization : public VisualizationBase
   CameraPoseVisualization camera_pose_visual_;
   ros::Publisher pub_kfs_traj_, pub_vo_traj_;
   ros::Publisher pub_img_tracker_result_;
+  nav_msgs::Path vo_traj_path_;
+  const std::string world_frame_ = "map";
 };
 
 }  // namespace viohw

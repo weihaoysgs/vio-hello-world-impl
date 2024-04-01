@@ -53,7 +53,8 @@ void WorldManager::run() {
 
       bool is_kf = visual_frontend_->VisualTracking(img_left, cur_time);
       if (is_kf) {
-        LOG(INFO) << "Keyframe create";
+        Keyframe kf(current_frame_->kfid_, img_left, img_right);
+        mapping_->AddNewKf(kf);
       }
     }
     std::chrono::milliseconds dura(1);

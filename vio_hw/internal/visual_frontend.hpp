@@ -7,6 +7,7 @@
 #include "vio_hw/internal/setting.hpp"
 #include "vio_hw/internal/tracker/tracker_base.hpp"
 #include "vio_hw/internal/viz/visualization_base.hpp"
+#include "geometry/motion_ba/motion_ba.hpp"
 
 namespace viohw {
 class VisualFrontEnd

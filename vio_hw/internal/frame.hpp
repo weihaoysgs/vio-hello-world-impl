@@ -33,6 +33,18 @@ class Frame
   void UpdateKeypoint(const int lmid, const cv::Point2f &pt);
   void RemoveKeypointById(const int lmid);
   Keypoint GetKeypointById(const int lmid) const;
+  void ComputeStereoKeypoint(const cv::Point2f &pt, Keypoint &kp);
+  std::vector<Keypoint> getKeypointsStereo() const;
+  void RemoveStereoKeypointById(const int lmid);
+  std::vector<Keypoint> GetKeypoints2d() const;
+  void UpdateKeypointStereo(const int lmid, const cv::Point2f &pt);
+  cv::Point2f ProjCamToRightImage(const Eigen::Vector3d &pt) const;
+  Eigen::Vector3d ProjCamToWorld(const Eigen::Vector3d &pt) const;
+  Sophus::SE3d GetTwc() const;
+  Sophus::SE3d GetTcw() const;
+  void SetTwc(const Sophus::SE3d &Twc);
+  cv::Point2f ProjCamToImage(const Eigen::Vector3d &pt) const;
+  void TurnKeypoint3d(const int lmid);
   // For using frame in ordered containers
   bool operator<(const Frame &f) const { return id_ < f.id_; }
 
@@ -53,7 +65,7 @@ class Frame
 
   // Pose (T cam -> world), (T world -> cam)
   Sophus::SE3d Twc_, Tcw_;
-
+  Sophus::SE3d Twb_, Tbw_;
   /* TODO
   Set a vector of calib ptrs to handle any multicam system.
   Each calib ptr should contain an extrinsic parametrization with a common

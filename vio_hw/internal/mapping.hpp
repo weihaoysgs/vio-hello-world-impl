@@ -11,6 +11,7 @@
 #include "vio_hw/internal/keyframe.hpp"
 #include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/setting.hpp"
+#include "geometry/triangulate/triangulate_cv.hpp"
 
 namespace viohw {
 
@@ -32,10 +33,10 @@ class Mapping
   void run();
 
   // get new keyframe, return true meaning successful
-  bool getNewKf(Keyframe &kf);
+  bool GetNewKf(Keyframe &kf);
 
   // add new kf to kf queen wait for process
-  void addNewKf(const Keyframe &kf);
+  void AddNewKf(const Keyframe &kf);
 
   void TriangulateTemporal(Frame &frame);
 
@@ -46,6 +47,9 @@ class Mapping
 
  private:
   bool is_new_kf_available_ = false;
+  bool stereo_mode_;
+  bool use_clahe_;
+  cv::Ptr<cv::CLAHE> clahe_;
 
   FramePtr current_frame_;
   SettingPtr params_;

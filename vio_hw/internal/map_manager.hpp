@@ -23,6 +23,8 @@ class MapManager
   void PrepareFrame();
   void AddKeyframe();
   void ExtractKeypoints(const cv::Mat &im, const cv::Mat &im_raw);
+  void StereoMatching(Frame &frame, const std::vector<cv::Mat> &vleftpyr,
+                      const std::vector<cv::Mat> &vrightpyr);
   void AddMapPoint();
   void AddMapPoint(const cv::Mat &desc);
   void AddKeypointsToFrame(const std::vector<cv::Point2f> &vpts, Frame &frame);
@@ -31,6 +33,13 @@ class MapManager
   void RemoveObsFromCurFrameById(const int lmid);
   std::shared_ptr<Frame> GetKeyframe(const int kfid) const;
   std::shared_ptr<MapPoint> GetMapPoint(const int lmid) const;
+  void UpdateMapPoint(const int lmid, const Eigen::Vector3d &wpt, const double kfanch_invdepth);
+  void RemoveMapPointObs(const int lmid, const int kfid);
+
+ public:
+  mutable std::mutex kf_mutex_, lm_mutex_;
+  mutable std::mutex map_mutex_;
+
  private:
   int lm_id_, kf_id_;
   int num_lms_, num_kfs_;
@@ -42,7 +51,6 @@ class MapManager
 
   std::unordered_map<int, std::shared_ptr<Frame>> map_kfs_;
   std::unordered_map<int, std::shared_ptr<MapPoint>> map_lms_;
-  mutable std::mutex kf_mutex_, lm_mutex_;
 };
 
 typedef std::shared_ptr<MapManager> MapManagerPtr;

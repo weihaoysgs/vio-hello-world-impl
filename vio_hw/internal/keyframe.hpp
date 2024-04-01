@@ -18,8 +18,10 @@ struct Keyframe
   Keyframe(int kfid, const cv::Mat &imleftraw)
       : kfid_(kfid), imleftraw_(imleftraw.clone()), is_stereo_(false) {}
 
-  Keyframe(int kfid, const cv::Mat &imleftraw,
-           const std::vector<cv::Mat> &vpyrleft,
+  Keyframe(int kfid, const cv::Mat &imleftraw, const cv::Mat &imright_raw)
+      : kfid_(kfid), imleftraw_(imleftraw.clone()), imrightraw_(imright_raw.clone()), is_stereo_(true) {}
+
+  Keyframe(int kfid, const cv::Mat &imleftraw, const std::vector<cv::Mat> &vpyrleft,
            const std::vector<cv::Mat> &vpyrright)
       : kfid_(kfid),
         imleftraw_(imleftraw.clone()),
@@ -37,8 +39,7 @@ struct Keyframe
   void displayInfo() {
     std::cout << "\n\n Keyframe struct object !  Info : id #" << kfid_
               << " - is stereo : " << is_stereo_;
-    std::cout << " - imleft size : " << imleft_.size
-              << " - imright size : " << imright_.size;
+    std::cout << " - imleft size : " << imleft_.size << " - imright size : " << imright_.size;
     std::cout << " - pyr left size : " << vpyr_imleft_.size()
               << " - pyr right size : " << vpyr_imright_.size() << "\n\n";
   }

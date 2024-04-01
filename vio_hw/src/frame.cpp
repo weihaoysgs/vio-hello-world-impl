@@ -186,15 +186,131 @@ void Frame::RemoveKeypointById(const int lmid) {
   mapkps_.erase(lmid);
 }
 
-Keypoint Frame::GetKeypointById(const int lmid) const
-{
+Keypoint Frame::GetKeypointById(const int lmid) const {
   std::lock_guard<std::mutex> lock(kps_mutex_);
 
   auto it = mapkps_.find(lmid);
-  if( it == mapkps_.end() ) {
+  if (it == mapkps_.end()) {
     return Keypoint();
   }
 
   return it->second;
+}
+
+void Frame::UpdateKeypointStereo(const int lmid, const cv::Point2f &pt) {
+  std::lock_guard<std::mutex> lock(kps_mutex_);
+
+  auto it = mapkps_.find(lmid);
+  if (it == mapkps_.end()) {
+    return;
+  }
+
+  ComputeStereoKeypoint(pt, it->second);
+}
+
+// Compute stereo keypoint from raw pixel position
+void Frame::ComputeStereoKeypoint(const cv::Point2f &pt, Keypoint &kp) {
+  kp.rpx_ = pt;
+  kp.runpx_ = pcalib_rightcam_->undistortImagePoint(pt);
+
+  Eigen::Vector3d bv(kp.runpx_.x, kp.runpx_.y, 1.);
+  bv = pcalib_rightcam_->iK_ * bv.eval();
+  bv.normalize();
+
+  kp.rbv_ = bv;
+
+  if (!kp.is_stereo_) {
+    kp.is_stereo_ = true;
+    nb_stereo_kps_++;
+  }
+}
+// Return vector of stereo keypoint objects
+std::vector<Keypoint> Frame::getKeypointsStereo() const {
+  std::lock_guard<std::mutex> lock(kps_mutex_);
+
+  std::vector<Keypoint> v;
+  v.reserve(nb_stereo_kps_);
+  for (const auto &kp : mapkps_) {
+    if (kp.second.is_stereo_) {
+      v.push_back(kp.second);
+    }
+  }
+  return v;
+}
+// Return vector of 2D keypoint objects
+std::vector<Keypoint> Frame::GetKeypoints2d() const
+{
+  std::lock_guard<std::mutex> lock(kps_mutex_);
+
+  std::vector<Keypoint> v;
+  v.reserve(nb2dkps_);
+  for( const auto & kp : mapkps_ ) {
+    if( !kp.second.is3d_ ) {
+      v.push_back(kp.second);
+    }
+  }
+  return v;
+}
+
+void Frame::RemoveStereoKeypointById(const int lmid) {
+  std::lock_guard<std::mutex> lock(kps_mutex_);
+
+  auto it = mapkps_.find(lmid);
+  if (it == mapkps_.end()) {
+    return;
+  }
+
+  if (it->second.is_stereo_) {
+    it->second.is_stereo_ = false;
+    nb_stereo_kps_--;
+  }
+}
+
+void Frame::TurnKeypoint3d(const int lmid) {
+  std::lock_guard<std::mutex> lock(kps_mutex_);
+
+  auto it = mapkps_.find(lmid);
+  if (it == mapkps_.end()) {
+    return;
+  }
+
+  if (!it->second.is3d_) {
+    it->second.is3d_ = true;
+    nb3dkps_++;
+    nb2dkps_--;
+  }
+}
+
+cv::Point2f Frame::ProjCamToImage(const Eigen::Vector3d &pt) const {
+  return pcalib_leftcam_->projectCamToImage(pt);
+}
+
+cv::Point2f Frame::ProjCamToRightImage(const Eigen::Vector3d &pt) const {
+  return pcalib_rightcam_->projectCamToImage(pcalib_rightcam_->Tcic0_ * pt);
+}
+
+Eigen::Vector3d Frame::ProjCamToWorld(const Eigen::Vector3d &pt) const {
+  std::lock_guard<std::mutex> lock(pose_mutex_);
+
+  Eigen::Vector3d wpt = Twc_ * pt;
+
+  return wpt;
+}
+Sophus::SE3d Frame::GetTwc() const
+{
+  std::lock_guard<std::mutex> lock(pose_mutex_);
+  return Twc_;
+}
+Sophus::SE3d Frame::GetTcw() const
+{
+  std::lock_guard<std::mutex> lock(pose_mutex_);
+  return Tcw_;
+}
+void Frame::SetTwc(const Sophus::SE3d &Twc)
+{
+  std::lock_guard<std::mutex> lock(pose_mutex_);
+
+  Twc_ = Twc;
+  Tcw_ = Twc.inverse();
 }
 }  // namespace viohw

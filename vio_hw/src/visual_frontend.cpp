@@ -198,14 +198,70 @@ void VisualFrontEnd::ShowTrackingResult() {
     cv::arrowedLine(draw_tracker_image, kp.px_, kf_kp.px_, cv::Scalar(0, 255, 0), 2, 8, 0, 0.3);
     cv::circle(draw_tracker_image, kf_kp.px_, 2, cv::Scalar(0, 255, 0), -1);
   }
-  // cv::imshow("tracker", draw_tracker_image);
-  // cv::waitKey(1);
+
   viz_->showTrackerResultImage(draw_tracker_image);
 }
 
 bool VisualFrontEnd::CheckIsNewKeyframe() { return true; }
 
-void VisualFrontEnd::ComputePose() {}
+void VisualFrontEnd::ComputePose() {
+  // Get cur nb of 3D kps
+  size_t nb3dkps = current_frame_->nb3dkps_;
+  LOG(INFO) << "3d kps num: " << nb3dkps;
+  if (nb3dkps < 4) {
+    LOG(WARNING) << ">>> Not enough kps to compute P3P / PnP";
+    return;
+  }
+  // Setup P3P-Ransac computation for OpenGV-based Pose estimation + motion-only BA with Ceres
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > vwpts, vbvs;
+  std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > vkps;
+  std::vector<int> vkpids, voutliersidx;
+
+  for (const auto& it : current_frame_->mapkps_) {
+    if (!it.second.is3d_) {
+      continue;
+    }
+    auto& kp = it.second;
+    auto plm = map_manager_->GetMapPoint(kp.lmid_);
+    if (plm == nullptr) {
+      continue;
+    }
+    // for P3P
+    vbvs.push_back(kp.bv_);
+
+    vkps.push_back(Eigen::Vector2d(kp.unpx_.x, kp.unpx_.y));
+    vwpts.push_back(plm->GetPoint());
+    vkpids.push_back(kp.lmid_);
+  }
+
+  std::vector<int> vscales(vkps.size(), 0);
+  Sophus::SE3d Twc = current_frame_->GetTwc();
+  bool success = false;
+  int max_iters = 5;
+  float robust_mono_th = 5.9915;
+  bool use_robust = true;
+  Eigen::Matrix3d K = current_frame_->pcalib_leftcam_->K_;
+  // success = geometry::tceresMotionOnlyBA(vkps, vwpts, vscales, Twc, max_iters, robust_mono_th, use_robust,
+  //                                        true, K, voutliersidx);
+
+  success = geometry::opencvP3PRansac(vbvs, vwpts, 100, 3., K(0, 0), K(1, 1), true, Twc,
+                                      voutliersidx);
+
+  // Check that pose estim. was good enough
+  size_t nbinliers = vwpts.size() - voutliersidx.size();
+  if (!success || nbinliers < 5 || voutliersidx.size() > 0.5 * vwpts.size() ||
+      Twc.translation().array().isInf().any() || Twc.translation().array().isNaN().any()) {
+    LOG(WARNING) << "ceres PNP calculate failed";
+  }
+  // Update frame pose
+  current_frame_->SetTwc(Twc);
+  // Remove outliers
+  for (const auto& idx : voutliersidx) {
+    // MapManager is responsible for all removing operations
+    map_manager_->RemoveObsFromCurFrameById(vkpids.at(idx));
+  }
+  viz_->addTrajectory(Twc.rotationMatrix(), Twc.translation());
+}
 
 void VisualFrontEnd::UpdateMotionModel() {}
 

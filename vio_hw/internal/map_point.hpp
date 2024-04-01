@@ -20,6 +20,14 @@ class MapPoint
   MapPoint(const int lmid, const int kfid, const bool bobs = true);
   MapPoint(const int lmid, const int kfid, const cv::Mat &desc, const bool bobs = true);
 
+  std::set<int> GetKfObsSet() const;
+
+  void RemoveKfObs(const int kfid);
+
+  Eigen::Vector3d GetPoint() const;
+
+  void SetPoint(const Eigen::Vector3d &ptxyz, const double invdepth = -1.);
+
   // For using MapPoint in ordered containers
   bool operator<(const MapPoint &mp) const { return lmid_ < mp.lmid_; }
 

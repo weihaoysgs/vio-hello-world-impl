@@ -43,6 +43,7 @@ add_library(vio_hw ${SOURCE_FILES})
 
 target_link_libraries(vio_hw
         feature_extraction
+        geometry
         tiny_ceres
         feature_tracking
         ${OpenCV_LIBS}

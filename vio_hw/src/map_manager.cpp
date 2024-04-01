@@ -164,4 +164,114 @@ std::shared_ptr<MapPoint> MapManager::GetMapPoint(const int lmid) const {
   return it->second;
 }
 
+void MapManager::StereoMatching(Frame& frame, const std::vector<cv::Mat>& vleftpyr,
+                                const std::vector<cv::Mat>& vrightpyr) {
+  // Find stereo correspondances with left kps
+  auto vleftkps = frame.getKeypoints();
+  size_t nbkps = vleftkps.size();
+
+  std::vector<int> v3dkpids, vkpids, voutkpids, vpriorids;
+  std::vector<cv::Point2f> v3dkps, v3dpriors, vkps, vpriors;
+  for (size_t i = 0; i < nbkps; i++) {
+    // Set left kp
+    auto& kp = vleftkps.at(i);
+
+    // Set prior right kp
+    cv::Point2f priorpt = kp.px_;
+
+    vkpids.push_back(kp.lmid_);
+    vkps.push_back(kp.px_);
+    vpriors.push_back(priorpt);
+  }
+
+  std::vector<cv::Point2f> good_right_kps;
+  std::vector<int> good_ids;
+  size_t num_good = 0, tracker_good = 0, inliner_good = 0;
+  if (!vkps.empty()) {
+    // Good / bad kps vector
+    std::vector<bool> vkpstatus;
+    std::vector<uchar> inliers;
+    tracker_->trackerAndMatcher(
+        vleftpyr, vrightpyr, param_->feat_tracker_setting_.klt_win_size_,
+        param_->feat_tracker_setting_.klt_pyr_level_, param_->feat_tracker_setting_.klt_err_,
+        param_->feat_tracker_setting_.klt_max_fb_dist_, vkps, vpriors, vkpstatus);
+
+
+    for (size_t i = 0; i < vkpstatus.size(); i++) {
+      if (vkpstatus.at(i)) {
+        frame.UpdateKeypointStereo(vkpids.at(i), vpriors.at(i));
+        num_good++;
+      }
+    }
+    // TODO
+  }
+  LOG(INFO) << "kp num: " << vkps.size() << ",Good Stereo Matching Num: " << num_good
+            << ",tracker good:" << tracker_good << ", inliner good:" << inliner_good;
+}
+
+void MapManager::UpdateMapPoint(const int lmid, const Eigen::Vector3d& wpt,
+                                const double inv_depth) {
+  std::lock_guard<std::mutex> lock(lm_mutex_);
+  std::lock_guard<std::mutex> lock_kf(kf_mutex_);
+  auto plmit = map_lms_.find(lmid);
+
+  if (plmit == map_lms_.end()) {
+    return;
+  }
+  if (plmit->second == nullptr) {
+    return;
+  }
+  // If MP 2D -> 3D => Notif. KFs
+  if (!plmit->second->is3d_) {
+    for (const auto& kfid : plmit->second->GetKfObsSet()) {
+      auto pkfit = map_kfs_.find(kfid);
+      if (pkfit != map_kfs_.end()) {
+        pkfit->second->TurnKeypoint3d(lmid);
+      } else {
+        plmit->second->RemoveKfObs(kfid);
+      }
+    }
+    if (plmit->second->isobs_) {
+      current_frame_->TurnKeypoint3d(lmid);
+    }
+  }
+
+  // Update MP world pos.
+  if( inv_depth >= 0. ) {
+    plmit->second->SetPoint(wpt, inv_depth);
+  } else {
+    plmit->second->SetPoint(wpt);
+  }
+}
+// Remove a KF obs from a MP
+void MapManager::RemoveMapPointObs(const int lmid, const int kfid) {
+  std::lock_guard<std::mutex> lock(lm_mutex_);
+  std::lock_guard<std::mutex> lockkf(kf_mutex_);
+
+  // Remove MP obs from KF
+  auto pkfit = map_kfs_.find(kfid);
+  if (pkfit != map_kfs_.end()) {
+    pkfit->second->RemoveKeypointById(lmid);
+  }
+
+  // Remove KF obs from MP
+  auto plmit = map_lms_.find(lmid);
+
+  // Skip if MP does not exist
+  if (plmit == map_lms_.end()) {
+    return;
+  }
+  plmit->second->RemoveKfObs(kfid);
+
+  // TODO
+  // if( pkfit != map_pkfs_.end() ) {
+  //   for( const auto &cokfid : plmit->second->getKfObsSet() ) {
+  //     auto pcokfit = map_pkfs_.find(cokfid);
+  //     if( pcokfit != map_pkfs_.end() ) {
+  //       pkfit->second->decreaseCovisibleKf(cokfid);
+  //       pcokfit->second->decreaseCovisibleKf(kfid);
+  //     }
+  //   }
+  // }
+}
 }  // namespace viohw

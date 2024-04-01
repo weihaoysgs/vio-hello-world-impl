@@ -2,9 +2,8 @@
 
 namespace backend {
 namespace DirectLeftSE3 {
-bool ReprojectionErrorSE3::Evaluate(double const* const* parameters,
-                                    double* residuals,
-                                    double** jacobians) const {
+inline bool ReprojectionErrorSE3::Evaluate(double const* const* parameters, double* residuals,
+                                           double** jacobians) const {
   // [tx, ty, tz, qw, qx, qy, qz]
   Eigen::Map<const Eigen::Vector3d> twc(parameters[0]);
   Eigen::Map<const Eigen::Quaterniond> qwc(parameters[0] + 3);
@@ -43,8 +42,7 @@ bool ReprojectionErrorSE3::Evaluate(double const* const* parameters,
     J_lRcw.noalias() = J_lcam * Tcw.rotationMatrix();
 
     if (jacobians[0] != NULL) {
-      Eigen::Map<Eigen::Matrix<double, 2, 7, Eigen::RowMajor> > J_se3pose(
-          jacobians[0]);
+      Eigen::Map<Eigen::Matrix<double, 2, 7, Eigen::RowMajor> > J_se3pose(jacobians[0]);
       J_se3pose.setZero();
 
       J_se3pose.block<2, 3>(0, 0).noalias() = -1. * J_lRcw;
