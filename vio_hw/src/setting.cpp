@@ -15,12 +15,14 @@ void Setting::Init( const cv::FileStorage& fs ) {
   cv::FileNode feat_tracker = fs["FeatureAndTracker"];
   cv::FileNode extrinsic = fs["Extrinsic"];
   cv::FileNode loop = fs["LoopCloser"];
+  cv::FileNode configfile = fs["ConfigFilePath"];
   readCameraParams( cameras );
   readIMUParams( imu );
   readSLAMParams( slam );
   readFeatureTrackerParams( feat_tracker );
   readExtrinsicParams( extrinsic );
   readLoopCloserParams( loop );
+  readConfigFilePathSetting( configfile );
 }
 
 void Setting::readCameraParams( const cv::FileNode& cameras ) {
@@ -89,5 +91,11 @@ void Setting::readExtrinsicParams( const cv::FileNode& node ) {
 void Setting::readLoopCloserParams( const cv::FileNode& node ) {
   node["use.loop"] >> loop_setting_.use_loop_closer_;
   node["loop.threshold"] >> loop_setting_.loop_threshold_;
+}
+
+void Setting::readConfigFilePathSetting( const cv::FileNode& node ) {
+  node["vocabulary.path"] >> config_file_path_setting_.vocabulary_path_;
+  node["kf.traj.save.path"] >> config_file_path_setting_.kf_traj_save_path_;
+  node["bag.file.path"] >> config_file_path_setting_.bag_file_path_;
 }
 }  // namespace viohw

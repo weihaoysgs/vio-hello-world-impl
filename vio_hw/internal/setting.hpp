@@ -91,6 +91,14 @@ public:
     double loop_threshold_;
   };
 
+  struct ConfigFilePathSetting
+  {
+    std::string name_ = "ConfigFilePathSetting";
+    std::string vocabulary_path_;
+    std::string kf_traj_save_path_;
+    std::string bag_file_path_;
+  };
+
   // explicit construction function
   explicit Setting( const std::string& config_file_path );
 
@@ -121,12 +129,15 @@ public:
   // read extrinsic params
   void readLoopCloserParams( const cv::FileNode& node );
 
+  void readConfigFilePathSetting( const cv::FileNode& node );
+
   CameraSetting cam_setting_;
   FeatureAndTrackerSetting feat_tracker_setting_;
   IMUSetting imu_setting_;
   SLAMSetting slam_setting_;
   ExtrinsicSetting extrinsic_setting_;
   LoopCloserSetting loop_setting_;
+  ConfigFilePathSetting config_file_path_setting_;
 };
 
 typedef std::shared_ptr<Setting> SettingPtr;
@@ -134,6 +145,16 @@ typedef std::shared_ptr<const Setting> SettingConstPtr;
 
 // Overloaded operators <<
 // clang-format off
+inline std::ostream& operator<<(std::ostream& os,
+                                const Setting::ConfigFilePathSetting& setting) {
+  os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
+  os << std::boolalpha;
+  os << std::right << std::setw(20) << "Vocabulary Path: "     << std::left << std::setw(10) << setting.vocabulary_path_ << std::endl
+     << std::right << std::setw(20) << "KF Traj Save Path: "   << std::left << std::setw(10) << setting.kf_traj_save_path_ << std::endl
+     << std::right << std::setw(20) << "Bag File Path: "       << std::left << std::setw(10) << setting.bag_file_path_;
+  return os;
+}
+
 inline std::ostream& operator<<(std::ostream& os,
                                 const Setting::LoopCloserSetting& setting) {
   os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
@@ -247,6 +268,7 @@ inline std::ostream& operator<<(std::ostream& os,
   os << setting.feat_tracker_setting_ << "\n";
   os << setting.extrinsic_setting_ << "\n";
   os << setting.loop_setting_ << "\n";
+  os << setting.config_file_path_setting_ << "\n";
   os << BLUE << "-------------[Params End]------------" << TAIL << std::endl;
   return os;
 }
