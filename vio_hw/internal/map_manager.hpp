@@ -35,6 +35,7 @@ class MapManager
   std::shared_ptr<MapPoint> GetMapPoint(const int lmid) const;
   void UpdateMapPoint(const int lmid, const Eigen::Vector3d &wpt, const double kfanch_invdepth);
   void RemoveMapPointObs(const int lmid, const int kfid);
+  void DescribeKeypoints(const cv::Mat &im, const std::vector<Keypoint> &vkps, const std::vector<cv::Point2f> &vpts);
 
  public:
   mutable std::mutex kf_mutex_, lm_mutex_;

@@ -15,12 +15,18 @@ Camera:
   left.distortion.coefficient: [-0.28340811, 0.07395907, 0.00019359, 1.76187114e-05]
   right.distortion.coefficient: [-0.28368365, 0.07451284, -0.00010473, -3.555907e-05]
 
+ConfigFilePath:
+  vocabulary.path: "/home/weihao/workspace/vio-hello-world-impl/thirdparty/Vocabulary/ORBvoc.txt"
+  kf.traj.save.path: ""
+  bag.file.path: ""
+
+
 FeatureAndTracker:
   feature.Type: 0
   tracker.Type: 0
   # common params
-  max.kps.num: 250
-  max.kps.distance: 30
+  max.kps.num: 350
+  max.kps.distance: 20
   use.clahe: 1
   clahe.val: 3
   track.keyframetoframe: 0

@@ -15,6 +15,11 @@ Camera:
   left.distortion.coefficient: [0.0, 0.0, 0.0, 0.0]
   right.distortion.coefficient: [0.0, 0.0, 0.0, 0.0]
 
+ConfigFilePath:
+  vocabulary.path: "/home/weihao/workspace/vio-hello-world-impl/thirdparty/Vocabulary/ORBvoc.txt"
+  kf.traj.save.path: ""
+  bag.file.path: ""
+
 FeatureAndTracker:
   feature.Type: 0
   tracker.Type: 0

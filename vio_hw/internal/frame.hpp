@@ -12,41 +12,44 @@
 namespace viohw {
 class Frame
 {
- public:
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   Frame() = default;
-  Frame(std::shared_ptr<CameraCalibration> pcalib_left, const size_t ncellsize);
+  Frame( std::shared_ptr<CameraCalibration> pcalib_left, const size_t ncellsize );
 
-  Frame(std::shared_ptr<CameraCalibration> pcalib_left,
-        std::shared_ptr<CameraCalibration> pcalib_right, const size_t ncellsize);
-  Frame(const Frame &F);
+  Frame( std::shared_ptr<CameraCalibration> pcalib_left,
+         std::shared_ptr<CameraCalibration> pcalib_right, const size_t ncellsize );
+  Frame( const Frame &F );
 
-  void updateFrame(const int id, const double img_time);
+  void updateFrame( const int id, const double img_time );
 
-  std::vector<Keypoint> getKeypoints() const;
-  void AddKeypoint(const Keypoint &kp);
-  void AddKeypoint(const cv::Point2f &pt, const int lmid);
-  void AddKeypoint(const cv::Point2f &pt, const int lmid, const cv::Mat &desc);
-  Keypoint ComputeKeypoint(const cv::Point2f &pt, const int lmid);
-  void ComputeKeypoint(const cv::Point2f &pt, Keypoint &kp);
-  void UpdateKeypoint(const int lmid, const cv::Point2f &pt);
-  void RemoveKeypointById(const int lmid);
-  Keypoint GetKeypointById(const int lmid) const;
-  void ComputeStereoKeypoint(const cv::Point2f &pt, Keypoint &kp);
+  void AddKeypoint( const Keypoint &kp );
+  void AddKeypoint( const cv::Point2f &pt, const int lmid );
+  void AddKeypoint( const cv::Point2f &pt, const int lmid, const cv::Mat &desc );
+  Keypoint ComputeKeypoint( const cv::Point2f &pt, const int lmid );
+  void ComputeKeypoint( const cv::Point2f &pt, Keypoint &kp );
+  void UpdateKeypoint( const int lmid, const cv::Point2f &pt );
+  void RemoveKeypointById( const int lmid );
+  Keypoint GetKeypointById( const int lmid ) const;
+  void ComputeStereoKeypoint( const cv::Point2f &pt, Keypoint &kp );
   std::vector<Keypoint> getKeypointsStereo() const;
-  void RemoveStereoKeypointById(const int lmid);
+  void RemoveStereoKeypointById( const int lmid );
+  bool isObservingKp( const int lmid ) const;
   std::vector<Keypoint> GetKeypoints2d() const;
-  void UpdateKeypointStereo(const int lmid, const cv::Point2f &pt);
-  cv::Point2f ProjCamToRightImage(const Eigen::Vector3d &pt) const;
-  Eigen::Vector3d ProjCamToWorld(const Eigen::Vector3d &pt) const;
+  std::vector<Keypoint> GetKeypoints3d() const;
+  void UpdateKeypointDesc(const int lmid, const cv::Mat &desc);
+  std::vector<Keypoint> GetKeypoints() const;
+  void UpdateKeypointStereo( const int lmid, const cv::Point2f &pt );
+  cv::Point2f ProjCamToRightImage( const Eigen::Vector3d &pt ) const;
+  Eigen::Vector3d ProjCamToWorld( const Eigen::Vector3d &pt ) const;
   Sophus::SE3d GetTwc() const;
   Sophus::SE3d GetTcw() const;
-  void SetTwc(const Sophus::SE3d &Twc);
-  cv::Point2f ProjCamToImage(const Eigen::Vector3d &pt) const;
-  void TurnKeypoint3d(const int lmid);
+  void SetTwc( const Sophus::SE3d &Twc );
+  cv::Point2f ProjCamToImage( const Eigen::Vector3d &pt ) const;
+  void TurnKeypoint3d( const int lmid );
   // For using frame in ordered containers
-  bool operator<(const Frame &f) const { return id_ < f.id_; }
+  bool operator<( const Frame &f ) const { return id_ < f.id_; }
 
   // Frame info
   int id_, kfid_;

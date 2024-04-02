@@ -213,7 +213,21 @@ bool VisualFrontEnd::CheckIsNewKeyframe() {
     LOG( FATAL ) << "Cant get prev keyframe.";
   }
 
+  // id diff with last KF
+  int num_img_from_kf = current_frame_->id_ - pkf->id_;
+
+  // 3d keypoint number
+  if ( current_frame_->nb3dkps_ < 20 ) {
+    return true;
+  }
+
   float parallax = ComputeParallax( pkf->kfid_, true, true, false );
+
+  double timer_differ = current_frame_->img_time_ - pkf->img_time_;
+
+  if ( param_->slam_setting_.stereo_mode_ && timer_differ > 1. ) {
+    return true;
+  }
 
   return true;
 }
@@ -333,7 +347,8 @@ void VisualFrontEnd::ComputePose() {
   size_t nbinliers = vwpts.size() - voutliersidx.size();
   if ( !success || nbinliers < 5 || voutliersidx.size() > 0.5 * vwpts.size() ||
        Twc.translation().array().isInf().any() || Twc.translation().array().isNaN().any() ) {
-    LOG( WARNING ) << "ceres PNP calculate failed";
+    LOG( WARNING ) << "ceres/OpenCV PNP calculate failed, num inliers " << nbinliers << ", num outliers "
+                   << voutliersidx.size() << ", vwpts.size: " << vwpts.size();
   }
   // Update frame pose
   current_frame_->SetTwc( Twc );

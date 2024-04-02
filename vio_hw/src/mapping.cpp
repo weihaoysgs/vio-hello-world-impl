@@ -21,7 +21,6 @@ Mapping::Mapping( viohw::SettingPtr param, viohw::MapManagerPtr map_manager, vio
 }
 
 void Mapping::run() {
-  LOG( INFO ) << "Mapper is ready to process Keyframes!";
 
   std::thread lc_thread( &LoopCloser::run, loop_closer_ );
 

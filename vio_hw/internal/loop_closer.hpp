@@ -35,6 +35,21 @@ public:
   // add new keyframe to loop closer thread
   void AddNewKeyFrame( const FramePtr &pkf, const cv::Mat &im );
 
+  // compute desc of new kf image
+  void ComputeDesc( std::vector<cv::KeyPoint> &cv_kps, cv::Mat &cv_descs );
+
+  // detect loop closer for new kf
+  std::pair<int, float> DetectLoop( cv::Mat &desc );
+
+  // process loop kf for pose graph optimization
+  void ProcessLoopCandidate( int kf_loop_id );
+
+  void KNNMatching( const Frame &newkf, const Frame &lckf,
+                    std::vector<std::pair<int, int>> &vkplmids );
+
+  // desc convert tool, ref ORB-SLAM3
+  static std::vector<cv::Mat> ConvertToDescriptorVector( const cv::Mat &descriptors );
+
 private:
   cv::Mat new_kf_img_;
 
