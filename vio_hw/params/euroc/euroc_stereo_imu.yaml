@@ -19,8 +19,8 @@ FeatureAndTracker:
   feature.Type: 0
   tracker.Type: 0
   # common params
-  max.kps.num: 300
-  max.kps.distance: 20
+  max.kps.num: 250
+  max.kps.distance: 30
   use.clahe: 1
   clahe.val: 3
   track.keyframetoframe: 0
@@ -50,6 +50,14 @@ SLAM:
   force.realtime: 1
   use.Rviz: 1
   use.Pangolin: 0
+
+LoopCloser:
+  use.loop: 1
+  loop.threshold: 0.6
+
+Backend:
+  use.backend: false
+
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )
 Extrinsic:

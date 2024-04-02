@@ -205,8 +205,8 @@ void MapManager::StereoMatching(Frame& frame, const std::vector<cv::Mat>& vleftp
     }
     // TODO
   }
-  LOG(INFO) << "kp num: " << vkps.size() << ",Good Stereo Matching Num: " << num_good
-            << ",tracker good:" << tracker_good << ", inliner good:" << inliner_good;
+  // LOG(INFO) << "kp num: " << vkps.size() << ",Good Stereo Matching Num: " << num_good
+  //           << ",tracker good:" << tracker_good << ", inliner good:" << inliner_good;
 }
 
 void MapManager::UpdateMapPoint(const int lmid, const Eigen::Vector3d& wpt,

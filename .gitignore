@@ -35,3 +35,4 @@ build/
 .vscode/
 .idea/
 out/
+thirdparty/Vocabulary/ORBvoc.txt

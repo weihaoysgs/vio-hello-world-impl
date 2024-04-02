@@ -12,6 +12,7 @@
 #include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/setting.hpp"
 #include "geometry/triangulate/triangulate_cv.hpp"
+#include "vio_hw/internal/loop_closer.hpp"
 
 namespace viohw {
 
@@ -49,11 +50,13 @@ class Mapping
   bool is_new_kf_available_ = false;
   bool stereo_mode_;
   bool use_clahe_;
+  bool use_loop_;
   cv::Ptr<cv::CLAHE> clahe_;
 
   FramePtr current_frame_;
   SettingPtr params_;
   MapManagerPtr map_manager_;
+  LoopCloserPtr loop_closer_;
 
   std::queue<Keyframe> kfs_queen_;
 

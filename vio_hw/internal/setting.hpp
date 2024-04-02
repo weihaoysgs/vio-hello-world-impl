@@ -11,13 +11,14 @@
 #include <opencv2/core.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
-#include "sophus/se3.hpp"
+
 #include "common/print_tools.hpp"
+#include "sophus/se3.hpp"
 
 namespace viohw {
 class Setting
 {
- public:
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   // camera related parameters
@@ -83,8 +84,15 @@ class Setting
     bool use_pangolin_;
   };
 
+  struct LoopCloserSetting
+  {
+    std::string name_ = "LoopSetting";
+    bool use_loop_closer_;
+    double loop_threshold_;
+  };
+
   // explicit construction function
-  explicit Setting(const std::string& config_file_path);
+  explicit Setting( const std::string& config_file_path );
 
   // delete default construction
   Setting() = delete;
@@ -93,28 +101,32 @@ class Setting
   ~Setting() = default;
 
   // read all parameters
-  void Init(const cv::FileStorage& fs);
+  void Init( const cv::FileStorage& fs );
 
   // read camera related params
-  void readCameraParams(const cv::FileNode& node);
+  void readCameraParams( const cv::FileNode& node );
 
   // read imu related params
-  void readIMUParams(const cv::FileNode& node);
+  void readIMUParams( const cv::FileNode& node );
 
   // read slam related params
-  void readSLAMParams(const cv::FileNode& node);
+  void readSLAMParams( const cv::FileNode& node );
 
   // read feature & tracker related params
-  void readFeatureTrackerParams(const cv::FileNode& node);
+  void readFeatureTrackerParams( const cv::FileNode& node );
 
   // read extrinsic params
-  void readExtrinsicParams(const cv::FileNode& node);
+  void readExtrinsicParams( const cv::FileNode& node );
+
+  // read extrinsic params
+  void readLoopCloserParams( const cv::FileNode& node );
 
   CameraSetting cam_setting_;
   FeatureAndTrackerSetting feat_tracker_setting_;
   IMUSetting imu_setting_;
   SLAMSetting slam_setting_;
   ExtrinsicSetting extrinsic_setting_;
+  LoopCloserSetting loop_setting_;
 };
 
 typedef std::shared_ptr<Setting> SettingPtr;
@@ -122,6 +134,15 @@ typedef std::shared_ptr<const Setting> SettingConstPtr;
 
 // Overloaded operators <<
 // clang-format off
+inline std::ostream& operator<<(std::ostream& os,
+                                const Setting::LoopCloserSetting& setting) {
+  os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
+  os << std::boolalpha;
+  os << std::right << std::setw(20) << "Use LoopCloser: "       << std::left << std::setw(10) << setting.use_loop_closer_ << std::endl
+     << std::right << std::setw(20) << "Loop Threshold: "       << std::left << std::setw(10) << setting.loop_threshold_;
+  return os;
+}
+
 inline std::ostream& operator<<(std::ostream& os,
                                 const Setting::IMUSetting& setting) {
   os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
@@ -225,6 +246,7 @@ inline std::ostream& operator<<(std::ostream& os,
   os << setting.slam_setting_ << "\n";
   os << setting.feat_tracker_setting_ << "\n";
   os << setting.extrinsic_setting_ << "\n";
+  os << setting.loop_setting_ << "\n";
   os << BLUE << "-------------[Params End]------------" << TAIL << std::endl;
   return os;
 }

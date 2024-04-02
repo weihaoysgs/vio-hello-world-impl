@@ -52,6 +52,11 @@ class VisualFrontEnd
   // update motion model, IMU or Constant model
   void UpdateMotionModel();
 
+  // get current frame[left image] pyramid image
+  std::vector<cv::Mat> GetCurrentFramePyramid() const;
+
+  float ComputeParallax(const int kfid, bool do_unrot, bool median, bool is_2donly);
+
  private:
   MapManagerPtr map_manager_;
   FramePtr current_frame_;

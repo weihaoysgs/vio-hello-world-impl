@@ -12,10 +12,12 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/tiny_ceres_solver/include
         ${PROJECT_SOURCE_DIR}/tiny_ceres_solver/internal
         ${PROJECT_SOURCE_DIR}/thirdparty/Sophus
+        ${PROJECT_SOURCE_DIR}/thirdparty/DBoW2
         ${PROJECT_SOURCE_DIR}
 )
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/backward-cpp)
+add_subdirectory(${PROJECT_SOURCE_DIR}/thirdparty/DBoW2)
 
 find_package(OpenCV 4 REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})

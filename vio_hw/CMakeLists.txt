@@ -37,6 +37,7 @@ set(SOURCE_FILES
         src/tracker/lightglue_impl.cpp
         src/tracker/optical_flow_impl.cpp
         src/mapping.cpp
+        src/loop_closer.cpp
 )
 
 add_library(vio_hw ${SOURCE_FILES})
@@ -46,6 +47,7 @@ target_link_libraries(vio_hw
         geometry
         tiny_ceres
         feature_tracking
+        DBoW2
         ${OpenCV_LIBS}
         ${catkin_LIBRARIES}
 )

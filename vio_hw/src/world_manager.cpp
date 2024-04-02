@@ -53,7 +53,7 @@ void WorldManager::run() {
 
       bool is_kf = visual_frontend_->VisualTracking(img_left, cur_time);
       if (is_kf) {
-        Keyframe kf(current_frame_->kfid_, img_left, img_right);
+        Keyframe kf(current_frame_->kfid_, img_left, img_right, visual_frontend_->GetCurrentFramePyramid());
         mapping_->AddNewKf(kf);
       }
     }
