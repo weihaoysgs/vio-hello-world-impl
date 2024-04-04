@@ -62,3 +62,8 @@ add_backward(run_kitti_node)
 target_link_libraries(run_kitti_node
         vio_hw
 )
+add_executable(run_hilti_node node/run_hilti_node.cpp)
+add_backward(run_hilti_node)
+target_link_libraries(run_hilti_node
+        vio_hw
+)

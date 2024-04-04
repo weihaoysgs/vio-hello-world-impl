@@ -42,10 +42,7 @@ void LoopCloser::run() {
       std::pair<int, float> candidate_kf_id_score = DetectLoop( cv_descs );
 
       if ( candidate_kf_id_score.second > 0.10 ) {
-        // static int c = 0;
-        // std::cout << GREEN << "Loop Closer Detect " << c++ << ", score: " << max_score
-        //           << ". loop threshold is: " << loop_threshold_ << TAIL << std::endl;
-        LOG( INFO ) << "Score: " << candidate_kf_id_score.second;
+        LOG( INFO ) << "Loop Score: " << candidate_kf_id_score.second;
       } else {
         continue;
       }
@@ -100,7 +97,7 @@ void LoopCloser::ProcessLoopCandidate( int kf_loop_id ) {
                    << ( success ? "success" : "failed" ) << ", num_inliers: " << num_inliers;
     return;
   }
-  LOG( INFO ) << "vkplmids: " << vkplmids.size() << ", num_inliers:" << num_inliers;
+  LOG( INFO ) << "kp lm_ids: " << vkplmids.size() << ", num_inliers:" << num_inliers;
 
   if ( !outliers_idx.empty() ) {
     // Remove outliers from vector of pairs
@@ -294,6 +291,9 @@ void LoopCloser::ComputeDesc( std::vector<cv::KeyPoint>& cv_kps, cv::Mat& cv_des
       cv_descs.push_back( plm->desc_ );
       cv::circle( mask, kp.px_, 2., 0, -1 );
     }
+  }
+  if ( cv_descs.empty() ) {
+    return;
   }
   // brief_cal_->compute( new_kf_img_, cv_kps, cv_descs );
 
