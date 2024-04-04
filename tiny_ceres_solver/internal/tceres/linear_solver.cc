@@ -36,7 +36,7 @@
 // #include "tceres/iterative_schur_complement_solver.h"
 #include "tceres/schur_complement_solver.h"
 // #include "tceres/dynamic_sparse_normal_cholesky_solver.h"
-// #include "tceres/sparse_normal_cholesky_solver.h"
+#include "tceres/sparse_normal_cholesky_solver.h"
 #include "tceres/types.h"
 #include "glog/logging.h"
 
@@ -77,18 +77,18 @@ LinearSolver* LinearSolver::Create(const LinearSolver::Options& options) {
 //     case CGNR:
 //       return new CgnrSolver(options);
 //
-//     case SPARSE_NORMAL_CHOLESKY:
-// #if defined(CERES_NO_SUITESPARSE) &&              \
-//     defined(CERES_NO_CXSPARSE) &&                 \
-//    !defined(CERES_USE_EIGEN_SPARSE)
-//       return NULL;
-// #else
-//       if (options.dynamic_sparsity) {
-//         return new DynamicSparseNormalCholeskySolver(options);
-//       }
-//
-//       return new SparseNormalCholeskySolver(options);
-// #endif
+    case SPARSE_NORMAL_CHOLESKY:
+#if defined(CERES_NO_SUITESPARSE) &&              \
+    defined(CERES_NO_CXSPARSE) &&                 \
+   !defined(CERES_USE_EIGEN_SPARSE)
+      return NULL;
+#else
+      // if (options.dynamic_sparsity) {
+      //   return new DynamicSparseNormalCholeskySolver(options);
+      // }
+
+      return new SparseNormalCholeskySolver(options);
+#endif
 //
 //     case SPARSE_SCHUR:
 // #if defined(CERES_NO_SUITESPARSE) &&                 \

@@ -65,6 +65,8 @@ add_library(tiny_ceres
         internal/tceres/trust_region_preprocessor.cc
         internal/tceres/gradient_checking_cost_function.cc
         internal/tceres/levenberg_marquardt_strategy.cc
+        internal/tceres/inner_product_computer.cc
+        internal/tceres/sparse_normal_cholesky_solver.cc
 )
 
 target_link_libraries(tiny_ceres ${THIRD_PARTY_LIBS})
@@ -79,6 +81,8 @@ set(TEST_SOURCES small_blas_test
        detect_structure_test block_random_access_dense_matrix_test
        invert_psd_matrix_test
        gradient_checking_cost_function_test
+       sparse_normal_cholesky_solver_test
+       inner_product_computer_test
 )
 
 foreach (test_src ${TEST_SOURCES})
