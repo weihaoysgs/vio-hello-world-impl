@@ -2,13 +2,11 @@
 
 namespace viohw {
 
-Mapping::Mapping( viohw::SettingPtr param, viohw::MapManagerPtr map_manager, viohw::FramePtr frame )
-    : params_( param ), map_manager_( map_manager ), current_frame_( frame ) {
+Mapping::Mapping( viohw::SettingPtr param, viohw::MapManagerPtr map_manager, viohw::FramePtr frame, LoopCloserPtr loop)
+    : params_( param ), map_manager_( map_manager ), current_frame_( frame ), loop_closer_(loop) {
   stereo_mode_ = params_->slam_setting_.stereo_mode_;
   use_clahe_ = params_->feat_tracker_setting_.use_clahe_;
   use_loop_ = params_->loop_setting_.use_loop_closer_;
-
-  loop_closer_.reset( new LoopCloser( param, map_manager ) );
 
   if ( use_clahe_ ) {
     int tilesize = 50;

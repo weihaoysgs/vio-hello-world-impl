@@ -28,7 +28,7 @@ class Mapping
   ~Mapping() = default;
 
   // Mapping construction
-  Mapping(SettingPtr param, MapManagerPtr map_manager, FramePtr frame);
+  Mapping(SettingPtr param, MapManagerPtr map_manager, FramePtr frame, LoopCloserPtr loop);
 
   // Mapping thread
   void run();

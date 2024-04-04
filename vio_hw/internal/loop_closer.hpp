@@ -7,6 +7,8 @@
 
 #include "DBoW2/FORB.h"
 #include "DBoW2/TemplatedVocabulary.h"
+#include "geometry/epipolar/epipolar_constraint.hpp"
+#include "geometry/motion_ba/motion_ba.hpp"
 #include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/setting.hpp"
 
@@ -47,11 +49,24 @@ public:
   void KNNMatching( const Frame &newkf, const Frame &lckf,
                     std::vector<std::pair<int, int>> &vkplmids );
 
+  bool ComputePnP( const Frame &frame, const std::vector<std::pair<int, int>> &vkplmids,
+                               Sophus::SE3d &Twc, std::vector<int> &voutlier_idx );
+
+  cv::Mat GetLoopMatcherResult() const { return loop_img_matcher_; }
+
+  static bool EpipolarFiltering( const Frame &newkf, const Frame &lckf,
+                                 std::vector<std::pair<int, int>> &vkplmids,
+                                 std::vector<int> &outliers_idx );
+
+  static void RemoveOutliers( std::vector<std::pair<int, int>> &vkplmids,
+                              std::vector<int> &voutliers_idx );
+
   // desc convert tool, ref ORB-SLAM3
   static std::vector<cv::Mat> ConvertToDescriptorVector( const cv::Mat &descriptors );
 
 private:
   cv::Mat new_kf_img_;
+  cv::Mat loop_img_matcher_;
 
   FramePtr new_kf_;
   SettingPtr param_;

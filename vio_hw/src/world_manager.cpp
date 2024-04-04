@@ -37,8 +37,10 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   visual_frontend_.reset(
       new VisualFrontEnd( params_, current_frame_, map_manager_, tracker_, viz_ ) );
 
+  loop_closer_.reset( new LoopCloser( params_, map_manager_ ) );
+
   // create mapping thread, and mapping will create sub thread for Estimator and LoopClosing
-  mapping_.reset( new Mapping( params_, map_manager_, current_frame_ ) );
+  mapping_.reset( new Mapping( params_, map_manager_, current_frame_, loop_closer_ ) );
 
   com::printHelloWorldVIO();
   com::printKeyboard();
@@ -47,12 +49,17 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
 void WorldManager::run() {
   cv::Mat img_left, img_right;
   double cur_time;
+
   while ( true ) {
     if ( getNewImage( img_left, img_right, cur_time ) ) {
       frame_id_++;
       current_frame_->updateFrame( frame_id_, cur_time );
 
       bool is_kf = visual_frontend_->VisualTracking( img_left, cur_time );
+
+      VisualizationImage();
+
+
       if ( is_kf ) {
         Keyframe kf( current_frame_->kfid_, img_left, img_right,
                      visual_frontend_->GetCurrentFramePyramid() );
@@ -147,5 +154,12 @@ void WorldManager::setupCalibration() {
     // zero)
     calib_model_right_->setupExtrinsic( params_->extrinsic_setting_.T_left_right_ );
   }
+}
+
+bool WorldManager::VisualizationImage() {
+  // direct get tracker image in frontend thread is thread-safe
+  bool s1 = viz_->showTrackerResultImage( visual_frontend_->GetTrackResultImage() );
+  bool s2 = viz_->showLoopResultImage( loop_closer_->GetLoopMatcherResult() );
+  return s1 && s2;
 }
 }  // namespace viohw

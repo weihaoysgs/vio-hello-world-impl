@@ -50,7 +50,9 @@ class VisualFrontEnd
   void ComputePose();
 
   // update motion model, IMU or Constant model
-  void UpdateMotionModel();
+  void UpdateMotionModel( double time );
+
+  cv::Mat GetTrackResultImage() const;
 
   // get current frame[left image] pyramid image
   std::vector<cv::Mat> GetCurrentFramePyramid() const;
@@ -66,6 +68,7 @@ class VisualFrontEnd
 
   ConstantMotionModel motion_model_;
 
+  cv::Mat draw_tracker_image_;
   cv::Mat cur_img_, prev_img_;
   cv::Ptr<cv::CLAHE> clahe_;
   std::vector<cv::Mat> cur_pyr_, prev_pyr_;

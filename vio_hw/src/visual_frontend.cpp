@@ -44,6 +44,10 @@ bool VisualFrontEnd::TrackerMono( cv::Mat& image, double time ) {
     return true;
   }
 
+  // Sophus::SE3d Twc = current_frame_->GetTwc();
+  // motion_model_.applyMotionModel( Twc, time );
+  // current_frame_->SetTwc( Twc );
+
   // tracking from frame to frame
   KLTTracking();
 
@@ -57,7 +61,7 @@ bool VisualFrontEnd::TrackerMono( cv::Mat& image, double time ) {
   ComputePose();
 
   // update motion model
-  UpdateMotionModel();
+  UpdateMotionModel( time );
 
   // check is new keyframe
   return CheckIsNewKeyframe();
@@ -185,8 +189,7 @@ void VisualFrontEnd::Epipolar2d2dFiltering() {
 }
 
 void VisualFrontEnd::ShowTrackingResult() {
-  cv::Mat draw_tracker_image;
-  cv::cvtColor( cur_img_, draw_tracker_image, cv::COLOR_GRAY2BGR );
+  cv::cvtColor( cur_img_, draw_tracker_image_, cv::COLOR_GRAY2BGR );
   // Get prev KF
   auto pkf = map_manager_->GetKeyframe( current_frame_->kfid_ );
   std::vector<cv::Point2f> vkf_px, vcur_px;
@@ -199,11 +202,10 @@ void VisualFrontEnd::ShowTrackingResult() {
     }
     vkf_px.push_back( kf_kp.px_ );
     vcur_px.push_back( kp.px_ );
-    cv::arrowedLine( draw_tracker_image, kp.px_, kf_kp.px_, cv::Scalar( 0, 255, 0 ), 2, 8, 0, 0.3 );
-    cv::circle( draw_tracker_image, kf_kp.px_, 2, cv::Scalar( 0, 255, 0 ), -1 );
+    cv::arrowedLine( draw_tracker_image_, kp.px_, kf_kp.px_, cv::Scalar( 0, 255, 0 ), 2, 8, 0,
+                     0.3 );
+    cv::circle( draw_tracker_image_, kf_kp.px_, 2, cv::Scalar( 0, 255, 0 ), -1 );
   }
-
-  viz_->showTrackerResultImage( draw_tracker_image );
 }
 
 bool VisualFrontEnd::CheckIsNewKeyframe() {
@@ -340,15 +342,16 @@ void VisualFrontEnd::ComputePose() {
   success = geometry::tceresMotionOnlyBA( vkps, vwpts, vscales, Twc, max_iters, robust_mono_th,
                                           use_robust, true, K, voutliersidx );
 
-  // success = geometry::opencvP3PRansac(vbvs, vwpts, 100, 3., K(0, 0), K(1, 1), true, Twc,
-  // voutliersidx);
+  // success = geometry::opencvP3PRansac( vbvs, vwpts, 100, 3., K( 0, 0 ), K( 1, 1 ), true, Twc,
+  //                                      voutliersidx );
 
   // Check that pose estim. was good enough
   size_t nbinliers = vwpts.size() - voutliersidx.size();
   if ( !success || nbinliers < 5 || voutliersidx.size() > 0.5 * vwpts.size() ||
        Twc.translation().array().isInf().any() || Twc.translation().array().isNaN().any() ) {
-    LOG( WARNING ) << "ceres/OpenCV PNP calculate failed, num inliers " << nbinliers << ", num outliers "
-                   << voutliersidx.size() << ", vwpts.size: " << vwpts.size();
+    LOG( WARNING ) << "ceres/OpenCV PNP calculate " << ( success ? "success" : "failed" )
+                   << " num inliers " << nbinliers << ", num outliers " << voutliersidx.size()
+                   << ", vwpts.size: " << vwpts.size();
   }
   // Update frame pose
   current_frame_->SetTwc( Twc );
@@ -360,8 +363,11 @@ void VisualFrontEnd::ComputePose() {
   viz_->addTrajectory( Twc.rotationMatrix(), Twc.translation() );
 }
 
-void VisualFrontEnd::UpdateMotionModel() {}
+void VisualFrontEnd::UpdateMotionModel( double time ) {
+  motion_model_.updateMotionModel( current_frame_->GetTwc(), time );
+}
 
 std::vector<cv::Mat> VisualFrontEnd::GetCurrentFramePyramid() const { return cur_pyr_; }
+cv::Mat VisualFrontEnd::GetTrackResultImage() const { return draw_tracker_image_; }
 
 }  // namespace viohw

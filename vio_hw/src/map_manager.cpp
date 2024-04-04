@@ -7,7 +7,11 @@ MapManager::MapManager( SettingPtr state, FramePtr frame, FeatureBasePtr feat_ex
     : param_( state ),
       current_frame_( frame ),
       feature_extractor_( feat_extract ),
-      tracker_( tracker ) {}
+      tracker_( tracker ),
+      lm_id_( 0 ),
+      kf_id_( 0 ),
+      num_lms_( 0 ),
+      num_kfs_( 0 ) {}
 
 void MapManager::CreateKeyframe( const cv::Mat& im, const cv::Mat& im_raw ) {
   PrepareFrame();

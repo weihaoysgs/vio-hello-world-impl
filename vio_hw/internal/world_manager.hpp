@@ -23,7 +23,7 @@ class WorldManager
   void addNewStereoImages(double time, cv::Mat &im0, cv::Mat &im1);
   bool getNewImage(cv::Mat &iml, cv::Mat &imr, double &time);
   void setupCalibration();
-  void createKeyframe(const cv::Mat &im, const cv::Mat &imraw);
+  bool VisualizationImage();
 
  private:
   std::queue<cv::Mat> img_left_queen_, img_right_queen_;
@@ -40,6 +40,7 @@ class WorldManager
   MapManagerPtr map_manager_;
   VisualFrontEndPtr visual_frontend_;
   MappingPtr mapping_;
+  LoopCloserPtr loop_closer_;
 
   std::shared_ptr<VisualizationBase> viz_;
   std::shared_ptr<CameraCalibration> calib_model_left_, calib_model_right_;

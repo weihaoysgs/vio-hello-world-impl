@@ -22,6 +22,10 @@ LoopCloser::LoopCloser( SettingPtr param, MapManagerPtr map_manager )
 }
 
 void LoopCloser::run() {
+  if ( !use_loop_ ) {
+    return;
+  }
+
   while ( true ) {
     if ( GetNewKeyFrame() ) {
       if ( new_kf_ == nullptr ) {
@@ -71,6 +75,110 @@ void LoopCloser::ProcessLoopCandidate( int kf_loop_id ) {
   if ( vkplmids.size() < 15 ) {
     return;
   }
+
+  std::vector<int> outliers_idx;
+  bool epipolar_status = EpipolarFiltering( *new_kf_, *lc_kf, vkplmids, outliers_idx );
+
+  size_t num_inliers = vkplmids.size() - outliers_idx.size();
+
+  if ( !epipolar_status || num_inliers < 10 ) {
+    LOG( WARNING ) << "Not enough inliers for LC after epipolar filtering";
+    return;
+  }
+
+  if ( !outliers_idx.empty() ) {
+    // Remove outliers from vector of pairs
+    RemoveOutliers( vkplmids, outliers_idx );
+  }
+
+  Sophus::SE3d Twc = new_kf_->GetTwc();
+  bool success = ComputePnP( *new_kf_, vkplmids, Twc, outliers_idx );
+
+  num_inliers = vkplmids.size() - outliers_idx.size();
+  if ( !success || num_inliers < 30 ) {
+    LOG( WARNING ) << "Not enough inliers for LC after ComputePnP(). PNP "
+                   << ( success ? "success" : "failed" ) << ", num_inliers: " << num_inliers;
+    return;
+  }
+  LOG( INFO ) << "vkplmids: " << vkplmids.size() << ", num_inliers:" << num_inliers;
+
+  if ( !outliers_idx.empty() ) {
+    // Remove outliers from vector of pairs
+    RemoveOutliers( vkplmids, outliers_idx );
+  }
+
+  size_t num_good_kps = vkplmids.size();
+  if ( num_good_kps >= 30 ) {
+    double lc_pose_err = ( new_kf_->GetTcw() * Twc ).log().norm();
+
+    LOG( INFO ) << "[PoseGraph] >>> Closing a loop between : "
+                << " KF #" << new_kf_->kfid_ << " (img #" << new_kf_->id_ << ") and KF #"
+                << lc_kf->kfid_ << " (img #" << lc_kf->id_ << " ), lc pose err: " << lc_pose_err;
+
+    LOG( INFO ) << "loop kf pos: " << lc_kf->GetTwc().translation().transpose() << "; "
+                << "new  kf pos: " << new_kf_->GetTwc().translation().transpose() << "; "
+                << "correct pos: " << Twc.translation().transpose();
+  }
+}
+
+bool LoopCloser::ComputePnP( const Frame& frame, const std::vector<std::pair<int, int>>& vkplmids,
+                             Sophus::SE3d& Twc, std::vector<int>& voutlier_idx ) {
+  // Init vector for PnP
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> vwpts, vbvs;
+  std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d>> vkps;
+  std::vector<int> vgoodkpidx, vscales, voutidx;
+
+  size_t nbkps = vkplmids.size();
+
+  vgoodkpidx.reserve( nbkps );
+  vkps.reserve( nbkps );
+  vwpts.reserve( nbkps );
+  vscales.reserve( nbkps );
+  voutidx.reserve( nbkps );
+
+  // Get kps & MPs
+  for ( size_t i = 0; i < nbkps; i++ ) {
+    int kpid = vkplmids.at( i ).first;
+    int lmid = vkplmids.at( i ).second;
+
+    auto plm = map_manager_->GetMapPoint( lmid );
+    if ( plm == nullptr ) {
+      continue;
+    }
+    auto kp = frame.GetKeypointById( kpid );
+    if ( kp.lmid_ < 0 ) {
+      continue;
+    }
+
+    vgoodkpidx.push_back( i );
+
+    vscales.push_back( kp.scale_ );
+    vwpts.push_back( plm->GetPoint() );
+
+    vkps.push_back( Eigen::Vector2d( kp.unpx_.x, kp.unpx_.y ) );
+    vbvs.push_back( kp.bv_ );
+  }
+
+  // If at least 3 correspondances, go
+  if ( vkps.size() >= 3 ) {
+    bool buse_robust = true;
+    bool bapply_l2_after_robust = false;
+
+    // bool success = geometry::tceresMotionOnlyBA(
+    //     vkps, vwpts, vscales, Twc, 10, 5.99, buse_robust, bapply_l2_after_robust,
+    //     frame.pcalib_leftcam_->fx_, frame.pcalib_leftcam_->fy_, frame.pcalib_leftcam_->cx_,
+    //     frame.pcalib_leftcam_->cy_, voutidx );
+    bool success = geometry::opencvP3PRansac( vbvs, vwpts, 100, 3., frame.pcalib_leftcam_->fx_,
+                                              frame.pcalib_leftcam_->fy_, true, Twc, voutidx );
+
+    for ( const auto& idx : voutidx ) {
+      voutlier_idx.push_back( vgoodkpidx.at( idx ) );
+    }
+
+    return success;
+  }
+
+  return false;
 }
 
 void LoopCloser::KNNMatching( const viohw::Frame& newkf, const viohw::Frame& lckf,
@@ -148,15 +256,19 @@ void LoopCloser::KNNMatching( const viohw::Frame& newkf, const viohw::Frame& lck
 }
 
 std::pair<int, float> LoopCloser::DetectLoop( cv::Mat& cv_descs ) {
+  // compute newKF image desc and add to the database
   map_kf_bow_vec_.insert( { new_kf_->kfid_, {} } );
   std::vector<cv::Mat> desc = ConvertToDescriptorVector( cv_descs );
   ORBVocabulary_->transform( desc, map_kf_bow_vec_[new_kf_->kfid_] );
+
+  // matcher to the database, find max score kf
   double max_score = -1e-9;
   int best_matcher_kf_id = -1;
   DBoW2::BowVector cur_kf_vec = map_kf_bow_vec_[new_kf_->kfid_];
   for ( const auto& kf_id_desc : map_kf_bow_vec_ ) {
     int id = kf_id_desc.first;
     DBoW2::BowVector vec = kf_id_desc.second;
+    // TODO(new_kf_->kfid_ - id < 40)
     if ( id == new_kf_->kfid_ || new_kf_->kfid_ - id < 40 ) {
       break;
     }
@@ -177,7 +289,7 @@ void LoopCloser::ComputeDesc( std::vector<cv::KeyPoint>& cv_kps, cv::Mat& cv_des
     auto plm = map_manager_->GetMapPoint( kp.lmid_ );
     if ( plm == nullptr ) {
       continue;
-    } else {
+    } else if ( !plm->desc_.empty() ) {
       cv_kps.push_back( cv::KeyPoint( kp.px_, 5., kp.angle_, 1., kp.scale_ ) );
       cv_descs.push_back( plm->desc_ );
       cv::circle( mask, kp.px_, 2., 0, -1 );
@@ -231,6 +343,65 @@ std::vector<cv::Mat> LoopCloser::ConvertToDescriptorVector( const cv::Mat& descr
   desc.reserve( descriptors.rows );
   for ( int j = 0; j < descriptors.rows; j++ ) desc.push_back( descriptors.row( j ) );
   return desc;
+}
+
+bool LoopCloser::EpipolarFiltering( const Frame& newkf, const Frame& lckf,
+                                    vector<std::pair<int, int>>& vkplmids,
+                                    vector<int>& voutliers_idx ) {
+  Eigen::Matrix3d R;
+  Eigen::Vector3d t;
+
+  size_t nbkps = vkplmids.size();
+
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> vlcbvs, vcurbvs;
+  vlcbvs.reserve( nbkps );
+  vcurbvs.reserve( nbkps );
+  voutliers_idx.reserve( nbkps );
+
+  for ( const auto& kplmid : vkplmids ) {
+    auto kp = newkf.GetKeypointById( kplmid.first );
+    vcurbvs.push_back( kp.bv_ );
+
+    auto lckp = lckf.GetKeypointById( kplmid.second );
+    vlcbvs.push_back( lckp.bv_ );
+  }
+
+  // TODO param config
+  bool success = geometry::Opencv5ptEssentialMatrix(
+      vlcbvs, vcurbvs, 1000, 3., false, newkf.pcalib_leftcam_->fx_, newkf.pcalib_leftcam_->fy_, R,
+      t, voutliers_idx );
+
+  return success;
+}
+
+void LoopCloser::RemoveOutliers( std::vector<std::pair<int, int>>& vkplmids,
+                                 std::vector<int>& voutliers_idx ) {
+  if ( voutliers_idx.empty() ) {
+    return;
+  }
+
+  size_t nbkps = vkplmids.size();
+  std::vector<std::pair<int, int>> vkplmidstmp;
+
+  vkplmidstmp.reserve( nbkps );
+
+  // double pointer
+  size_t j = 0;
+  for ( size_t i = 0; i < nbkps; i++ ) {
+    if ( (int)i != voutliers_idx.at( j ) ) {
+      vkplmidstmp.push_back( vkplmids.at( i ) );
+    } else {
+      j++;
+      if ( j == voutliers_idx.size() ) {
+        j = 0;
+        voutliers_idx.at( 0 ) = -1;
+      }
+    }
+  }
+
+  vkplmids.swap( vkplmidstmp );
+
+  voutliers_idx.clear();
 }
 
 }  // namespace viohw
