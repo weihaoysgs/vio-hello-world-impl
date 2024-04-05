@@ -169,7 +169,8 @@ inline bool OutputPoses( const std::string& filename,
     auto pair = pose;
     Eigen::Vector3d p = pair.second.getPose().translation();
     Eigen::Quaterniond q = pair.second.getPose().unit_quaternion();
-    outfile << pair.first << " " << p.transpose() << " " << q.x() << " " << q.y() << " " << q.z()
+    outfile << pair.first << " " << p.transpose().x() << " " << p.transpose().y() << " " << p.transpose().z()
+            << " " << q.x() << " " << q.y() << " " << q.z()
             << " " << q.w() << '\n';
   }
   return true;

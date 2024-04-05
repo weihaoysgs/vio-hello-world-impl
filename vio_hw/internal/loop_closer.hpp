@@ -10,6 +10,7 @@
 #include "geometry/epipolar/epipolar_constraint.hpp"
 #include "geometry/motion_ba/motion_ba.hpp"
 #include "vio_hw/internal/map_manager.hpp"
+#include "vio_hw/internal/optimization.hpp"
 #include "vio_hw/internal/setting.hpp"
 
 namespace viohw {
@@ -26,7 +27,7 @@ public:
   ~LoopCloser() = default;
 
   // construction function
-  LoopCloser( SettingPtr param, MapManagerPtr map_manager );
+  LoopCloser( SettingPtr param, MapManagerPtr map_manager, OptimizationPtr optimization );
 
   // loop closer thread
   void run();
@@ -71,6 +72,7 @@ private:
   FramePtr new_kf_;
   SettingPtr param_;
   MapManagerPtr map_manager_;
+  OptimizationPtr optimization_;
 
   bool is_new_kf_available_ = false;
 

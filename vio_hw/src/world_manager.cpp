@@ -37,7 +37,11 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   visual_frontend_.reset(
       new VisualFrontEnd( params_, current_frame_, map_manager_, tracker_, viz_ ) );
 
-  loop_closer_.reset( new LoopCloser( params_, map_manager_ ) );
+  // create optimization
+  optimization_.reset( new Optimization( params_, map_manager_ ) );
+
+  // create loop closer
+  loop_closer_.reset( new LoopCloser( params_, map_manager_, optimization_ ) );
 
   // create mapping thread, and mapping will create sub thread for Estimator and LoopClosing
   mapping_.reset( new Mapping( params_, map_manager_, current_frame_, loop_closer_ ) );
@@ -58,7 +62,6 @@ void WorldManager::run() {
       bool is_kf = visual_frontend_->VisualTracking( img_left, cur_time );
 
       VisualizationImage();
-
 
       if ( is_kf ) {
         Keyframe kf( current_frame_->kfid_, img_left, img_right,

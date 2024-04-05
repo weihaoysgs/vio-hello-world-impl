@@ -2,8 +2,8 @@
 
 namespace viohw {
 
-LoopCloser::LoopCloser( SettingPtr param, MapManagerPtr map_manager )
-    : param_( param ), map_manager_( map_manager ) {
+LoopCloser::LoopCloser( SettingPtr param, MapManagerPtr map_manager, OptimizationPtr optimization )
+    : param_( param ), map_manager_( map_manager ), optimization_( optimization ) {
   use_loop_ = param->loop_setting_.use_loop_closer_;
   loop_threshold_ = param->loop_setting_.loop_threshold_;
 
@@ -115,6 +115,7 @@ void LoopCloser::ProcessLoopCandidate( int kf_loop_id ) {
     LOG( INFO ) << "loop kf pos: " << lc_kf->GetTwc().translation().transpose() << "; "
                 << "new  kf pos: " << new_kf_->GetTwc().translation().transpose() << "; "
                 << "correct pos: " << Twc.translation().transpose();
+    optimization_->LocalPoseGraph( *new_kf_, lc_kf->kfid_, Twc );
   }
 }
 

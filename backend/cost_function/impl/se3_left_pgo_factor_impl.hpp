@@ -1,7 +1,7 @@
 #pragma once
 namespace backend {
-bool LeftSE3RelativePoseError::Evaluate( double const* const* parameters, double* residuals,
-                                         double** jacobians ) const {
+inline bool LeftSE3RelativePoseError::Evaluate( double const* const* parameters, double* residuals,
+                                                double** jacobians ) const {
   // [tx, ty, tz, qw, qx, qy, qz]
   Eigen::Map<const Eigen::Vector3d> twc0( parameters[0] );
   Eigen::Map<const Eigen::Quaterniond> qwc0( parameters[0] + 3 );

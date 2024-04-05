@@ -41,6 +41,7 @@ class WorldManager
   VisualFrontEndPtr visual_frontend_;
   MappingPtr mapping_;
   LoopCloserPtr loop_closer_;
+  OptimizationPtr optimization_;
 
   std::shared_ptr<VisualizationBase> viz_;
   std::shared_ptr<CameraCalibration> calib_model_left_, calib_model_right_;

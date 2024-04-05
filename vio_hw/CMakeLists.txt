@@ -38,6 +38,7 @@ set(SOURCE_FILES
         src/tracker/optical_flow_impl.cpp
         src/mapping.cpp
         src/loop_closer.cpp
+        src/optimization.cpp
 )
 
 add_library(vio_hw ${SOURCE_FILES})
