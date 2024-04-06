@@ -24,7 +24,7 @@ FeatureAndTracker:
   feature.Type: 0
   tracker.Type: 0
   # common params
-  max.kps.num: 500
+  max.kps.num: 300
   max.kps.distance: 20
   use.clahe: 0
   clahe.val: 3

@@ -92,7 +92,7 @@ void MapManager::ExtractKeypoints( const cv::Mat& im, const cv::Mat& im_raw ) {
   int num_need_detect = param_->feat_tracker_setting_.max_feature_num_ - kps.size();
   if ( num_need_detect > 0 ) {
     std::vector<cv::KeyPoint> new_kps;
-    feature_extractor_->setMaxKpsNumber( num_need_detect );
+    feature_extractor_->setTobeExtractKpsNumber( num_need_detect );
     feature_extractor_->detect( im, new_kps, mask );
     if ( !new_kps.empty() ) {
       std::vector<cv::Point2f> desc_pts;

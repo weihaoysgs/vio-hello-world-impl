@@ -9,7 +9,7 @@ bool ORBCVExtractor::detect(const cv::Mat &image,
 }
 
 ORBCVExtractor::ORBCVExtractor(const FeatureBase::FeatureExtractorOptions &options) {
-  orb_ = feat::ORB::create(options.max_kps_num_);
+  // orb_ = feat::ORB::create(options.max_kps_num_);
 }
 
 }  // namespace viohw

@@ -6,17 +6,27 @@
 
 namespace viohw {
 
-class GoodFeature2Tracker : public FeatureBase
+class GoodFeature2TrackerConfig
 {
- public:
-  explicit GoodFeature2Tracker(const FeatureBase::FeatureExtractorOptions &options);
-
-  bool detect(const cv::Mat &image, std::vector<cv::KeyPoint> &kps,
-              cv::Mat mask = cv::Mat(), cv::Mat desc = cv::Mat()) override;
-
- private:
+public:
   int kps_min_distance_;
   float kps_quality_level_;
+  int max_kps_num_;
+};
+
+typedef std::shared_ptr<GoodFeature2TrackerConfig> GoodFeature2TrackerConfigPtr;
+typedef std::shared_ptr<const GoodFeature2TrackerConfig> GoodFeature2TrackerConfigConstPtr;
+
+class GoodFeature2Tracker : public FeatureBase
+{
+public:
+  explicit GoodFeature2Tracker( const GoodFeature2TrackerConfig &options );
+
+  bool detect( const cv::Mat &image, std::vector<cv::KeyPoint> &kps, cv::Mat mask = cv::Mat(),
+               cv::Mat desc = cv::Mat() ) override;
+
+private:
+  GoodFeature2TrackerConfig feature_extract_config_;
 };
 
 }  // namespace viohw

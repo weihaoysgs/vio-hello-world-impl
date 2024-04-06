@@ -25,6 +25,7 @@ class WorldManager
   void setupCalibration();
   bool VisualizationImage();
   void VisualizationKFTraj();
+  bool GenerateFeatureExtractorBase();
 
  private:
   std::queue<cv::Mat> img_left_queen_, img_right_queen_;

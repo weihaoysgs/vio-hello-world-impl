@@ -1,18 +1,15 @@
 #include "vio_hw/internal/world_manager.hpp"
 
+#include "vio_hw/internal/feat/good_feature_impl.hpp"
+#include "vio_hw/internal/feat/orb_slam_impl.hpp"
+
 namespace viohw {
 
 WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setting ) {
   setupCalibration();
 
   // create feature extractor
-  FeatureBase::FeatureExtractorOptions feature_options{
-      .feature_type_ = FeatureBase::HARRIS,
-      .max_kps_num_ = params_->feat_tracker_setting_.max_feature_num_,
-      .kps_max_distance_ = params_->feat_tracker_setting_.max_feature_dis_,
-      .kps_quality_level_ =
-          static_cast<float>( params_->feat_tracker_setting_.feature_quality_level_ ) };
-  feature_extractor_ = FeatureBase::Create( feature_options );
+  GenerateFeatureExtractorBase();
 
   // create visualization
   VisualizationBase::VisualizationOption viz_option{ VisualizationBase::RVIZ };
@@ -80,6 +77,30 @@ void WorldManager::run() {
     std::chrono::milliseconds dura( 1 );
     std::this_thread::sleep_for( dura );
   }
+}
+
+bool WorldManager::GenerateFeatureExtractorBase() {
+  // TODO select feature extract type
+  FeatureBase::FeatureExtractorOptions feature_options{ .feature_type_ = FeatureBase::ORB };
+  feature_options.orbslamExtractorConfig.reset( new ORBSLAMExtractorConfig );
+  feature_options.orbslamExtractorConfig->iniThFAST_ = 20;
+  feature_options.orbslamExtractorConfig->minThFAST_ = 7;
+  feature_options.orbslamExtractorConfig->level_ = 8;
+  feature_options.orbslamExtractorConfig->scale_factor_ = 1.2;
+  feature_options.orbslamExtractorConfig->max_kps_ =
+      params_->feat_tracker_setting_.max_feature_num_;
+
+  feature_options.goodFeature2TrackerConfig.reset( new GoodFeature2TrackerConfig );
+  feature_options.goodFeature2TrackerConfig->kps_min_distance_ =
+      params_->feat_tracker_setting_.max_feature_dis_;
+  feature_options.goodFeature2TrackerConfig->kps_quality_level_ =
+      params_->feat_tracker_setting_.feature_quality_level_;
+  feature_options.goodFeature2TrackerConfig->max_kps_num_ =
+      params_->feat_tracker_setting_.max_feature_num_;
+
+  feature_extractor_ = FeatureBase::Create( feature_options );
+
+  return true;
 }
 
 void WorldManager::addNewStereoImages( const double time, cv::Mat& im0, cv::Mat& im1 ) {

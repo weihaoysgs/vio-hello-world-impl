@@ -19,11 +19,11 @@ std::shared_ptr<FeatureBase> FeatureBase::Create(const FeatureExtractorOptions& 
     }
     case FeatureType::HARRIS: {
       LOG(INFO) << "Create Feature Extractor with [HARRIS]";
-      return std::make_shared<GoodFeature2Tracker>(options);
+      return std::make_shared<GoodFeature2Tracker>(*options.goodFeature2TrackerConfig);
     }
     case FeatureType::ORB: {
       LOG(INFO) << "Create Feature Extractor with [ORB]";
-      return std::make_shared<ORBSLAMExtractor>();
+      return std::make_shared<ORBSLAMExtractor>(*options.orbslamExtractorConfig);
     }
     case FeatureType::SUPER_POINT: {
       // TODO
