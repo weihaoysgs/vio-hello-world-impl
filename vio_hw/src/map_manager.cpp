@@ -47,7 +47,8 @@ void MapManager::AddKeyframe() {  // Create a copy of Cur. Frame shared_ptr for 
 
   // Add KF to the unordered map and update id/nb
   map_kfs_.emplace( kf_id_, pkf );
-  num_kfs_++;
+  // num_kfs_++;
+  NumKFPlus();
   kf_id_++;
 }
 
@@ -146,8 +147,8 @@ void MapManager::AddMapPoint() {
   // Add new MP to the map and update id/nb
   map_lms_.emplace( lm_id_, plm );
   lm_id_++;
-  num_lms_++;
-
+  // num_lms_++;
+  NumLandmarkPlus();
   // Visualization related part for pointcloud obs
   // TODO
 }
@@ -160,8 +161,8 @@ void MapManager::AddMapPoint( const cv::Mat& desc ) {
   // Add new MP to the map and update id/nb
   map_lms_.emplace( lm_id_, plm );
   lm_id_++;
-  num_lms_++;
-
+  // num_lms_++;
+  NumLandmarkPlus();
   // Visualization related part for pointcloud obs
   // TODO
 }
@@ -305,4 +306,20 @@ void MapManager::RemoveMapPointObs( const int lmid, const int kfid ) {
   // }
 }
 
+int MapManager::GetNumberKF() const {
+  std::lock_guard<std::mutex> lck( num_kfs_mutex_ );
+  return num_kfs_;
+}
+void MapManager::NumKFPlus() {
+  std::lock_guard<std::mutex> lck( num_kfs_mutex_ );
+  num_kfs_++;
+}
+int MapManager::GetNumberLandmark() const {
+  std::lock_guard<std::mutex> lck( num_lms_mutex_ );
+  return num_lms_;
+}
+void MapManager::NumLandmarkPlus() {
+  std::lock_guard<std::mutex> lck( num_lms_mutex_ );
+  num_lms_++;
+}
 }  // namespace viohw

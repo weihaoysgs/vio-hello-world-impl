@@ -22,6 +22,13 @@ class PangolinVisualization : public VisualizationBase
 
   bool addPoint(const Eigen::Vector3d &t,
                 const Eigen::Vector3d &color) override;
+
+  bool showPoint() override;
+
+  bool showTrajectory() override;
+
+  bool showKFTrajectory() override;
+
 };
 
 }  // namespace viohw

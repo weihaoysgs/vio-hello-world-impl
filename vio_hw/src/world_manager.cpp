@@ -61,12 +61,20 @@ void WorldManager::run() {
 
       bool is_kf = visual_frontend_->VisualTracking( img_left, cur_time );
 
+      viz_->addTrajectory( current_frame_->GetTwc().rotationMatrix(),
+                           current_frame_->GetTwc().translation() );
+      viz_->showTrajectory();
       VisualizationImage();
 
       if ( is_kf ) {
         Keyframe kf( current_frame_->kfid_, img_left, img_right,
                      visual_frontend_->GetCurrentFramePyramid() );
         mapping_->AddNewKf( kf );
+
+        if ( !kf_viz_is_on_ ) {
+          std::thread kf_viz_thread( &WorldManager::VisualizationKFTraj, this );
+          kf_viz_thread.detach();
+        }
       }
     }
     std::chrono::milliseconds dura( 1 );
@@ -164,5 +172,21 @@ bool WorldManager::VisualizationImage() {
   bool s1 = viz_->showTrackerResultImage( visual_frontend_->GetTrackResultImage() );
   bool s2 = viz_->showLoopResultImage( loop_closer_->GetLoopMatcherResult() );
   return s1 && s2;
+}
+
+void WorldManager::VisualizationKFTraj() {
+  kf_viz_is_on_ = true;
+
+  viz_->clearKFTraj();
+  for ( int i = 0; i < current_frame_->kfid_; i++ ) {
+    auto kf = map_manager_->GetKeyframe( i );
+    if ( kf == nullptr ) continue;
+    Sophus::SE3d kf_pose = kf->GetTwc();
+    viz_->addKFTrajectory( kf_pose.rotationMatrix(), kf_pose.translation() );
+  }
+
+  viz_->showKFTrajectory();
+
+  kf_viz_is_on_ = false;
 }
 }  // namespace viohw

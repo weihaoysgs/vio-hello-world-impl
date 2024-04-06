@@ -26,5 +26,8 @@ bool PangolinVisualization::addPoint(const Eigen::Vector3d& t,
 }
 
 void PangolinVisualization::render() {}
+bool PangolinVisualization::showPoint() { return false; }
+bool PangolinVisualization::showTrajectory() { return false; }
+bool PangolinVisualization::showKFTrajectory() { return false; }
 
 }  // namespace viohw

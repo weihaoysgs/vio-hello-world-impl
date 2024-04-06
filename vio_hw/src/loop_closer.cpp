@@ -158,7 +158,7 @@ bool LoopCloser::ComputePnP( const Frame& frame, const std::vector<std::pair<int
   }
 
   // If at least 3 correspondances, go
-  if ( vkps.size() >= 3 ) {
+  if ( vkps.size() >= 6 ) {
     bool buse_robust = true;
     bool bapply_l2_after_robust = false;
 

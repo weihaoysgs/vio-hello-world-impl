@@ -33,6 +33,17 @@ public:
 
   virtual bool addPoint( const Eigen::Vector3d &t, const Eigen::Vector3d &color ) = 0;
 
+  virtual bool showPoint() = 0;
+
+  virtual bool showTrajectory() = 0;
+
+  virtual bool showKFTrajectory() = 0;
+
+  virtual bool clearKFTraj() {
+    LOG( WARNING ) << "clearKFTraj tobe impl";
+    return false;
+  };
+
   virtual bool showLoopResultImage( const cv::Mat &img ) {
     LOG( WARNING ) << "showLoopResultImage tobe impl";
     return false;

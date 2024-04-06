@@ -33,13 +33,19 @@ class MapManager
   void RemoveObsFromCurFrameById(const int lmid);
   std::shared_ptr<Frame> GetKeyframe(const int kfid) const;
   std::shared_ptr<MapPoint> GetMapPoint(const int lmid) const;
-  void UpdateMapPoint(const int lmid, const Eigen::Vector3d &wpt, const double kfanch_invdepth);
+  void UpdateMapPoint(const int lmid, const Eigen::Vector3d &wpt, const double kfanch_invdepth=-1);
   void RemoveMapPointObs(const int lmid, const int kfid);
   void DescribeKeypoints(const cv::Mat &im, const std::vector<Keypoint> &vkps, const std::vector<cv::Point2f> &vpts);
+  int GetNumberKF() const;
+  void NumKFPlus();
+  int GetNumberLandmark() const;
+  void NumLandmarkPlus();
+  FramePtr GetCurrentFrame() { return current_frame_; }
 
  public:
   mutable std::mutex kf_mutex_, lm_mutex_;
   mutable std::mutex map_mutex_;
+  mutable std::mutex num_kfs_mutex_, num_lms_mutex_;
 
  private:
   int lm_id_, kf_id_;

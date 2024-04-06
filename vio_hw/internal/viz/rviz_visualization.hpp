@@ -28,14 +28,22 @@ public:
 
   bool addPoint( const Eigen::Vector3d &t, const Eigen::Vector3d &color ) override;
 
-  bool showLoopResultImage(const cv::Mat &img) override;
+  bool showLoopResultImage( const cv::Mat &img ) override;
+
+  bool clearKFTraj() override;
+
+  bool showPoint() override;
+
+  bool showTrajectory() override;
+
+  bool showKFTrajectory() override;
 
 private:
   CameraPoseVisualization camera_pose_visual_;
   ros::Publisher camera_pose_visual_pub_;
   ros::Publisher pub_kfs_traj_, pub_vo_traj_;
   ros::Publisher pub_img_tracker_result_, pub_loop_img_result_;
-  nav_msgs::Path vo_traj_path_;
+  nav_msgs::Path vo_traj_path_, kf_traj_path_;
   const std::string world_frame_ = "map";
 };
 

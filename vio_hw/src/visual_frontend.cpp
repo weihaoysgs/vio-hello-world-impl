@@ -27,6 +27,8 @@ VisualFrontEnd::VisualFrontEnd( viohw::SettingPtr state, viohw::FramePtr frame,
 }
 
 bool VisualFrontEnd::VisualTracking( cv::Mat& image, double time ) {
+  std::lock_guard<std::mutex> lock( map_manager_->map_mutex_ );
+  
   bool is_kf = TrackerMono( image, time );
   if ( is_kf ) {
     map_manager_->CreateKeyframe( cur_img_, image );
@@ -360,7 +362,7 @@ void VisualFrontEnd::ComputePose() {
     // MapManager is responsible for all removing operations
     map_manager_->RemoveObsFromCurFrameById( vkpids.at( idx ) );
   }
-  viz_->addTrajectory( Twc.rotationMatrix(), Twc.translation() );
+
 }
 
 void VisualFrontEnd::UpdateMotionModel( double time ) {

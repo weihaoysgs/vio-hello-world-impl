@@ -24,6 +24,7 @@ class WorldManager
   bool getNewImage(cv::Mat &iml, cv::Mat &imr, double &time);
   void setupCalibration();
   bool VisualizationImage();
+  void VisualizationKFTraj();
 
  private:
   std::queue<cv::Mat> img_left_queen_, img_right_queen_;
@@ -32,6 +33,7 @@ class WorldManager
   std::mutex img_mutex_;
 
   bool is_new_img_available_ = false;
+  bool kf_viz_is_on_ = false;
   int frame_id_ = -1;
 
   FeatureBasePtr feature_extractor_;

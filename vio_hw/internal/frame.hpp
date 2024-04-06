@@ -42,6 +42,7 @@ public:
   std::vector<Keypoint> GetKeypoints() const;
   void UpdateKeypointStereo( const int lmid, const cv::Point2f &pt );
   cv::Point2f ProjCamToRightImage( const Eigen::Vector3d &pt ) const;
+  Eigen::Vector3d ProjWorldToCam( const Eigen::Vector3d &pt ) const;
   Eigen::Vector3d ProjCamToWorld( const Eigen::Vector3d &pt ) const;
   Sophus::SE3d GetTwc() const;
   Sophus::SE3d GetTcw() const;

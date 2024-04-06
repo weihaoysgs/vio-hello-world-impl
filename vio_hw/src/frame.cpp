@@ -200,10 +200,9 @@ void Frame::UpdateKeypointStereo( const int lmid, const cv::Point2f &pt ) {
   ComputeStereoKeypoint( pt, it->second );
 }
 
-bool Frame::isObservingKp(const int lmid) const
-{
-  std::lock_guard<std::mutex> lock(kps_mutex_);
-  return mapkps_.count(lmid);
+bool Frame::isObservingKp( const int lmid ) const {
+  std::lock_guard<std::mutex> lock( kps_mutex_ );
+  return mapkps_.count( lmid );
 }
 
 // Compute stereo keypoint from raw pixel position
@@ -249,12 +248,11 @@ std::vector<Keypoint> Frame::GetKeypoints2d() const {
   return v;
 }
 
-void Frame::UpdateKeypointDesc(const int lmid, const cv::Mat &desc)
-{
-  std::lock_guard<std::mutex> lock(kps_mutex_);
+void Frame::UpdateKeypointDesc( const int lmid, const cv::Mat &desc ) {
+  std::lock_guard<std::mutex> lock( kps_mutex_ );
 
-  auto it = mapkps_.find(lmid);
-  if( it == mapkps_.end() ) {
+  auto it = mapkps_.find( lmid );
+  if ( it == mapkps_.end() ) {
     return;
   }
 
@@ -262,15 +260,14 @@ void Frame::UpdateKeypointDesc(const int lmid, const cv::Mat &desc)
 }
 
 // Return vector of 3D keypoint objects
-std::vector<Keypoint> Frame::GetKeypoints3d() const
-{
-  std::lock_guard<std::mutex> lock(kps_mutex_);
+std::vector<Keypoint> Frame::GetKeypoints3d() const {
+  std::lock_guard<std::mutex> lock( kps_mutex_ );
 
   std::vector<Keypoint> v;
-  v.reserve(nb3dkps_);
-  for( const auto &kp : mapkps_ ) {
-    if( kp.second.is3d_ ) {
-      v.push_back(kp.second);
+  v.reserve( nb3dkps_ );
+  for ( const auto &kp : mapkps_ ) {
+    if ( kp.second.is3d_ ) {
+      v.push_back( kp.second );
     }
   }
   return v;
@@ -325,6 +322,13 @@ cv::Point2f Frame::ProjCamToRightImage( const Eigen::Vector3d &pt ) const {
   return pcalib_rightcam_->projectCamToImage( pcalib_rightcam_->Tcic0_ * pt );
 }
 
+Eigen::Vector3d Frame::ProjWorldToCam( const Eigen::Vector3d &pt ) const {
+  std::lock_guard<std::mutex> lock( pose_mutex_ );
+
+  Eigen::Vector3d campt = Tcw_ * pt;
+
+  return campt;
+}
 Eigen::Vector3d Frame::ProjCamToWorld( const Eigen::Vector3d &pt ) const {
   std::lock_guard<std::mutex> lock( pose_mutex_ );
 
