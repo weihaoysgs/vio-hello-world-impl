@@ -28,6 +28,8 @@ class MapPoint
 
   void SetPoint(const Eigen::Vector3d &ptxyz, const double invdepth = -1.);
 
+  void AddKfObs(const int kfid);
+
   void AddDesc(const int kfid, const cv::Mat &d);
 
   // For using MapPoint in ordered containers

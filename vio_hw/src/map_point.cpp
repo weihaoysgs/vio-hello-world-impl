@@ -139,4 +139,10 @@ void MapPoint::SetPoint( const Eigen::Vector3d &ptxyz, const double kfanch_invde
     invdepth_ = kfanch_invdepth;
   }
 }
+
+void MapPoint::AddKfObs( const int kfid ) {
+  std::lock_guard<std::mutex> lock( pt_mutex );
+  set_kfids_.insert( kfid );
+}
+
 }  // namespace viohw

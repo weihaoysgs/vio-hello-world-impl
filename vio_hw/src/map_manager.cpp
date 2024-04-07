@@ -23,19 +23,18 @@ void MapManager::PrepareFrame() {
   // Update new KF id
   current_frame_->kfid_ = kf_id_;
 
-  // TODO
-  // for (const auto& kp : current_frame_->getKeypoints()) {
-  //   // Get the related MP
-  //   auto plmit = map_lms_.find(kp.lmid_);
-  //
-  //   if (plmit == map_lms_.end()) {
-  //     removeObsFromCurFrameById(kp.lmid_);
-  //     continue;
-  //   }
-  //
-  //   // Relate new KF id to the MP
-  //   plmit->second->addKfObs(nkfid_);
-  // }
+  for ( const auto& kp : current_frame_->GetKeypoints() ) {
+    // Get the related MP
+    auto lm_iter = map_lms_.find( kp.lmid_ );
+
+    if ( lm_iter == map_lms_.end() ) {
+      RemoveObsFromCurFrameById( kp.lmid_ );
+      continue;
+    }
+
+    // Relate new KF id to the MP
+    lm_iter->second->AddKfObs( kf_id_ );
+  }
 }
 
 void MapManager::AddKeyframe() {  // Create a copy of Cur. Frame shared_ptr for creating an
