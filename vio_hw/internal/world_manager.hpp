@@ -13,6 +13,7 @@
 #include "vio_hw/internal/tracker/tracker_base.hpp"
 #include "vio_hw/internal/visual_frontend.hpp"
 #include "vio_hw/internal/viz/visualization_base.hpp"
+#include "vio_hw/internal/estimator.hpp"
 
 namespace viohw {
 class WorldManager
@@ -47,6 +48,7 @@ class WorldManager
   MappingPtr mapping_;
   LoopCloserPtr loop_closer_;
   OptimizationPtr optimization_;
+  EstimatorPtr estimator_;
 
   std::shared_ptr<VisualizationBase> viz_;
   std::shared_ptr<CameraCalibration> calib_model_left_, calib_model_right_;

@@ -5,7 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /CameraVizPose1/Status1
+        - /Grid1
       Splitter Ratio: 0.5
     Tree Height: 1212
   - Class: rviz/Selection
@@ -48,7 +48,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XZ
-      Plane Cell Count: 150
+      Plane Cell Count: 200
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/Image
@@ -67,7 +67,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -86,7 +86,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /hello_world_vio/vo_traj
       Unreliable: false
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /hello_world_vio/cam_pose_visual
@@ -164,17 +164,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -17.284948348999023
-        Y: 48.1305046081543
-        Z: 101.27821350097656
+        X: -5.123459815979004
+        Y: 48.04023361206055
+        Z: 164.40011596679688
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: -0.08479773253202438
+      Pitch: 0.07520239800214767
       Target Frame: <Fixed Frame>
-      Yaw: 1.5354207754135132
+      Yaw: 1.615420937538147
     Saved: ~
 Window Geometry:
   Displays:

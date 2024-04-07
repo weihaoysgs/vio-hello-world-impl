@@ -17,7 +17,7 @@ Camera:
 
 ConfigFilePath:
   vocabulary.path: "/home/weihao/workspace/vio-hello-world-impl/thirdparty/Vocabulary/ORBvoc.txt"
-  kf.traj.save.path: ""
+  kf.traj.save.path: "/home/weihao/workspace/vio-hello-world-impl/vio_hw/output/kitti_out/kitti_00_kf.txt"
   bag.file.path: ""
 
 FeatureAndTracker:
@@ -57,11 +57,11 @@ SLAM:
   use.Pangolin: 0
 
 LoopCloser:
-  use.loop: 1
+  use.loop: 0
   loop.threshold: 0.6
 
 Backend:
-  use.backend: false
+  use.backend: 0
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )
 Extrinsic:

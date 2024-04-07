@@ -6,19 +6,20 @@
 #include <mutex>
 #include <thread>
 
+#include "geometry/triangulate/triangulate_cv.hpp"
 #include "sophus/se3.hpp"
+#include "vio_hw/internal/estimator.hpp"
 #include "vio_hw/internal/frame.hpp"
 #include "vio_hw/internal/keyframe.hpp"
+#include "vio_hw/internal/loop_closer.hpp"
 #include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/setting.hpp"
-#include "geometry/triangulate/triangulate_cv.hpp"
-#include "vio_hw/internal/loop_closer.hpp"
 
 namespace viohw {
 
 class Mapping
 {
- public:
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
   // default construction
@@ -28,25 +29,26 @@ class Mapping
   ~Mapping() = default;
 
   // Mapping construction
-  Mapping(SettingPtr param, MapManagerPtr map_manager, FramePtr frame, LoopCloserPtr loop);
+  Mapping( SettingPtr param, MapManagerPtr map_manager, FramePtr frame, LoopCloserPtr loop,
+           EstimatorPtr estimator );
 
   // Mapping thread
   void run();
 
   // get new keyframe, return true meaning successful
-  bool GetNewKf(Keyframe &kf);
+  bool GetNewKf( Keyframe &kf );
 
   // add new kf to kf queen wait for process
-  void AddNewKf(const Keyframe &kf);
+  void AddNewKf( const Keyframe &kf );
 
-  void TriangulateTemporal(Frame &frame);
+  void TriangulateTemporal( Frame &frame );
 
-  void TriangulateStereo(Frame &frame);
+  void TriangulateStereo( Frame &frame );
 
-  Eigen::Vector3d ComputeTriangulation(const Sophus::SE3d &T, const Eigen::Vector3d &bvl,
-                                       const Eigen::Vector3d &bvr);
+  Eigen::Vector3d ComputeTriangulation( const Sophus::SE3d &T, const Eigen::Vector3d &bvl,
+                                        const Eigen::Vector3d &bvr );
 
- private:
+private:
   bool is_new_kf_available_ = false;
   bool stereo_mode_;
   bool use_clahe_;
@@ -57,6 +59,7 @@ class Mapping
   SettingPtr params_;
   MapManagerPtr map_manager_;
   LoopCloserPtr loop_closer_;
+  EstimatorPtr estimator_;
 
   std::queue<Keyframe> kfs_queen_;
 

@@ -40,8 +40,11 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   // create loop closer
   loop_closer_.reset( new LoopCloser( params_, map_manager_, optimization_ ) );
 
+  // create estimator thread
+  estimator_.reset( new Estimator( params_, map_manager_, optimization_ ) );
+
   // create mapping thread, and mapping will create sub thread for Estimator and LoopClosing
-  mapping_.reset( new Mapping( params_, map_manager_, current_frame_, loop_closer_ ) );
+  mapping_.reset( new Mapping( params_, map_manager_, current_frame_, loop_closer_, estimator_ ) );
 
   com::printHelloWorldVIO();
   com::printKeyboard();

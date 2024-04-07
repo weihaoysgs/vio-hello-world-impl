@@ -44,7 +44,7 @@ class MapManager
 
  public:
   mutable std::mutex kf_mutex_, lm_mutex_;
-  mutable std::mutex map_mutex_;
+  mutable std::mutex map_mutex_, optim_mutex_;
   mutable std::mutex num_kfs_mutex_, num_lms_mutex_;
 
  private:

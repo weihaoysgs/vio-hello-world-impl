@@ -30,6 +30,8 @@ public:
   bool LocalPoseGraph( Frame &new_frame, int kf_loop_id, const Sophus::SE3d &new_Twc );
   bool localPoseGraph( Frame &new_frame, int kf_loop_id, const Sophus::SE3d &new_Twc );
 
+  void LocalBA( Frame &newframe, bool buse_robust_cost );
+
 private:
   SettingPtr param_;
   MapManagerPtr map_manager_;

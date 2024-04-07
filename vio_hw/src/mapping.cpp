@@ -2,8 +2,13 @@
 
 namespace viohw {
 
-Mapping::Mapping( viohw::SettingPtr param, viohw::MapManagerPtr map_manager, viohw::FramePtr frame, LoopCloserPtr loop)
-    : params_( param ), map_manager_( map_manager ), current_frame_( frame ), loop_closer_(loop) {
+Mapping::Mapping( viohw::SettingPtr param, viohw::MapManagerPtr map_manager, viohw::FramePtr frame,
+                  LoopCloserPtr loop, EstimatorPtr estimator )
+    : params_( param ),
+      map_manager_( map_manager ),
+      current_frame_( frame ),
+      loop_closer_( loop ),
+      estimator_( estimator ) {
   stereo_mode_ = params_->slam_setting_.stereo_mode_;
   use_clahe_ = params_->feat_tracker_setting_.use_clahe_;
   use_loop_ = params_->loop_setting_.use_loop_closer_;
@@ -21,6 +26,7 @@ Mapping::Mapping( viohw::SettingPtr param, viohw::MapManagerPtr map_manager, vio
 void Mapping::run() {
 
   std::thread lc_thread( &LoopCloser::run, loop_closer_ );
+  std::thread estimator_thread( &Estimator::run, estimator_ );
 
   int klt_win_size = params_->feat_tracker_setting_.klt_win_size_;
   cv::Size cv_klt_win_size( klt_win_size, klt_win_size );
@@ -53,6 +59,7 @@ void Mapping::run() {
         TriangulateTemporal( *new_kf );
       }
 
+      estimator_->AddNewKf( new_kf );
       if ( use_loop_ ) {
         loop_closer_->AddNewKeyFrame( new_kf, kf.imleftraw_ );
       }

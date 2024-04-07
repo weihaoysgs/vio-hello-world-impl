@@ -39,6 +39,7 @@ set(SOURCE_FILES
         src/mapping.cpp
         src/loop_closer.cpp
         src/optimization.cpp
+        src/estimator.cpp
 )
 
 add_library(vio_hw ${SOURCE_FILES})
