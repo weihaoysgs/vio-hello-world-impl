@@ -24,7 +24,6 @@ Mapping::Mapping( viohw::SettingPtr param, viohw::MapManagerPtr map_manager, vio
 }
 
 void Mapping::run() {
-
   std::thread lc_thread( &LoopCloser::run, loop_closer_ );
   std::thread estimator_thread( &Estimator::run, estimator_ );
 
@@ -201,7 +200,13 @@ void Mapping::TriangulateStereo( Frame& frame ) {
   Sophus::SE3d Tlr = frame.pcalib_rightcam_->getExtrinsic();
   Sophus::SE3d Trl = Tlr.inverse();
 
+  size_t num_already_3d_kps = 0;
   for ( size_t i = 0; i < num_kps; i++ ) {
+    if ( vkps.at( i ).is3d_ ) {
+      num_already_3d_kps++;
+      continue;
+    }
+
     if ( !vkps.at( i ).is3d_ && vkps.at( i ).is_stereo_ ) {
       stereo_idx.push_back( i );
       left_bvs.push_back( vkps.at( i ).bv_ );
@@ -209,8 +214,9 @@ void Mapping::TriangulateStereo( Frame& frame ) {
     }
   }
 
-  if ( stereo_idx.empty() ) {
-    LOG( WARNING ) << "stereo feature is empty";
+  if ( stereo_idx.empty() && num_already_3d_kps != num_kps ) {
+    LOG( WARNING ) << "stereo feature is empty, num_already_3d_kps: " << num_already_3d_kps
+                   << ", num_stereo_kps: " << num_kps;
     return;
   }
 
