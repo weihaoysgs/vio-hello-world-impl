@@ -99,6 +99,7 @@ int main( int argc, char **argv ) {
   std::thread sensor_grab_thread( &SensorManager::syncProcess, &sensor_manager );
 
   ros::spin();
+  world_manager.SaveKFTrajectoryTUM( params->config_file_path_setting_.kf_traj_save_path_ );
   return 0;
 }
 

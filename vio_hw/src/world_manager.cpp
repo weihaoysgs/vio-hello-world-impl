@@ -210,4 +210,21 @@ void WorldManager::VisualizationKFTraj() {
 
   kf_viz_is_on_ = false;
 }
+
+void WorldManager::SaveKFTrajectoryTUM( const std::string path ) {
+  std::ofstream fout( path, std::ofstream::out );
+  for ( int i = 0; i < current_frame_->kfid_; i++ ) {
+    auto kf = map_manager_->GetKeyframe( i );
+    if ( kf == nullptr ) continue;
+    Sophus::SE3d kf_pose = kf->GetTwc();
+    Eigen::Vector3d p = kf_pose.translation();
+    Eigen::Quaternion q = kf_pose.unit_quaternion();
+    double time = kf->img_time_;
+    fout << std::setprecision( 10 ) << time << std::setprecision( 4 ) << " " << p.x() << " "
+         << p.y() << " " << p.z() << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w()
+         << std::endl;
+  }
+  LOG( INFO ) << "KF Traj save at: " << path;
+}
+
 }  // namespace viohw

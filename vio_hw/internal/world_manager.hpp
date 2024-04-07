@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <thread>
+#include <fstream>
 
 #include "vio_hw/internal/feat/feature.hpp"
 #include "vio_hw/internal/frame.hpp"
@@ -26,6 +27,7 @@ class WorldManager
   bool VisualizationImage();
   void VisualizationKFTraj();
   bool GenerateFeatureExtractorBase();
+  void SaveKFTrajectoryTUM(const std::string path);
 
  private:
   std::queue<cv::Mat> img_left_queen_, img_right_queen_;
