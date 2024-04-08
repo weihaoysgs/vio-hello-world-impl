@@ -6,7 +6,7 @@ Estimator::Estimator( SettingPtr param, MapManagerPtr map_manager, OptimizationP
     : param_( param ), map_manager_( map_manager ), optimization_( optimization ) {}
 
 void Estimator::run() {
-  bool open_backend = true;
+  bool open_backend = param_->backend_optimization_setting_.open_backend_opt_;
   if ( !open_backend ) {
     LOG( WARNING ) << "<<<Backend Optimization is close>>>";
     return;

@@ -16,6 +16,7 @@ void Setting::Init( const cv::FileStorage& fs ) {
   cv::FileNode extrinsic = fs["Extrinsic"];
   cv::FileNode loop = fs["LoopCloser"];
   cv::FileNode configfile = fs["ConfigFilePath"];
+  cv::FileNode backend = fs["Backend"];
   readCameraParams( cameras );
   readIMUParams( imu );
   readSLAMParams( slam );
@@ -23,6 +24,7 @@ void Setting::Init( const cv::FileStorage& fs ) {
   readExtrinsicParams( extrinsic );
   readLoopCloserParams( loop );
   readConfigFilePathSetting( configfile );
+  readBackendOptimizationSetting( backend );
 }
 
 void Setting::readCameraParams( const cv::FileNode& cameras ) {
@@ -97,5 +99,10 @@ void Setting::readConfigFilePathSetting( const cv::FileNode& node ) {
   node["vocabulary.path"] >> config_file_path_setting_.vocabulary_path_;
   node["kf.traj.save.path"] >> config_file_path_setting_.kf_traj_save_path_;
   node["bag.file.path"] >> config_file_path_setting_.bag_file_path_;
+}
+
+void Setting::readBackendOptimizationSetting( const cv::FileNode& node ) {
+  node["opt.window.size"] >> backend_optimization_setting_.optimize_kf_num_;
+  node["use.backend"] >> backend_optimization_setting_.open_backend_opt_;
 }
 }  // namespace viohw

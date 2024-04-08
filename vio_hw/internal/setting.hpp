@@ -99,6 +99,13 @@ public:
     std::string bag_file_path_;
   };
 
+  struct BackendOptimizationSetting
+  {
+    std::string name_ = "BackendOptimizationSetting";
+    int optimize_kf_num_;
+    bool open_backend_opt_;
+  };
+
   // explicit construction function
   explicit Setting( const std::string& config_file_path );
 
@@ -131,6 +138,8 @@ public:
 
   void readConfigFilePathSetting( const cv::FileNode& node );
 
+  void readBackendOptimizationSetting( const cv::FileNode& node );
+
   CameraSetting cam_setting_;
   FeatureAndTrackerSetting feat_tracker_setting_;
   IMUSetting imu_setting_;
@@ -138,6 +147,7 @@ public:
   ExtrinsicSetting extrinsic_setting_;
   LoopCloserSetting loop_setting_;
   ConfigFilePathSetting config_file_path_setting_;
+  BackendOptimizationSetting backend_optimization_setting_;
 };
 
 typedef std::shared_ptr<Setting> SettingPtr;
@@ -145,6 +155,16 @@ typedef std::shared_ptr<const Setting> SettingConstPtr;
 
 // Overloaded operators <<
 // clang-format off
+
+inline std::ostream& operator<<(std::ostream& os,
+                                const Setting::BackendOptimizationSetting& setting) {
+  os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
+  os << std::boolalpha;
+  os << std::right << std::setw(20) << "Optimize KF Num: "     << std::left << std::setw(10) << setting.optimize_kf_num_ << std::endl
+     << std::right << std::setw(20) << "Open Backend: "       << std::left << std::setw(10) << setting.open_backend_opt_;
+  return os;
+}
+
 inline std::ostream& operator<<(std::ostream& os,
                                 const Setting::ConfigFilePathSetting& setting) {
   os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
@@ -269,6 +289,7 @@ inline std::ostream& operator<<(std::ostream& os,
   os << setting.extrinsic_setting_ << "\n";
   os << setting.loop_setting_ << "\n";
   os << setting.config_file_path_setting_ << "\n";
+  os << setting.backend_optimization_setting_ << "\n";
   os << BLUE << "-------------[Params End]------------" << TAIL << std::endl;
   return os;
 }
