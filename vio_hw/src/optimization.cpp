@@ -4,7 +4,7 @@ namespace viohw {
 viohw::Optimization::Optimization( viohw::SettingPtr param, viohw::MapManagerPtr map_manager )
     : map_manager_( map_manager ), param_( param ) {}
 
-bool Optimization::LocalPoseGraph( Frame& new_frame, int kf_loop_id, const Sophus::SE3d& new_Twc ) {
+bool Optimization::LocalPoseGraph( Frame &new_frame, int kf_loop_id, const Sophus::SE3d &new_Twc ) {
   tceres::Problem problem;
 
   std::map<int, backend::PoseParametersBlock> map_id_poses_param_block;
@@ -17,7 +17,7 @@ bool Optimization::LocalPoseGraph( Frame& new_frame, int kf_loop_id, const Sophu
   Sophus::SE3d T_loop_wc = loop_kf->GetTwc();
   map_id_poses_param_block.emplace( kf_loop_id,
                                     backend::PoseParametersBlock( kf_loop_id, T_loop_wc ) );
-  auto* local_pose_parameterization = new backend::SE3LeftParameterization;
+  auto *local_pose_parameterization = new backend::SE3LeftParameterization;
   problem.AddParameterBlock( map_id_poses_param_block.at( kf_loop_id ).values(),
                              backend::PoseParametersBlock::ndim_, local_pose_parameterization );
   problem.SetParameterBlockConstant( map_id_poses_param_block.at( kf_loop_id ).values() );
@@ -42,11 +42,11 @@ bool Optimization::LocalPoseGraph( Frame& new_frame, int kf_loop_id, const Sophu
     Sophus::SE3d T_w_cj = kf->GetTwc();
 
     map_id_poses_param_block.emplace( kfid, backend::PoseParametersBlock( kfid, T_w_cj ) );
-    auto* local_parameterization = new backend::SE3LeftParameterization;
+    auto *local_parameterization = new backend::SE3LeftParameterization;
     problem.AddParameterBlock( map_id_poses_param_block.at( kfid ).values(),
                                backend::PoseParametersBlock::ndim_, local_parameterization );
     Sophus::SE3d T_ij = T_ci_w * T_w_cj;
-    tceres::CostFunction* cost_function = new backend::LeftSE3RelativePoseError( T_ij );
+    tceres::CostFunction *cost_function = new backend::LeftSE3RelativePoseError( T_ij );
     problem.AddResidualBlock( cost_function, nullptr,
                               map_id_poses_param_block.at( ci_kf_id ).values(),
                               map_id_poses_param_block.at( kfid ).values() );
@@ -54,7 +54,7 @@ bool Optimization::LocalPoseGraph( Frame& new_frame, int kf_loop_id, const Sophu
     ci_kf_id = kfid;
   }
 
-  tceres::CostFunction* cost_fun = new backend::LeftSE3RelativePoseError( T_loopkf_newkf );
+  tceres::CostFunction *cost_fun = new backend::LeftSE3RelativePoseError( T_loopkf_newkf );
   problem.AddResidualBlock( cost_fun, nullptr, map_id_poses_param_block.at( kf_loop_id ).values(),
                             map_id_poses_param_block.at( new_frame.kfid_ ).values() );
 
@@ -93,7 +93,7 @@ bool Optimization::LocalPoseGraph( Frame& new_frame, int kf_loop_id, const Sophu
   std::vector<Sophus::SE3d, Eigen::aligned_allocator<Sophus::SE3d>> vTwc;
 
   // get updated KFs / MPs
-  for ( const auto& kf_id_pkf : map_kfs ) {
+  for ( const auto &kf_id_pkf : map_kfs ) {
     int kf_id = kf_id_pkf.first;
     auto pkf = kf_id_pkf.second;
 
@@ -104,7 +104,7 @@ bool Optimization::LocalPoseGraph( Frame& new_frame, int kf_loop_id, const Sophu
     vkf_ids.push_back( kf_id );
     vTwc.push_back( map_id_poses_param_block.at( kf_id ).getPose() );
 
-    for ( const auto& kp : pkf->GetKeypoints3d() ) {
+    for ( const auto &kp : pkf->GetKeypoints3d() ) {
       int lmid = kp.lmid_;
       if ( processed_lm_ids.count( lmid ) ) {
         continue;
@@ -141,7 +141,7 @@ bool Optimization::LocalPoseGraph( Frame& new_frame, int kf_loop_id, const Sophu
     Sophus::SE3d T_lc_cur = init_Tcw * Tw_cur;
     Sophus::SE3d update_T_wc_cur = opt_newkf_pose * T_lc_cur;
 
-    for ( const auto& kp : pkf->GetKeypoints3d() ) {
+    for ( const auto &kp : pkf->GetKeypoints3d() ) {
       int lmid = kp.lmid_;
       if ( processed_lm_ids.count( lmid ) ) {
         continue;
@@ -185,134 +185,144 @@ bool Optimization::LocalPoseGraph( Frame& new_frame, int kf_loop_id, const Sophu
   return true;
 }
 
-void Optimization::LocalBA( Frame& newframe, bool use_robust_cost ) {
-  const int optimize_frame_num = 25;
-  const float mono_th = 5.9915;
-  const int min_cov_score = 20;
-  size_t min_const_kfs = 2;
-  size_t num_mono = 0;
-  size_t num_stereo = 0;
+void Optimization::LocalBA( Frame &newframe, const bool buse_robust_cost ) {
+  using namespace backend;
+  namespace tceres = tceres;
+  LOG( INFO ) << "Local BA ";
 
-  std::vector<std::shared_ptr<Frame>> optimized_frame;
+  std::vector<std::shared_ptr<Frame>> inertial_frames;
+  std::vector<std::shared_ptr<Frame>> fix_frames;
+
   std::shared_ptr<Frame> curr_frame = map_manager_->GetKeyframe( newframe.kfid_ );
-  CHECK( curr_frame != nullptr ) << "Opt KF is nullptr";
-  optimized_frame.push_back( curr_frame );
-
-  // push back to be optimized keyframe
-  for ( int i = 1; i <= optimize_frame_num; i++ ) {
-    int last_kf_id = curr_frame->kfid_ - i;
-    auto last_kf = map_manager_->GetKeyframe( last_kf_id );
-    if ( last_kf == nullptr || last_kf_id < 0 ) {
+  assert( curr_frame != nullptr );
+  inertial_frames.push_back( curr_frame );
+  const int opt_kf_num = 25;
+  for ( int i = 1; i <= opt_kf_num; i++ ) {
+    int last_kf_id = newframe.kfid_ - i;
+    std::shared_ptr<Frame> last_kf = map_manager_->GetKeyframe( last_kf_id );
+    if ( last_kf_id < 0 || last_kf == nullptr ) {
       continue;
     }
-    optimized_frame.push_back( last_kf );
+    inertial_frames.push_back( last_kf );
   }
-
-  // from big to small
-  std::sort( optimized_frame.begin(), optimized_frame.end(),
-             []( const std::shared_ptr<Frame>& f1, const std::shared_ptr<Frame>& f2 ) {
+  std::sort( inertial_frames.begin(), inertial_frames.end(),
+             []( const std::shared_ptr<Frame> f1, const std::shared_ptr<Frame> f2 ) {
                return f1->kfid_ > f2->kfid_;
              } );
-
-  //==========Setup BA Problem==========//
+  // =================================
+  //      Setup BA Problem
+  // =================================
 
   tceres::Problem problem;
-  auto* loss_function = new tceres::LossFunctionWrapper(
-      new tceres::HuberLoss( std::sqrt( mono_th ) ), tceres::TAKE_OWNERSHIP );
+  tceres::LossFunctionWrapper *loss_function;
 
-  if ( !use_robust_cost ) {
+  // Chi2 thresh.
+  const float mono_th = 5.991;
+
+  loss_function = new tceres::LossFunctionWrapper( new tceres::HuberLoss( std::sqrt( mono_th ) ),
+                                                   tceres::TAKE_OWNERSHIP );
+
+  if ( !buse_robust_cost ) {
     loss_function->Reset( nullptr, tceres::TAKE_OWNERSHIP );
   }
 
-  if ( curr_frame->nb3dkps_ < min_cov_score ) {
-    LOG( WARNING ) << "Current KF kps too less than " << min_cov_score << ", not execute LocalBA()";
-    return;
-  }
+  size_t nmincstkfs = 2;
 
   if ( param_->slam_setting_.stereo_mode_ ) {
-    min_const_kfs = 1;
+    nmincstkfs = 1;
   }
+
+  size_t nbmono = 0;
+  size_t nbstereo = 0;
 
   auto ordering = new tceres::ParameterBlockOrdering;
 
-  std::unordered_map<int, backend::PoseParametersBlock> map_id_pose_params;
-  std::unordered_map<int, backend::PointXYZParametersBlock> map_id_point_xyz_params;
+  std::unordered_map<int, PoseParametersBlock> map_id_posespar_;
+  std::unordered_map<int, PointXYZParametersBlock> map_id_pointspar_;
 
-  std::unordered_map<int, std::shared_ptr<Frame>> map_local_kfs;
-  std::unordered_map<int, std::shared_ptr<MapPoint>> map_local_landmarks;
+  std::unordered_map<int, std::shared_ptr<MapPoint>> map_local_plms;
+  std::unordered_map<int, std::shared_ptr<Frame>> map_local_pkfs;
 
   // Storing the factors and their residuals block ids
-  // for fast accessing when checking for outliers
-  std::vector<std::pair<tceres::CostFunction*,
-                        std::pair<tceres::internal::ResidualBlock*, std::pair<int, int>>>>
-      v_reproj_err_kfid_lmid, v_right_reproj_err_kfid_lmid;
+  // for fast accessing when cheking for outliers
+  std::vector<
+      std::pair<tceres::CostFunction *, std::pair<tceres::ResidualBlockId, std::pair<int, int>>>>
+      vreprojerr_kfid_lmid, vright_reprojerr_kfid_lmid, vanchright_reprojerr_kfid_lmid;
 
-  //==========Setup Intrinsic and Extrinsic parameters==========//
+  // Add the left cam calib parameters
+  auto pcalibleft = newframe.pcalib_leftcam_;
+  CameraIntrinsicParametersBlock calibpar( 0, pcalibleft->fx_, pcalibleft->fy_, pcalibleft->cx_,
+                                           pcalibleft->cy_ );
+  problem.AddParameterBlock( calibpar.values(), 4 );
+  ordering->AddElementToGroup( calibpar.values(), 1 );
 
-  // add left camera intrinsic parameter to problem and set constant
-  auto left_cam_calib = newframe.pcalib_leftcam_;
-  backend::CameraIntrinsicParametersBlock left_cam_intrinsic_param_block( 0, left_cam_calib->K_ );
-  problem.AddParameterBlock( left_cam_intrinsic_param_block.values(), 4 );
-  ordering->AddElementToGroup( left_cam_intrinsic_param_block.values(), 1 );
-  problem.SetParameterBlockConstant( left_cam_intrinsic_param_block.values() );
+  problem.SetParameterBlockConstant( calibpar.values() );
 
-  // prepare variable for stereo mode
-  auto right_cam_calib = newframe.pcalib_rightcam_;
-  backend::CameraIntrinsicParametersBlock right_cam_intrinsic_param_block;
+  // Prepare variables if STEREO mode
+  auto pcalibright = newframe.pcalib_rightcam_;
+  CameraIntrinsicParametersBlock rightcalibpar;
+
   Sophus::SE3d Trl, Tlr;
-  backend::PoseParametersBlock rl_extrinsic_pose_parameter_block( 0, Trl );
+  PoseParametersBlock rlextrinpose( 0, Trl );
 
   if ( param_->slam_setting_.stereo_mode_ ) {
-    // right Intrinsic
-    right_cam_intrinsic_param_block =
-        backend::CameraIntrinsicParametersBlock( 0, right_cam_calib->K_ );
-    problem.AddParameterBlock( right_cam_intrinsic_param_block.values(), 4 );
-    ordering->AddElementToGroup( right_cam_intrinsic_param_block.values(), 1 );
-    problem.SetParameterBlockConstant( right_cam_intrinsic_param_block.values() );
+    // Right Intrinsic
+    rightcalibpar = CameraIntrinsicParametersBlock( 0, pcalibright->fx_, pcalibright->fy_,
+                                                    pcalibright->cx_, pcalibright->cy_ );
+    problem.AddParameterBlock( rightcalibpar.values(), 4 );
+    ordering->AddElementToGroup( rightcalibpar.values(), 1 );
 
-    // right Extrinsic
-    Tlr = right_cam_calib->getExtrinsic();
+    problem.SetParameterBlockConstant( rightcalibpar.values() );
+
+    // Right Extrinsic
+    Tlr = pcalibright->getExtrinsic();
     Trl = Tlr.inverse();
-    rl_extrinsic_pose_parameter_block = backend::PoseParametersBlock( 0, Trl );
-    tceres::LocalParameterization* local_param = new backend::SE3LeftParameterization();
-    problem.AddParameterBlock( rl_extrinsic_pose_parameter_block.values(), 7, local_param );
-    ordering->AddElementToGroup( rl_extrinsic_pose_parameter_block.values(), 1 );
-    problem.SetParameterBlockConstant( rl_extrinsic_pose_parameter_block.values() );
+    rlextrinpose = PoseParametersBlock( 0, Trl );
+
+    tceres::LocalParameterization *local_param = new SE3LeftParameterization();
+
+    problem.AddParameterBlock( rlextrinpose.values(), 7, local_param );
+    ordering->AddElementToGroup( rlextrinpose.values(), 1 );
+
+    problem.SetParameterBlockConstant( rlextrinpose.values() );
   }
 
-  //==========Setup Tobe Optimized (KF Pose && Point) parameters==========//
+  // Get the new KF covisible KFs
+  // std::map<int,int> map_covkfs = newframe.getCovisibleKfMap();
 
+  // Add the new KF to the map with max score
+  // map_covkfs.emplace(newframe.kfid_, newframe.nb3dkps_);
+
+  // Keep track of MPs no suited for BA for speed-up
   std::unordered_set<int> set_badlmids;
+
   std::unordered_set<int> set_lmids2opt;
   std::unordered_set<int> set_kfids2opt;
   std::unordered_set<int> set_cstkfids;
 
-  for ( int i = 0; i < optimized_frame.size(); i++ ) {
-    std::shared_ptr<Frame> pkf = optimized_frame[i];
-    map_id_pose_params.emplace( pkf->kfid_,
-                                backend::PoseParametersBlock( pkf->kfid_, pkf->GetTwc() ) );
-    tceres::LocalParameterization* local_parameterization = new backend::SE3LeftParameterization();
-    problem.AddParameterBlock( map_id_pose_params.at( pkf->kfid_ ).values(), 7,
+  for ( int i = 0; i < inertial_frames.size(); i++ ) {
+    std::shared_ptr<Frame> pkf = inertial_frames[i];
+    // Sophus::SE3d Tcb = pslamstate_->T_imu_camera_.inverse();
+    map_id_posespar_.emplace( pkf->kfid_, PoseParametersBlock( pkf->kfid_, pkf->GetTwc() ) );
+    tceres::LocalParameterization *local_parameterization = new SE3LeftParameterization();
+    problem.AddParameterBlock( map_id_posespar_.at( pkf->kfid_ ).values(), 7,
                                local_parameterization );
-    ordering->AddElementToGroup( map_id_pose_params.at( pkf->kfid_ ).values(), 1 );
-
-    // set first frame constant
-    if ( i == optimized_frame.size() - 1 ) {
-      set_cstkfids.insert( pkf->kfid_ );
-      problem.SetParameterBlockConstant( map_id_pose_params.at( pkf->kfid_ ).values() );
-    }
+    ordering->AddElementToGroup( map_id_posespar_.at( pkf->kfid_ ).values(), 1 );
 
     // Get the 3D point for those keyframes, latter deal
     set_kfids2opt.insert( pkf->kfid_ );
-    for ( const auto& kp : pkf->GetKeypoints3d() ) {
+    for ( const auto &kp : pkf->GetKeypoints3d() ) {
       set_lmids2opt.insert( kp.lmid_ );
     }
-    map_local_kfs.emplace( pkf->kfid_, pkf );
+    map_local_pkfs.emplace( pkf->kfid_, pkf );
+  }
+  {
+    std::shared_ptr<Frame> before_kf = inertial_frames.back();
+    problem.SetParameterBlockConstant( map_id_posespar_.at( before_kf->kfid_ ).values() );
   }
 
-
   // Go through the MPs to optimize
-  for ( const auto& lmid : set_lmids2opt ) {
+  for ( const auto &lmid : set_lmids2opt ) {
     auto plm = map_manager_->GetMapPoint( lmid );
 
     if ( plm == nullptr ) {
@@ -324,91 +334,113 @@ void Optimization::LocalBA( Frame& newframe, bool use_robust_cost ) {
       continue;
     }
 
-    map_local_landmarks.emplace( lmid, plm );
+    map_local_plms.emplace( lmid, plm );
 
-    map_id_point_xyz_params.emplace( lmid,
-                                     backend::PointXYZParametersBlock( lmid, plm->GetPoint() ) );
-    problem.AddParameterBlock( map_id_point_xyz_params.at( lmid ).values(), 3 );
-    ordering->AddElementToGroup( map_id_point_xyz_params.at( lmid ).values(), 0 );
+    map_id_pointspar_.emplace( lmid, PointXYZParametersBlock( lmid, plm->GetPoint() ) );
 
-    for ( const auto& kfid : plm->GetKfObsSet() ) {
-      // if ( !set_kfids2opt.count( kfid ) && !set_cstkfids.count( kfid ) ) {
-      //   continue;
-      // }
-      auto kf_iter = map_local_kfs.find( kfid );
+    problem.AddParameterBlock( map_id_pointspar_.at( lmid ).values(), 3 );
+    ordering->AddElementToGroup( map_id_pointspar_.at( lmid ).values(), 0 );
+
+    for ( const auto &kfid : plm->GetKfObsSet() ) {
+      auto pkfit = map_local_pkfs.find( kfid );
       std::shared_ptr<Frame> pkf = nullptr;
-      if ( kf_iter == map_local_kfs.end() ) {
+
+      // Add the observing KF if not set yet
+      if ( pkfit == map_local_pkfs.end() ) {
         pkf = map_manager_->GetKeyframe( kfid );
         if ( pkf == nullptr ) {
           map_manager_->RemoveMapPointObs( kfid, plm->lmid_ );
           continue;
         }
+        map_local_pkfs.emplace( kfid, pkf );
+        map_id_posespar_.emplace( kfid, PoseParametersBlock( kfid, pkf->GetTwc() ) );
 
-        map_local_kfs.emplace( kfid, pkf );
-        map_id_pose_params.emplace( kfid, backend::PoseParametersBlock( kfid, pkf->GetTwc() ) );
+        tceres::LocalParameterization *local_parameterization = new SE3LeftParameterization();
 
-        tceres::LocalParameterization* local_parameterization =
-            new backend::SE3LeftParameterization();
-        problem.AddParameterBlock( map_id_pose_params.at( kfid ).values(), 7,
+        problem.AddParameterBlock( map_id_posespar_.at( kfid ).values(), 7,
                                    local_parameterization );
-        ordering->AddElementToGroup( map_id_pose_params.at( kfid ).values(), 1 );
-        problem.SetParameterBlockConstant( map_id_pose_params.at( kfid ).values() );
+        ordering->AddElementToGroup( map_id_posespar_.at( kfid ).values(), 1 );
 
         set_cstkfids.insert( kfid );
+        problem.SetParameterBlockConstant( map_id_posespar_.at( kfid ).values() );
+
       } else {
-        pkf = kf_iter->second;
+        pkf = pkfit->second;
       }
 
       auto kp = pkf->GetKeypointById( lmid );
-      // if not found, the id is -1
+
       if ( kp.lmid_ != lmid ) {
         map_manager_->RemoveMapPointObs( lmid, kfid );
         continue;
       }
 
-      tceres::CostFunction* f;
+      tceres::CostFunction *f;
       tceres::ResidualBlockId rid;
 
+      // Add a visual factor between KF-MP nodes
       if ( kp.is_stereo_ ) {
-        f = new backend::DirectLeftSE3::ReprojectionErrorKSE3XYZ( kp.unpx_.x, kp.unpx_.y,
-                                                                  std::pow( 2., kp.scale_ ) );
+        f = new DirectLeftSE3::ReprojectionErrorKSE3XYZ( kp.unpx_.x, kp.unpx_.y,
+                                                         std::pow( 2., kp.scale_ ) );
 
-        rid = problem.AddResidualBlock( f, loss_function, left_cam_intrinsic_param_block.values(),
-                                        map_id_pose_params.at( kfid ).values(),
-                                        map_id_point_xyz_params.at( lmid ).values() );
+        rid = problem.AddResidualBlock( f, loss_function, calibpar.values(),
+                                        map_id_posespar_.at( kfid ).values(),
+                                        map_id_pointspar_.at( lmid ).values() );
 
-        v_reproj_err_kfid_lmid.push_back(
+        vreprojerr_kfid_lmid.push_back(
             std::make_pair( f, std::make_pair( rid, std::make_pair( kfid, lmid ) ) ) );
 
-        f = new backend::DirectLeftSE3::ReprojectionErrorRightCamKSE3XYZ(
-            kp.runpx_.x, kp.runpx_.y, std::pow( 2., kp.scale_ ) );
+        f = new DirectLeftSE3::ReprojectionErrorRightCamKSE3XYZ( kp.runpx_.x, kp.runpx_.y,
+                                                                 std::pow( 2., kp.scale_ ) );
 
-        rid = problem.AddResidualBlock( f, loss_function, right_cam_intrinsic_param_block.values(),
-                                        map_id_pose_params.at( kfid ).values(),
-                                        rl_extrinsic_pose_parameter_block.values(),
-                                        map_id_point_xyz_params.at( lmid ).values() );
+        rid = problem.AddResidualBlock( f, loss_function, rightcalibpar.values(),
+                                        map_id_posespar_.at( kfid ).values(), rlextrinpose.values(),
+                                        map_id_pointspar_.at( lmid ).values() );
 
-        v_right_reproj_err_kfid_lmid.push_back(
+        vright_reprojerr_kfid_lmid.push_back(
             std::make_pair( f, std::make_pair( rid, std::make_pair( kfid, lmid ) ) ) );
-        num_stereo++;
+        nbstereo++;
         continue;
       } else {
-        f = new backend::DirectLeftSE3::ReprojectionErrorKSE3XYZ( kp.unpx_.x, kp.unpx_.y,
-                                                                  std::pow( 2., kp.scale_ ) );
+        f = new DirectLeftSE3::ReprojectionErrorKSE3XYZ( kp.unpx_.x, kp.unpx_.y,
+                                                         std::pow( 2., kp.scale_ ) );
 
-        rid = problem.AddResidualBlock( f, loss_function, left_cam_intrinsic_param_block.values(),
-                                        map_id_pose_params.at( kfid ).values(),
-                                        map_id_point_xyz_params.at( lmid ).values() );
-        v_reproj_err_kfid_lmid.push_back(
+        rid = problem.AddResidualBlock( f, loss_function, calibpar.values(),
+                                        map_id_posespar_.at( kfid ).values(),
+                                        map_id_pointspar_.at( lmid ).values() );
+
+        vreprojerr_kfid_lmid.push_back(
             std::make_pair( f, std::make_pair( rid, std::make_pair( kfid, kp.lmid_ ) ) ) );
 
-        num_mono++;
+        nbmono++;
       }
     }
   }
 
+  // Ensure the gauge is fixed
+  size_t nbcstkfs = set_cstkfids.size();
+
+  // At least two fixed KF in mono / one fixed KF in Stereo / RGB-D
+  if ( nbcstkfs < nmincstkfs ) {
+    for ( auto it = map_local_pkfs.begin(); nbcstkfs < nmincstkfs && it != map_local_pkfs.end();
+          it++ ) {
+      problem.SetParameterBlockConstant( map_id_posespar_.at( it->first ).values() );
+      set_cstkfids.insert( it->first );
+      nbcstkfs++;
+    }
+  }
+
+  size_t nbkfstot = map_local_pkfs.size();
+  size_t nbkfs2opt = nbkfstot - nbcstkfs;
+  size_t nblms2opt = map_local_plms.size();
+
+  // =================================
+  //      Solve BA Problem
+  // =================================
+
   tceres::Solver::Options options;
   options.linear_solver_ordering.reset( ordering );
+
   options.linear_solver_type = tceres::DENSE_SCHUR;
   options.trust_region_strategy_type = tceres::LEVENBERG_MARQUARDT;
   options.num_threads = 1;
@@ -419,78 +451,91 @@ void Optimization::LocalBA( Frame& newframe, bool use_robust_cost ) {
   tceres::Solver::Summary summary;
   tceres::Solve( options, &problem, &summary );
 
+  // =================================
+  //      Remove outliers
+  // =================================
 
-  // LOG( INFO ) << tceres::internal::StringPrintf( "constant kf %d, opt kf %d, opt landmarks %d",
-  //                                                set_cstkfids.size(), set_kfids2opt.size(),
-  //                                                set_lmids2opt.size() );
+  size_t nbbadobsmono = 0;
+  size_t nbbadobsrightcam = 0;
 
-  // LOG( INFO ) << summary.FullReport();
+  std::vector<std::pair<int, int>> vbadkflmids;
+  std::vector<std::pair<int, int>> vbadstereokflmids;
+  vbadkflmids.reserve( vreprojerr_kfid_lmid.size() / 10 );
+  vbadstereokflmids.reserve( vright_reprojerr_kfid_lmid.size() / 10 );
 
-  size_t num_bad_obs_mono = 0;
-  size_t num_bad_obs_rightcam = 0;
+  for ( auto it = vreprojerr_kfid_lmid.begin(); it != vreprojerr_kfid_lmid.end(); ) {
+    bool bbigchi2 = true;
+    bool bdepthpos = true;
 
-  std::vector<std::pair<int, int>> v_bad_kflmids;
-  std::vector<std::pair<int, int>> v_bad_stereo_kflmids;
+    auto *err = static_cast<DirectLeftSE3::ReprojectionErrorKSE3XYZ *>( it->first );
+    bbigchi2 = err->chi2err_ > mono_th;
+    bdepthpos = err->isdepthpositive_;
 
-  for ( auto it = v_reproj_err_kfid_lmid.begin(); it != v_reproj_err_kfid_lmid.end(); ) {
-    auto* err = dynamic_cast<backend::DirectLeftSE3::ReprojectionErrorKSE3XYZ*>( it->first );
-    bool big_chi2 = err->chi2err_ > mono_th;
-    bool depth_positive = err->isdepthpositive_;
-    if ( big_chi2 || !depth_positive ) {
-      // TODO apply_l2_after_robust_
-
+    if ( bbigchi2 || !bdepthpos ) {
       int lmid = it->second.second.second;
       int kfid = it->second.second.first;
-      v_bad_kflmids.push_back( std::pair<int, int>( kfid, lmid ) );
+      vbadkflmids.push_back( std::pair<int, int>( kfid, lmid ) );
       set_badlmids.insert( lmid );
-      num_bad_obs_mono++;
+      nbbadobsmono++;
 
-      it = v_reproj_err_kfid_lmid.erase( it );
+      it = vreprojerr_kfid_lmid.erase( it );
     } else {
       it++;
     }
   }
 
-  for ( auto it = v_right_reproj_err_kfid_lmid.begin();
-        it != v_right_reproj_err_kfid_lmid.end(); ) {
-    auto* err =
-        dynamic_cast<backend::DirectLeftSE3::ReprojectionErrorRightCamKSE3XYZ*>( it->first );
-    bool big_chi2 = err->chi2err_ > mono_th;
-    bool depth_positive = err->isdepthpositive_;
-    if ( big_chi2 || !depth_positive ) {
-      // TODO apply_l2_after_robust_
-
+  for ( auto it = vright_reprojerr_kfid_lmid.begin(); it != vright_reprojerr_kfid_lmid.end(); ) {
+    bool bbigchi2 = true;
+    bool bdepthpos = true;
+    auto *err = static_cast<DirectLeftSE3::ReprojectionErrorRightCamKSE3XYZ *>( it->first );
+    bbigchi2 = err->chi2err_ > mono_th;
+    bdepthpos = err->isdepthpositive_;
+    if ( bbigchi2 || !bdepthpos ) {
       int lmid = it->second.second.second;
       int kfid = it->second.second.first;
-      v_bad_stereo_kflmids.push_back( std::pair<int, int>( kfid, lmid ) );
+      vbadstereokflmids.push_back( std::pair<int, int>( kfid, lmid ) );
       set_badlmids.insert( lmid );
-      num_bad_obs_rightcam++;
+      nbbadobsrightcam++;
 
-      it = v_right_reproj_err_kfid_lmid.erase( it );
+      it = vright_reprojerr_kfid_lmid.erase( it );
     } else {
       it++;
     }
   }
+
+  size_t nbbadobs = nbbadobsmono + nbbadobsrightcam;
+
+  // =================================
+  //      Refine BA Solution
+  // =================================
+
+  bool bl2optimdone = false;
+
+  // =================================
+  //      Remove outliers
+  // =================================
 
   // =================================
   //      Update State Parameters
   // =================================
+
   std::lock_guard<std::mutex> lock( map_manager_->map_mutex_ );
-  for ( const auto& badkflmid : v_bad_stereo_kflmids ) {
+
+  for ( const auto &badkflmid : vbadstereokflmids ) {
     int kfid = badkflmid.first;
     int lmid = badkflmid.second;
-    auto it = map_local_kfs.find( kfid );
-    if ( it != map_local_kfs.end() ) {
+    auto it = map_local_pkfs.find( kfid );
+    if ( it != map_local_pkfs.end() ) {
       it->second->RemoveStereoKeypointById( lmid );
     }
     set_badlmids.insert( lmid );
   }
 
-  for ( const auto& badkflmid : v_bad_kflmids ) {
+  for ( const auto &badkflmid : vbadkflmids ) {
     int kfid = badkflmid.first;
     int lmid = badkflmid.second;
-    auto it = map_local_kfs.find( kfid );
-    if ( it != map_local_kfs.end() ) {
+    auto it = map_local_pkfs.find( kfid );
+    if ( it != map_local_pkfs.end() ) {
       map_manager_->RemoveMapPointObs( lmid, kfid );
     }
     if ( kfid == map_manager_->GetCurrentFrame()->kfid_ ) {
@@ -499,8 +544,8 @@ void Optimization::LocalBA( Frame& newframe, bool use_robust_cost ) {
     set_badlmids.insert( lmid );
   }
 
-  // update KF pose
-  for ( const auto& kfid_pkf : map_local_kfs ) {
+  // Update KFs
+  for ( const auto &kfid_pkf : map_local_pkfs ) {
     int kfid = kfid_pkf.first;
 
     if ( set_cstkfids.count( kfid ) ) {
@@ -513,15 +558,15 @@ void Optimization::LocalBA( Frame& newframe, bool use_robust_cost ) {
       continue;
     }
 
-    auto it = map_id_pose_params.find( kfid );
-    if ( it != map_id_pose_params.end() ) {
+    // auto optkfpose = map_id_posespar_.at(kfid);
+    auto it = map_id_posespar_.find( kfid );
+    if ( it != map_id_posespar_.end() ) {
       pkf->SetTwc( it->second.getPose() );
     }
   }
 
-  LOG(INFO) << "Local BA end";
-  // update mappoint
-  /*for ( const auto& lmid_plm : map_local_landmarks ) {
+  // Update MPs
+  for ( const auto &lmid_plm : map_local_plms ) {
     int lmid = lmid_plm.first;
     auto plm = lmid_plm.second;
 
@@ -530,24 +575,24 @@ void Optimization::LocalBA( Frame& newframe, bool use_robust_cost ) {
       continue;
     }
 
-    if( plm->IsBad() ) {
-      map_manager_->RemoveMapPoint(lmid);
-      set_badlmids.erase(lmid);
+    if ( plm->IsBad() ) {
+      map_manager_->RemoveMapPoint( lmid );
+      set_badlmids.erase( lmid );
       continue;
     }
 
     // Map Point Culling
     auto kfids = plm->GetKfObsSet();
-    if( kfids.size() < 3 ) {
-      if( plm->kfid_ < newframe.kfid_-3 && !plm->isobs_ ) {
-        map_manager_->RemoveMapPoint(lmid);
-        set_badlmids.erase(lmid);
+    if ( kfids.size() < 3 ) {
+      if ( plm->kfid_ < newframe.kfid_ - 3 && !plm->isobs_ ) {
+        map_manager_->RemoveMapPoint( lmid );
+        set_badlmids.erase( lmid );
         continue;
       }
     }
 
-    auto optlmit = map_id_point_xyz_params.find( lmid );
-    if ( optlmit != map_id_point_xyz_params.end() ) {
+    auto optlmit = map_id_pointspar_.find( lmid );
+    if ( optlmit != map_id_pointspar_.end() ) {
       map_manager_->UpdateMapPoint( lmid, optlmit->second.getPoint() );
     } else {
       set_badlmids.insert( lmid );
@@ -556,10 +601,10 @@ void Optimization::LocalBA( Frame& newframe, bool use_robust_cost ) {
 
   // Map Point Culling for bad Obs.
   size_t nbbadlm = 0;
-  for ( const auto& lmid : set_badlmids ) {
+  for ( const auto &lmid : set_badlmids ) {
     std::shared_ptr<MapPoint> plm;
-    auto plmit = map_local_landmarks.find( lmid );
-    if ( plmit == map_local_landmarks.end() ) {
+    auto plmit = map_local_plms.find( lmid );
+    if ( plmit == map_local_plms.end() ) {
       plm = map_manager_->GetMapPoint( lmid );
     } else {
       plm = plmit->second;
@@ -581,7 +626,8 @@ void Optimization::LocalBA( Frame& newframe, bool use_robust_cost ) {
       }
     }
   }
-*/
+
+  nbbadobs = nbbadobsmono + nbbadobsrightcam;
 }
 
 }  // namespace viohw

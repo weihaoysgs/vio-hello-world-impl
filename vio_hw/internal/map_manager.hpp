@@ -69,6 +69,8 @@ public:
   // remove mappoint obs in keyframe
   void RemoveMapPointObs( const int lmid, const int kfid );
 
+  void RemoveMapPoint(const int lmid);
+
   // compute and update keypoint desc
   void DescribeKeypoints( const cv::Mat &im, const std::vector<Keypoint> &vkps,
                           const std::vector<cv::Point2f> &vpts );

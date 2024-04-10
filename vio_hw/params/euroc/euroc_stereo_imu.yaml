@@ -17,7 +17,7 @@ Camera:
 
 ConfigFilePath:
   vocabulary.path: "/home/weihao/workspace/vio-hello-world-impl/thirdparty/Vocabulary/ORBvoc.txt"
-  kf.traj.save.path: ""
+  kf.traj.save.path: "/home/weihao/workspace/vio-hello-world-impl/vio_hw/output/euroc_out/MH_05_KF.txt"
   bag.file.path: ""
 
 
@@ -25,9 +25,9 @@ FeatureAndTracker:
   feature.Type: 0
   tracker.Type: 0
   # common params
-  max.kps.num: 350
+  max.kps.num: 300
   max.kps.distance: 20
-  use.clahe: 1
+  use.clahe: 0
   clahe.val: 3
   track.keyframetoframe: 0
   use.brief: 1
@@ -58,11 +58,12 @@ SLAM:
   use.Pangolin: 0
 
 LoopCloser:
-  use.loop: 1
+  use.loop: 0
   loop.threshold: 0.6
 
 Backend:
-  use.backend: false
+  use.backend: 1
+  opt.window.size: 15
 
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )

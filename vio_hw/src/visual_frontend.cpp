@@ -206,7 +206,12 @@ void VisualFrontEnd::ShowTrackingResult() {
     vcur_px.push_back( kp.px_ );
     cv::arrowedLine( draw_tracker_image_, kp.px_, kf_kp.px_, cv::Scalar( 0, 255, 0 ), 2, 8, 0,
                      0.3 );
-    cv::circle( draw_tracker_image_, kf_kp.px_, 2, cv::Scalar( 0, 255, 0 ), -1 );
+    // cv::circle( draw_tracker_image_, kf_kp.px_, 2, cv::Scalar( 0, 255, 0 ), -1 );
+    if ( kp.is3d_ ) {
+      cv::circle( draw_tracker_image_, kp.px_, 3, cv::Scalar( 0, 0, 255 ), -1 );
+    } else {
+      cv::circle( draw_tracker_image_, kp.px_, 3, cv::Scalar( 255, 0, 0 ), -1 );
+    }
   }
 }
 
@@ -224,9 +229,9 @@ bool VisualFrontEnd::CheckIsNewKeyframe() {
     return true;
   }
 
-  if ( num_img_from_kf <= 5 ) {
-    return true;
-  }
+  // if ( num_img_from_kf >= 15 ) {
+  //   return true;
+  // }
 
   // 3d keypoint number
   if ( current_frame_->nb3dkps_ < 20 || current_frame_->nb3dkps_ < 0.75 * pkf->nb3dkps_ ) {
@@ -353,11 +358,11 @@ void VisualFrontEnd::ComputePose() {
   float robust_mono_th = 5.9915;
   bool use_robust = true;
   Eigen::Matrix3d K = current_frame_->pcalib_leftcam_->K_;
-  success = geometry::tceresMotionOnlyBA( vkps, vwpts, vscales, Twc, max_iters, robust_mono_th,
-                                          use_robust, true, K, voutliersidx );
+  // success = geometry::tceresMotionOnlyBA( vkps, vwpts, vscales, Twc, max_iters, robust_mono_th,
+  //                                         use_robust, true, K, voutliersidx );
 
-  // success = geometry::opencvP3PRansac( vbvs, vwpts, 100, 3., K( 0, 0 ), K( 1, 1 ), true, Twc,
-  //                                      voutliersidx );
+  success = geometry::opencvP3PRansac( vbvs, vwpts, 100, 3., K( 0, 0 ), K( 1, 1 ), true, Twc,
+                                       voutliersidx );
 
   // Check that pose estim. was good enough
   size_t nbinliers = vwpts.size() - voutliersidx.size();

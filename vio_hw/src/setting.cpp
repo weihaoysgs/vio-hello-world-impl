@@ -82,6 +82,16 @@ void Setting::readExtrinsicParams( const cv::FileNode& node ) {
   cv::cv2eigen( cvTbc0, Tbc0 );
   cv::cv2eigen( cvTbc1, Tbc1 );
 
+  auto normalizedRotation = []( Eigen::Matrix4d& Tic ) -> void {
+    Eigen::Quaterniond unit_Q( Tic.block<3, 3>( 0, 0 ) );
+    Eigen::Matrix3d Ric = unit_Q.normalized().toRotationMatrix();
+    Eigen::Vector3d tic = Tic.block<3, 1>( 0, 3 );
+    Tic = Sophus::SE3d( Ric, tic ).matrix();
+  };
+
+  normalizedRotation( Tbc0 );
+  normalizedRotation( Tbc1 );
+
   extrinsic_setting_.T_left_right_ = Sophus::SE3d( Tbc0.inverse() * Tbc1 );
   extrinsic_setting_.Tc0c1_ = Sophus::SE3d( Tbc0.inverse() * Tbc1 );
   extrinsic_setting_.Tbc0_ = Sophus::SE3d( Tbc0 );

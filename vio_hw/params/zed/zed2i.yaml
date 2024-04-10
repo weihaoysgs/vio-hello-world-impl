@@ -6,14 +6,14 @@
 #--------------------------------------------------------------------------------------------
 
 Camera:
-  topic.left.right: [ "/cam0/image_raw", "/cam1/image_raw" ]
+  topic.left.right: [ "/zed2/zed_node/left/image_rect_color", "/zed2/zed_node/right/image_rect_color" ]
   model.left.right: [ "pinhole","pinhole" ]
   left.resolution: [ 752, 480 ]
-  right.resolution: [ 752,480 ]
-  left.K: [458.654, 457.296, 367.215, 248.375]
-  right.K: [457.587, 456.134, 379.999, 255.238]
-  left.distortion.coefficient: [-0.28340811, 0.07395907, 0.00019359, 1.76187114e-05]
-  right.distortion.coefficient: [-0.28368365, 0.07451284, -0.00010473, -3.555907e-05]
+  right.resolution: [ 752, 480 ]
+  left.K: [267.82012939453125, 267.82012939453125, 320.6171569824219, 188.72052001953125]
+  right.K: [267.82012939453125, 267.82012939453125, 320.6171569824219, 188.72052001953125]
+  left.distortion.coefficient: [0.0, 0.0, 0.0, 0.0]
+  right.distortion.coefficient: [0.0, 0.0, 0.0, 0.0]
 
 ConfigFilePath:
   vocabulary.path: "/home/weihao/workspace/vio-hello-world-impl/thirdparty/Vocabulary/ORBvoc.txt"
@@ -44,7 +44,7 @@ FeatureAndTracker:
   klt.err: 30.
 
 IMU:
-  topic: "/imu0"
+  topic: "/zed2/zed_node/imu/data"
   acc_n: 0.1
   acc_w: 0.2
   gyr_n: 0.3
@@ -58,11 +58,13 @@ SLAM:
   use.Pangolin: 0
 
 LoopCloser:
-  use.loop: 1
+  use.loop: 0
   loop.threshold: 0.6
 
 Backend:
-  use.backend: false
+  use.backend: 1
+  opt.window.size: 15
+
 
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )
@@ -72,18 +74,18 @@ Extrinsic:
     rows: 4
     cols: 4
     dt: d
-    data: [ 0.0148655429818, -0.999880929698, 0.00414029679422, -0.0216401454975,
-            0.999557249008, 0.0149672133247, 0.025715529948,  -0.064676986768,
-            -0.0257744366974, 0.00375618835797, 0.999660727178, 0.00981073058949,
+    data: [ 0.00660296, -0.01619175,  0.9998471,   0.00825293,
+            -0.99997521 ,-0.00255324 , 0.00656246 , 0.02153814,
+            0.00244659, -0.99986565, -0.01620821, -0.00264005,
             0., 0., 0., 1. ]
 
   body_T_cam1: !!opencv-matrix
     rows: 4
     cols: 4
     dt: d
-    data: [ 0.0125552670891, -0.999755099723, 0.0182237714554, -0.0198435579556,
-            0.999598781151, 0.0130119051815, 0.0251588363115, 0.0453689425024,
-            -0.0253898008918, 0.0179005838253, 0.999517347078, 0.00786212447038,
+    data: [ 0.00470383 ,-0.01704957,  0.99984358,  0.0101872,
+            -0.99998591, -0.00254023,  0.00466118, -0.0946885,
+            0.00246036 ,-0.99985142, -0.01706127 ,-0.00239143,
             0., 0., 0., 1. ]
 
 

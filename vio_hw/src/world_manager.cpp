@@ -84,7 +84,7 @@ void WorldManager::run() {
 
 bool WorldManager::GenerateFeatureExtractorBase() {
   // TODO select feature extract type
-  FeatureBase::FeatureExtractorOptions feature_options{ .feature_type_ = FeatureBase::ORB };
+  FeatureBase::FeatureExtractorOptions feature_options{ .feature_type_ = FeatureBase::HARRIS };
   feature_options.orbslamExtractorConfig.reset( new ORBSLAMExtractorConfig );
   feature_options.orbslamExtractorConfig->iniThFAST_ = 20;
   feature_options.orbslamExtractorConfig->minThFAST_ = 7;
