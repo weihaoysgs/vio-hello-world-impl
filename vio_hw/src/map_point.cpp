@@ -145,4 +145,24 @@ void MapPoint::AddKfObs( const int kfid ) {
   set_kfids_.insert( kfid );
 }
 
+bool MapPoint::IsBad() {
+  std::lock_guard<std::mutex> lock( pt_mutex );
+
+  // Set as bad 3D MPs who are observed by 2 KF
+  // or less and not observed by current frame
+  if ( set_kfids_.size() < 2 ) {
+    if ( !isobs_ && is3d_ ) {
+      is3d_ = false;
+      return true;
+    }
+  }
+
+  if ( set_kfids_.empty() && !isobs_ ) {
+    is3d_ = false;
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace viohw

@@ -28,7 +28,7 @@ VisualFrontEnd::VisualFrontEnd( viohw::SettingPtr state, viohw::FramePtr frame,
 
 bool VisualFrontEnd::VisualTracking( cv::Mat& image, double time ) {
   std::lock_guard<std::mutex> lock( map_manager_->map_mutex_ );
-  
+
   bool is_kf = TrackerMono( image, time );
   if ( is_kf ) {
     map_manager_->CreateKeyframe( cur_img_, image );
@@ -46,9 +46,9 @@ bool VisualFrontEnd::TrackerMono( cv::Mat& image, double time ) {
     return true;
   }
 
-  // Sophus::SE3d Twc = current_frame_->GetTwc();
-  // motion_model_.applyMotionModel( Twc, time );
-  // current_frame_->SetTwc( Twc );
+  Sophus::SE3d Twc = current_frame_->GetTwc();
+  motion_model_.applyMotionModel( Twc, time );
+  current_frame_->SetTwc( Twc );
 
   // tracking from frame to frame
   KLTTracking();
@@ -219,9 +219,17 @@ bool VisualFrontEnd::CheckIsNewKeyframe() {
 
   // id diff with last KF
   int num_img_from_kf = current_frame_->id_ - pkf->id_;
+  if ( current_frame_->nbkps_ <
+       static_cast<size_t>( param_->feat_tracker_setting_.max_feature_num_ * 0.35 ) ) {
+    return true;
+  }
+
+  if ( num_img_from_kf <= 5 ) {
+    return true;
+  }
 
   // 3d keypoint number
-  if ( current_frame_->nb3dkps_ < 20 ) {
+  if ( current_frame_->nb3dkps_ < 20 || current_frame_->nb3dkps_ < 0.75 * pkf->nb3dkps_ ) {
     return true;
   }
 
@@ -233,7 +241,11 @@ bool VisualFrontEnd::CheckIsNewKeyframe() {
     return true;
   }
 
-  return true;
+  if ( parallax > 10. ) {
+    return true;
+  }
+
+  return false;
 }
 
 float VisualFrontEnd::ComputeParallax( const int kfid, bool do_un_rot, bool median,
@@ -362,7 +374,6 @@ void VisualFrontEnd::ComputePose() {
     // MapManager is responsible for all removing operations
     map_manager_->RemoveObsFromCurFrameById( vkpids.at( idx ) );
   }
-
 }
 
 void VisualFrontEnd::UpdateMotionModel( double time ) {

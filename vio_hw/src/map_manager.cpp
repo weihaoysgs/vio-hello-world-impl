@@ -85,7 +85,9 @@ void MapManager::ExtractKeypoints( const cv::Mat& im, const cv::Mat& im_raw ) {
 
   cv::Mat mask = cv::Mat( im.rows, im.cols, CV_8UC1, cv::Scalar( 255 ) );
   for ( auto& pt : kps ) {
-    cv::circle( mask, pt.px_, param_->feat_tracker_setting_.max_feature_dis_, 0, -1 );
+    // cv::circle( mask, pt.px_, param_->feat_tracker_setting_.max_feature_dis_, 0, -1 );
+    cv::rectangle( mask, pt.px_ - cv::Point2f( 10, 10 ), pt.px_ + cv::Point2f( 10, 10 ), 0,
+                   cv::FILLED );
   }
 
   int num_need_detect = param_->feat_tracker_setting_.max_feature_num_ - kps.size();
@@ -273,6 +275,51 @@ void MapManager::UpdateMapPoint( const int lmid, const Eigen::Vector3d& wpt,
     plmit->second->SetPoint( wpt );
   }
 }
+// Remove a MP from the map
+void MapManager::RemoveMapPoint(const int lmid)
+{
+  std::lock_guard<std::mutex> lock(lm_mutex_);
+  std::lock_guard<std::mutex> lockkf(kf_mutex_);
+
+  // Get related MP
+  auto plmit = map_lms_.find(lmid);
+  // Skip if MP does not exist
+  if( plmit != map_lms_.end() ) {
+    // Remove all observations from KFs
+    for( const auto &kfid : plmit->second->GetKfObsSet() )
+    {
+      auto pkfit = map_kfs_.find(kfid);
+      if( pkfit == map_kfs_.end() ) {
+        continue;
+      }
+      pkfit->second->RemoveKeypointById(lmid);
+
+      for( const auto &cokfid : plmit->second->GetKfObsSet() ) {
+        if( cokfid != kfid ) {
+          // TODO
+          // pkfit->second->decreaseCovisibleKf(cokfid);
+        }
+      }
+    }
+
+    // If obs in cur Frame, remove cur obs
+    if( plmit->second->isobs_ ) {
+      current_frame_->RemoveKeypointById(lmid);
+    }
+
+    if( plmit->second->is3d_ ) {
+      num_lms_--;
+    }
+
+    // Erase MP and update nb MPs
+    map_lms_.erase( plmit );
+  }
+
+  // Visualization related part for pointcloud obs
+  // TODO
+}
+
+
 // Remove a KF obs from a MP
 void MapManager::RemoveMapPointObs( const int lmid, const int kfid ) {
   std::lock_guard<std::mutex> lock( lm_mutex_ );

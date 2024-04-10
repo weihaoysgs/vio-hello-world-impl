@@ -30,6 +30,7 @@ void Mapping::run() {
   int klt_win_size = params_->feat_tracker_setting_.klt_win_size_;
   cv::Size cv_klt_win_size( klt_win_size, klt_win_size );
   int klt_pyra_level = params_->feat_tracker_setting_.klt_pyr_level_;
+  bool open_backend_opt = params_->backend_optimization_setting_.open_backend_opt_;
 
   Keyframe kf;
 
@@ -58,7 +59,9 @@ void Mapping::run() {
         TriangulateTemporal( *new_kf );
       }
 
-      estimator_->AddNewKf( new_kf );
+      if ( open_backend_opt ) {
+        estimator_->AddNewKf( new_kf );
+      }
       if ( use_loop_ ) {
         loop_closer_->AddNewKeyFrame( new_kf, kf.imleftraw_ );
       }
@@ -179,6 +182,15 @@ void Mapping::TriangulateTemporal( Frame& frame ) {
 
     good++;
   }
+  size_t total_kps = frame.nbkps_;
+  size_t nb_stereo_kps = frame.nb_stereo_kps_;
+  size_t nb_3d_kps = frame.nb3dkps_;
+  size_t nb_2d_kps = frame.nb2dkps_;
+  std::string output = tceres::internal::StringPrintf(
+      "TriangulateTemporal success %d, "
+      "total kps %d, stereo kps %d, 3d kps %d, 2d kps %d",
+      good, total_kps, nb_stereo_kps, nb_3d_kps, nb_2d_kps );
+  // LOG( INFO ) << output;
 }
 
 void Mapping::TriangulateStereo( Frame& frame ) {
@@ -220,7 +232,7 @@ void Mapping::TriangulateStereo( Frame& frame ) {
     return;
   }
 
-  int good;
+  int good = 0;
 
   for ( size_t i = 0; i < stereo_idx.size(); i++ ) {
     int kpidx = stereo_idx.at( i );
@@ -249,6 +261,15 @@ void Mapping::TriangulateStereo( Frame& frame ) {
 
     good++;
   }
+  size_t total_kps = frame.nbkps_;
+  size_t nb_stereo_kps = frame.nb_stereo_kps_;
+  size_t nb_3d_kps = frame.nb3dkps_;
+  size_t nb_2d_kps = frame.nb2dkps_;
+  std::string output = tceres::internal::StringPrintf(
+      "TriangulateStereo success %d, "
+      "total kps %d, stereo kps %d, 3d kps %d, 2d kps %d",
+      good, total_kps, nb_stereo_kps, nb_3d_kps, nb_2d_kps );
+  // LOG( INFO ) << output;
 }
 
 Eigen::Vector3d Mapping::ComputeTriangulation( const Sophus::SE3d& T, const Eigen::Vector3d& bvl,

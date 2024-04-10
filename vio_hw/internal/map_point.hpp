@@ -9,7 +9,7 @@ namespace viohw {
 
 class MapPoint
 {
- public:
+public:
   enum MapPointColor
   {
     OBSERVED,
@@ -17,23 +17,25 @@ class MapPoint
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  MapPoint(const int lmid, const int kfid, const bool bobs = true);
-  MapPoint(const int lmid, const int kfid, const cv::Mat &desc, const bool bobs = true);
+  MapPoint( const int lmid, const int kfid, const bool bobs = true );
+  MapPoint( const int lmid, const int kfid, const cv::Mat &desc, const bool bobs = true );
 
   std::set<int> GetKfObsSet() const;
 
-  void RemoveKfObs(const int kfid);
+  void RemoveKfObs( const int kfid );
 
   Eigen::Vector3d GetPoint() const;
 
-  void SetPoint(const Eigen::Vector3d &ptxyz, const double invdepth = -1.);
+  void SetPoint( const Eigen::Vector3d &ptxyz, const double invdepth = -1. );
 
-  void AddKfObs(const int kfid);
+  void AddKfObs( const int kfid );
 
-  void AddDesc(const int kfid, const cv::Mat &d);
+  void AddDesc( const int kfid, const cv::Mat &d );
+
+  bool IsBad();
 
   // For using MapPoint in ordered containers
-  bool operator<(const MapPoint &mp) const { return lmid_ < mp.lmid_; }
+  bool operator<( const MapPoint &mp ) const { return lmid_ < mp.lmid_; }
 
   // MapPoint id
   int lmid_;
@@ -60,7 +62,7 @@ class MapPoint
   std::unordered_map<int, float> map_desc_dist_;
 
   // For vizu
-  cv::Scalar color_ = cv::Scalar(200);
+  cv::Scalar color_ = cv::Scalar( 200 );
 
   mutable std::mutex pt_mutex;
 };

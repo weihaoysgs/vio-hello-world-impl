@@ -14,6 +14,7 @@
 #include "vio_hw/internal/loop_closer.hpp"
 #include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/setting.hpp"
+#include "tceres/stringprintf.h"
 
 namespace viohw {
 
