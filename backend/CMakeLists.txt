@@ -1,3 +1,7 @@
+add_library(backend
+    sensor_fusion/imu/imu_types.cc
+)
+
 add_executable(gauss_newton_method example/gauss_newton_method.cpp)
 target_link_libraries(gauss_newton_method tiny_ceres)
 
