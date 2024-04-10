@@ -223,7 +223,7 @@ void WorldManager::SaveKFTrajectoryTUM( const std::string path ) {
     Eigen::Vector3d p = kf_pose.translation();
     Eigen::Quaternion q = kf_pose.unit_quaternion();
     double time = kf->img_time_;
-    fout << std::setprecision( 10 ) << time << std::setprecision( 4 ) << " " << p.x() << " "
+    fout << std::setprecision( 20 ) << time << std::setprecision( 4 ) << " " << p.x() << " "
          << p.y() << " " << p.z() << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w()
          << std::endl;
   }
