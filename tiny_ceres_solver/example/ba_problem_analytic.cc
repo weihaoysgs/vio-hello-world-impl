@@ -70,6 +70,38 @@ class BundleAdjustmentCostFunction
             -Rj.transpose() * Ri * skewSymmetric(pts_camera_i);
         jacobians_pose_i.leftCols<6>() = reduce * jacobians_pose;
         jacobians_pose_i.rightCols<1>().setZero();
+        {
+          std::cout << "analysis jacobi pose i:\n"
+                    << jacobians_pose_i << std::endl;
+          const double eps = 1e-6;
+          Eigen::Quaternion<double> q_temp;
+          Eigen::Vector3d t_temp;
+          Eigen::Matrix<double, 2, 6> numeric_jacobian;
+          for (int i = 0; i < 6; i++) {
+            Eigen::Vector3d delta = Eigen::Vector3d::Zero();
+            delta(i % 3) = eps;
+            if (i <= 2) {
+              q_temp = Qi;
+              t_temp = Pi + delta;
+            } else {
+              Eigen::Matrix<double, 3, 1> half_theta = delta;
+              half_theta /= static_cast<double>(2.0);
+              Eigen::Quaternion<double> dq(1.0, half_theta.x(), half_theta.y(),
+                                           half_theta.z());
+              q_temp = (Qi * dq);
+              t_temp = Pi;
+            }
+            Eigen::Vector3d pts_camera_i = obs_pt_i_ / inverse_depth_i;
+            Eigen::Vector3d pts_world = q_temp * pts_camera_i + t_temp;
+            Eigen::Vector3d pts_camera_j = Qj.inverse() * (pts_world - Pj);
+            Eigen::Vector2d _error;
+            double depth_j = pts_camera_j.z();
+            _error = (pts_camera_j / depth_j).head<2>() - obs_pt_j_.head<2>();
+            numeric_jacobian.col(i) = (_error - error) / eps;
+          }
+          std::cout << "numeric jacobi pose i:\n " << numeric_jacobian
+                    << std::endl;
+        }
       }
       if (jacobians[1]) {
         Eigen::Map<Eigen::Matrix<double, 2, 7, Eigen::RowMajor>>
@@ -79,11 +111,62 @@ class BundleAdjustmentCostFunction
         jacobians_pose.rightCols<3>() = skewSymmetric(pts_camera_j);
         jacobians_pose_j.leftCols<6>() = reduce * jacobians_pose;
         jacobians_pose_j.rightCols<1>().setZero();
+        {
+          std::cout << "analysis jacobi pose j:\n"
+                    << jacobians_pose_j << std::endl;
+          const double eps = 1e-6;
+          Eigen::Quaternion<double> q_temp;
+          Eigen::Vector3d t_temp;
+          Eigen::Matrix<double, 2, 6> numeric_jacobian;
+          for (int i = 0; i < 6; i++) {
+            Eigen::Vector3d delta = Eigen::Vector3d::Zero();
+            delta(i % 3) = eps;
+            if (i <= 2) {
+              q_temp = Qj;
+              t_temp = Pj + delta;
+            } else {
+              Eigen::Matrix<double, 3, 1> half_theta = delta;
+              half_theta /= static_cast<double>(2.0);
+              Eigen::Quaternion<double> dq(1.0, half_theta.x(), half_theta.y(),
+                                           half_theta.z());
+              q_temp = (Qj * dq);
+              t_temp = Pj;
+            }
+            Eigen::Vector3d pts_camera_i = obs_pt_i_ / inverse_depth_i;
+            Eigen::Vector3d pts_world = Qi * pts_camera_i + Pi;
+            Eigen::Vector3d pts_camera_j =
+                q_temp.inverse() * (pts_world - t_temp);
+            Eigen::Vector2d _error;
+            double depth_j = pts_camera_j.z();
+            _error = (pts_camera_j / depth_j).head<2>() - obs_pt_j_.head<2>();
+            numeric_jacobian.col(i) = (_error - error) / eps;
+          }
+          std::cout << "numeric jacobi pose j:\n " << numeric_jacobian
+                    << std::endl;
+        }
       }
       if (jacobians[2]) {
         Eigen::Map<Eigen::Vector2d> jacobians_inverse_depth_i(jacobians[2]);
         jacobians_inverse_depth_i = reduce * Rj.transpose() * Ri * obs_pt_i_ *
                                     -1.0 / (inverse_depth_i * inverse_depth_i);
+        {
+          std::cout << "analysis jacobi inv depth :\n"
+                    << jacobians_inverse_depth_i << std::endl;
+          const double eps = 1e-6;
+          double inverse_depth_i_eps = inverse_depth_i + eps;
+          Eigen::Matrix<double, 2, 1> numeric_jacobian;
+
+          Eigen::Vector3d pts_camera_i = obs_pt_i_ / inverse_depth_i_eps;
+          Eigen::Vector3d pts_world = Qi * pts_camera_i + Pi;
+          Eigen::Vector3d pts_camera_j = Qj.inverse() * (pts_world - Pj);
+
+          Eigen::Vector2d _error;
+          double depth_j = pts_camera_j.z();
+          _error = (pts_camera_j / depth_j).head<2>() - obs_pt_j_.head<2>();
+          numeric_jacobian = (_error - error) / eps;
+          std::cout << "numeric jacobi inv depth:\n " << numeric_jacobian
+                    << std::endl;
+        }
       }
     }
 
@@ -165,12 +248,13 @@ int main(int argc, char** argv) {
   tceres::Problem problem;
   for (const auto& pose : camera_poses) {
     // TODO
-    // tceres::LocalParameterization *local_parameterization =
-    //     new tceres::slam::PoseLocalParameterization();
     tceres::LocalParameterization* local_parameterization =
-        new tceres::ProductParameterization(
-            new tceres::IdentityParameterization(3),new tceres::EigenQuaternionParameterization
-            );
+        new tceres::slam::PoseLocalParameterization();
+    // tceres::LocalParameterization* local_parameterization =
+    //     new tceres::ProductParameterization(
+    //         new
+    //         tceres::EigenQuaternionParameterization,new tceres::IdentityParameterization(3)
+    //         );
 
     poses_params.emplace(pose_id++,
                          tceres::slam::PoseParameterBlock(pose.Qwc, pose.twc));
@@ -204,10 +288,10 @@ int main(int argc, char** argv) {
       Eigen::Vector3d pt_j = camera_poses[j].feature_ids_.find(i)->second;
       tceres::CostFunction* cost_function =
           new BundleAdjustmentCostFunction(pt_i, pt_j);
-      problem.AddResidualBlock(
-          cost_function, nullptr, poses_params.at(0).values(),
-          poses_params.at(j).values(),
-          inv_depths_params.at(inv_depth_id - 1).values());
+      problem.AddResidualBlock(cost_function, nullptr,
+                               poses_params.at(0).values(),
+                               poses_params.at(j).values(),
+                               inv_depths_params.at(inv_depth_id - 1).values());
     }
   }
 
@@ -218,12 +302,12 @@ int main(int argc, char** argv) {
   options.linear_solver_type = tceres::DENSE_SCHUR;
   options.minimizer_type = tceres::TRUST_REGION;
   options.max_num_iterations = 100;
-  options.check_gradients = true;
+  // options.check_gradients = true;
   options.gradient_check_relative_precision = 1e-6;
   tceres::Solve(options, &problem, &summary);
   std::cout << summary.FullReport();
   std::cout << "\nCompare MonoBA results after opt..." << std::endl;
-   std::cout.precision(4);
+  std::cout.precision(4);
   for (int k = 0; k < points.size(); k += 1) {
     std::cout << "after opt, point " << k << " : gt " << 1. / points[k].z()
               << " ,noise " << 1. / noise_inv_depth[k] << " ,opt "
