@@ -49,10 +49,13 @@ public:
       : a( acc_x, acc_y, acc_z ), w( ang_vel_x, ang_vel_y, ang_vel_z ), t( timestamp ) {}
   Point( const cv::Point3f Acc, const cv::Point3f Gyro, const double &timestamp )
       : a( Acc.x, Acc.y, Acc.z ), w( Gyro.x, Gyro.y, Gyro.z ), t( timestamp ) {}
+  Point( const Eigen::Vector3d Acc, const Eigen::Vector3d Gyro, const double &timestamp )
+      : a( Acc ), w( Gyro ), t( timestamp ) {}
+  Point() : t( 0.0 ), a( Eigen::Vector3d::Zero() ), w( Eigen::Vector3d::Zero() ){};
 
 public:
-  Eigen::Vector3f a;
-  Eigen::Vector3f w;
+  Eigen::Vector3d a;
+  Eigen::Vector3d w;
   double t;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
@@ -260,6 +263,9 @@ Eigen::Matrix3f InverseRightJacobianSO3( const float &x, const float &y, const f
 Eigen::Matrix3f InverseRightJacobianSO3( const Eigen::Vector3f &v );
 
 Eigen::Matrix3f NormalizeRotation( const Eigen::Matrix3f &R );
+
+typedef std::shared_ptr<Preintegrated> PreintegratedPtr;
+typedef std::shared_ptr<const Preintegrated> PreintegratedConstPtr;
 
 }  // namespace IMU
 

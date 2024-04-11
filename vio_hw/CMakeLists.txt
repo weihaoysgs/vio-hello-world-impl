@@ -48,6 +48,7 @@ target_link_libraries(vio_hw
         feature_extraction
         geometry
         tiny_ceres
+        backend
         feature_tracking
         DBoW2
         ${OpenCV_LIBS}

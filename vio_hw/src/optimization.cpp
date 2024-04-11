@@ -187,8 +187,6 @@ bool Optimization::LocalPoseGraph( Frame &new_frame, int kf_loop_id, const Sophu
 
 void Optimization::LocalBA( Frame &newframe, const bool buse_robust_cost ) {
   using namespace backend;
-  namespace tceres = tceres;
-  LOG( INFO ) << "Local BA ";
 
   std::vector<std::shared_ptr<Frame>> inertial_frames;
   std::vector<std::shared_ptr<Frame>> fix_frames;

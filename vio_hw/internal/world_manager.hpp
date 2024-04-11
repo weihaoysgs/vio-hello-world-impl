@@ -2,9 +2,12 @@
 #define VIO_HELLO_WORLD_WORLD_MANAGER_HPP
 
 #include <chrono>
-#include <thread>
 #include <fstream>
+#include <thread>
 
+#include "backend/sensor_fusion/imu/imu_database.h"
+#include "backend/sensor_fusion/imu/imu_types.h"
+#include "vio_hw/internal/estimator.hpp"
 #include "vio_hw/internal/feat/feature.hpp"
 #include "vio_hw/internal/frame.hpp"
 #include "vio_hw/internal/map_manager.hpp"
@@ -13,24 +16,26 @@
 #include "vio_hw/internal/tracker/tracker_base.hpp"
 #include "vio_hw/internal/visual_frontend.hpp"
 #include "vio_hw/internal/viz/visualization_base.hpp"
-#include "vio_hw/internal/estimator.hpp"
 
 namespace viohw {
 class WorldManager
 {
- public:
-  explicit WorldManager(std::shared_ptr<Setting> &setting);
+public:
+  explicit WorldManager( std::shared_ptr<Setting> &setting );
   void run();
   const std::shared_ptr<Setting> getParams() const { return params_; }
-  void addNewStereoImages(double time, cv::Mat &im0, cv::Mat &im1);
-  bool getNewImage(cv::Mat &iml, cv::Mat &imr, double &time);
+  void addNewStereoImages( double time, cv::Mat &im0, cv::Mat &im1 );
+  bool getNewImage( cv::Mat &iml, cv::Mat &imr, double &time );
   void setupCalibration();
   bool VisualizationImage();
   void VisualizationKFTraj();
   bool GenerateFeatureExtractorBase();
-  void SaveKFTrajectoryTUM(const std::string path);
+  void SaveKFTrajectoryTUM( const std::string path );
+  void InsertIMUMeasure( backend::IMU::Point &data );
+  void PreIntegrateIMU( std::vector<backend::IMU::Point> &imu_data, double last_image_time,
+                        double curr_image_time );
 
- private:
+private:
   std::queue<cv::Mat> img_left_queen_, img_right_queen_;
   std::queue<double> img_time_queen_;
 
@@ -53,6 +58,9 @@ class WorldManager
   std::shared_ptr<VisualizationBase> viz_;
   std::shared_ptr<CameraCalibration> calib_model_left_, calib_model_right_;
   const std::shared_ptr<Setting> params_;
+
+  // imu database
+  backend::IMU::IMUDataBasePtr imu_database_;
 };
 }  // namespace viohw
 #endif  // VIO_HELLO_WORLD_WORLD_MANAGER_HPP

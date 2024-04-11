@@ -11,6 +11,9 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   // create feature extractor
   GenerateFeatureExtractorBase();
 
+  // create IMU database
+  imu_database_.reset( new backend::IMU::IMUDataBase( 200, 30 ) );
+
   // create visualization
   VisualizationBase::VisualizationOption viz_option{ VisualizationBase::RVIZ };
   viz_ = VisualizationBase::Create( viz_option );
@@ -52,12 +55,25 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
 
 void WorldManager::run() {
   cv::Mat img_left, img_right;
-  double cur_time;
+  double cur_time = 0, last_time = 0;
+  std::vector<backend::IMU::Point> imus;
+  bool use_imu = params_->slam_setting_.use_imu_;
 
   while ( true ) {
     if ( getNewImage( img_left, img_right, cur_time ) ) {
       frame_id_++;
       current_frame_->updateFrame( frame_id_, cur_time );
+
+      if ( use_imu ) {
+        auto status = imu_database_->GetIntervalIMUMeasurement( last_time, cur_time, imus );
+        if ( status != backend::IMUMeasureStatus::SUCCESS_GET_IMU_DATA ) {
+          LOG( WARNING ) << backend::IMUMeasureStatusToString( status );
+        } else {
+          // PreIntegrateIMU( imus );
+        }
+      }
+
+      last_time = cur_time;
 
       bool is_kf = visual_frontend_->VisualTracking( img_left, cur_time );
 
@@ -228,6 +244,15 @@ void WorldManager::SaveKFTrajectoryTUM( const std::string path ) {
          << std::endl;
   }
   LOG( INFO ) << "KF Traj save at: " << path;
+}
+
+void WorldManager::InsertIMUMeasure( backend::IMU::Point& data ) {
+  imu_database_->InsertMeasure( data );
+}
+
+void WorldManager::PreIntegrateIMU( vector<backend::IMU::Point>& mvImuFromLastFrame,
+                                    double last_image_time, double curr_image_time ) {
+
 }
 
 }  // namespace viohw

@@ -28,7 +28,7 @@
 #include <sophus/se3.hpp>
 #include <vector>
 
-namespace ORB_SLAM3 {
+namespace backend {
 
 template <class Archive>
 void serializeSophusSE3( Archive& ar, Sophus::SE3f& T, const unsigned int version ) {
