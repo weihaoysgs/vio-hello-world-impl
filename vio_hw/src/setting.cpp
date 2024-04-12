@@ -36,6 +36,7 @@ void Setting::readCameraParams( const cv::FileNode& cameras ) {
   cameras["right.K"] >> cam_setting_.right_k_;
   cameras["left.distortion.coefficient"] >> cam_setting_.left_dist_coeff_;
   cameras["right.distortion.coefficient"] >> cam_setting_.right_dist_coeff_;
+  cameras["FPS"] >> cam_setting_.camera_FPS_;
 }
 
 void Setting::readIMUParams( const cv::FileNode& node ) {
@@ -44,6 +45,8 @@ void Setting::readIMUParams( const cv::FileNode& node ) {
   node["acc_w"] >> imu_setting_.acc_w_;
   node["gyr_n"] >> imu_setting_.gyr_n_;
   node["gyr_w"] >> imu_setting_.gyr_w_;
+  node["g_norm"] >> imu_setting_.g_norm_;
+  node["FPS"] >> imu_setting_.imu_FPS_;
 }
 
 void Setting::readSLAMParams( const cv::FileNode& node ) {

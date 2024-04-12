@@ -26,6 +26,7 @@ public:
   {
     std::string name_ = "{CameraSetting}";
     std::string left_image_topic_, right_image_topic_;
+    int camera_FPS_;
     std::vector<std::string> topic_left_right_;
     std::vector<std::string> model_left_right_;
     std::vector<int> left_resolution_, right_resolution_;
@@ -71,6 +72,8 @@ public:
     std::string imu_topic_;
     double acc_n_, acc_w_;
     double gyr_n_, gyr_w_;
+    double g_norm_;
+    int imu_FPS_;
   };
 
   // slam parameters
@@ -191,7 +194,9 @@ inline std::ostream& operator<<(std::ostream& os,
      << std::right << std::setw(20) << "Acc Noise: "       << std::left << std::setw(10) << setting.acc_n_ << std::endl
      << std::right << std::setw(20) << "Acc Random Walk: " << std::left << std::setw(10) << setting.acc_w_ << std::endl
      << std::right << std::setw(20) << "Gyr Noise: "       << std::left << std::setw(10) << setting.gyr_n_ << std::endl
-     << std::right << std::setw(20) << "Gyr Random Walk: " << std::left << std::setw(10) << setting.gyr_w_;
+     << std::right << std::setw(20) << "Gyr Random Walk: " << std::left << std::setw(10) << setting.gyr_w_ << std::endl
+     << std::right << std::setw(20) << "FPS: "             << std::left << std::setw(10) << setting.imu_FPS_ << std::endl
+     << std::right << std::setw(20) << "G norm: "          << std::left << std::setw(10) << setting.g_norm_;
   return os;
 }
 
@@ -276,6 +281,7 @@ inline std::ostream& operator<<(std::ostream& os,
   for (const auto& coeff : setting.right_dist_coeff_) {
     os << coeff << " ";
   }
+  os << std::endl << std::right << std::setw(20) << "Camera FPS: " << setting.camera_FPS_ << std::endl;
   return os;
 }
 
