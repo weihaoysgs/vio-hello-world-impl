@@ -14,6 +14,7 @@ Camera:
   right.K: [457.587, 456.134, 379.999, 255.238]
   left.distortion.coefficient: [-0.28340811, 0.07395907, 0.00019359, 1.76187114e-05]
   right.distortion.coefficient: [-0.28368365, 0.07451284, -0.00010473, -3.555907e-05]
+  FPS: 20
 
 ConfigFilePath:
   vocabulary.path: "/home/weihao/workspace/vio-hello-world-impl/thirdparty/Vocabulary/ORBvoc.txt"
@@ -45,10 +46,12 @@ FeatureAndTracker:
 
 IMU:
   topic: "/imu0"
-  acc_n: 0.1
-  acc_w: 0.2
-  gyr_n: 0.3
-  gyr_w: 0.4
+  acc_n: 2.0000e-1
+  acc_w: 3.0000e-03
+  gyr_n: 1.7e-4
+  gyr_w: 1.9393e-05
+  g_norm: 9.81
+  FPS: 200
 
 SLAM:
   stereo.mode: 1
@@ -59,10 +62,10 @@ SLAM:
 
 LoopCloser:
   use.loop: 0
-  loop.threshold: 0.6
+  loop.threshold: 0.1
 
 Backend:
-  use.backend: 1
+  use.backend: 0
   opt.window.size: 15
 
 
