@@ -81,7 +81,9 @@ Frame::Frame( const Frame &F )
       Frl_( F.Frl_ ),
       Fcv_( F.Fcv_ ),
       map_covkfs_( F.map_covkfs_ ),
-      set_local_mapids_( F.set_local_mapids_ ) {}
+      set_local_mapids_( F.set_local_mapids_ ) {
+  // TODO reset preintegrated measure
+}
 
 void Frame::AddKeypoint( const Keypoint &kp ) {
   std::lock_guard<std::mutex> lock( kps_mutex_ );
