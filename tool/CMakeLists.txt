@@ -1,0 +1,1 @@
+add_executable(cpu_check cpu_check.cpp)
