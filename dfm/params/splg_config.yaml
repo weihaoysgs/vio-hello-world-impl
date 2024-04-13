@@ -1,0 +1,34 @@
+%YAML 1.0
+---
+
+SP.batchSize: 1      #  Number of inputs in a batch
+SP.dlaCore: -1       # Specify the DLA core to run network on.
+SP.int8: 0           # Allow runnning the network in Int8 mode.
+SP.fp16: 1           # Allow running the network in FP16 mode.
+SP.onnxFilePath: "/home/weihao/workspace/lightglue_ws/deep-feature-matcher/weight/superpoint_v1.onnx"
+SP.engineFilePath: "/home/weihao/workspace/lightglue_ws/deep-feature-matcher/weight/superpoint_v1.engine"
+SP.keypointThreshold: 0.0005
+SP.maxKeypoints: 2048
+SP.border: 4
+SP.inputTensorNames:
+  - "input"
+SP.outputTensorNames:
+  - "scores"
+  - "descriptors"
+
+LG.batchSize: 1      #  Number of inputs in a batch
+LG.dlaCore: -1       # Specify the DLA core to run network on.
+LG.int8: 0           # Allow runnning the network in Int8 mode.
+LG.fp16: 1           # Allow running the network in FP16 mode.
+LG.onnxFilePath: "/home/weihao/workspace/lightglue_ws/deep-feature-matcher/weight/superpoint_lightglue.trt.onnx"
+LG.engineFilePath: "/home/weihao/workspace/lightglue_ws/deep-feature-matcher/weight/superpoint_lightglue.trt.engine"
+LG.imageWidth : 1024
+LG.imageHeight : 682
+LG.minMatcherScore: 0.1
+LG.inputTensorNames:
+  - "kpts0"
+  - "kpts1"
+  - "desc0"
+  - "desc1"
+LG.outputTensorNames:
+  - "score"
