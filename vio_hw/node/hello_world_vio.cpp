@@ -33,16 +33,12 @@ public:
       : slam_world_( slam_manager ), nh_( "~" ) {
     LOG( INFO ) << "Sensor Manager is create.";
 
-    sub_left_img_ = nh_.subscribe( slam_world_->getParams()->cam_setting_.topic_left_right_[0], 2,
+    sub_left_img_ = nh_.subscribe( slam_world_->getParams()->cam_setting_.topic_left_right_[0], 1,
                                    &SensorManager::subLeftImage, this );
-    sub_right_img_ = nh_.subscribe( slam_world_->getParams()->cam_setting_.topic_left_right_[1], 2,
+    sub_right_img_ = nh_.subscribe( slam_world_->getParams()->cam_setting_.topic_left_right_[1], 1,
                                     &SensorManager::subRightImage, this );
     sub_imu_ = nh_.subscribe( slam_world_->getParams()->imu_setting_.imu_topic_, 10,
                               &SensorManager::subIMU, this );
-    std::printf( "sub image0 topic :%s, img topic %s, imu topic %s",
-                 slam_world_->getParams()->cam_setting_.topic_left_right_[0].c_str(),
-                 slam_world_->getParams()->cam_setting_.topic_left_right_[1].c_str(),
-                 slam_world_->getParams()->imu_setting_.imu_topic_.c_str() );
   };
 
   ~SensorManager() = default;
@@ -133,6 +129,8 @@ int main( int argc, char **argv ) {
 
   auto params = std::make_shared<viohw::Setting>( FLAGS_config_file_path );
   std::cout << *params << std::endl;
+  com::printHelloWorldVIO();
+
   viohw::WorldManager world_manager( params );
   // Start the SLAM thread
   std::thread estimate_thread( &viohw::WorldManager::run, &world_manager );

@@ -358,11 +358,11 @@ void VisualFrontEnd::ComputePose() {
   float robust_mono_th = 5.9915;
   bool use_robust = true;
   Eigen::Matrix3d K = current_frame_->pcalib_leftcam_->K_;
-  // success = geometry::tceresMotionOnlyBA( vkps, vwpts, vscales, Twc, max_iters, robust_mono_th,
-  //                                         use_robust, true, K, voutliersidx );
+  success = geometry::tceresMotionOnlyBA( vkps, vwpts, vscales, Twc, max_iters, robust_mono_th,
+                                          use_robust, true, K, voutliersidx );
 
-  success = geometry::opencvP3PRansac( vbvs, vwpts, 100, 3., K( 0, 0 ), K( 1, 1 ), true, Twc,
-                                       voutliersidx );
+  // success = geometry::opencvP3PRansac( vbvs, vwpts, 100, 3., K( 0, 0 ), K( 1, 1 ), true, Twc,
+  //                                      voutliersidx );
 
   // Check that pose estim. was good enough
   size_t nbinliers = vwpts.size() - voutliersidx.size();

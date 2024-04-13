@@ -194,7 +194,7 @@ void Optimization::LocalBA( Frame &newframe, const bool buse_robust_cost ) {
   std::shared_ptr<Frame> curr_frame = map_manager_->GetKeyframe( newframe.kfid_ );
   assert( curr_frame != nullptr );
   inertial_frames.push_back( curr_frame );
-  const int opt_kf_num = 25;
+  const int opt_kf_num = param_->backend_optimization_setting_.optimize_kf_num_;
   for ( int i = 1; i <= opt_kf_num; i++ ) {
     int last_kf_id = newframe.kfid_ - i;
     std::shared_ptr<Frame> last_kf = map_manager_->GetKeyframe( last_kf_id );

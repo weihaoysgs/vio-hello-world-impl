@@ -55,12 +55,13 @@ target_link_libraries(vio_hw
         ${catkin_LIBRARIES}
 )
 
-add_executable(hello_world_vio node/hello_world_vio.cpp)
+add_executable(hello_world_vio node/hello_world_vio.cpp ${BACKWARD_ENABLE})
+add_backward(hello_world_vio)
 add_backward(hello_world_vio)
 target_link_libraries(hello_world_vio
         vio_hw
 )
-add_executable(run_kitti_node node/run_kitti_node.cpp)
+add_executable(run_kitti_node node/run_kitti_node.cpp ${BACKWARD_ENABLE})
 add_backward(run_kitti_node)
 target_link_libraries(run_kitti_node
         vio_hw

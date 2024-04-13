@@ -5,6 +5,7 @@
 #include <thread>
 
 #include "backend/sensor_fusion/imu/imu_types.h"
+#include "common/math_utils.hpp"
 
 namespace backend {
 namespace IMU {
@@ -33,10 +34,32 @@ public:
 
   void EraseOlderIMUMeasure( double time );
 
+  bool IMUAvailable( double t ) {
+    std::unique_lock<std::mutex> lck( imu_meas_mutex_ );
+    if ( !queen_imu_meas_.empty() && t <= queen_imu_meas_.back().t )
+      return true;
+    else
+      return false;
+  }
+
+  void WaitUntilImuAvailable( double cur_img_time ) {
+    while ( 1 ) {
+      if ( IMUAvailable( cur_img_time ) )
+        break;
+      else {
+        LOG( WARNING ) << "Wait For IMU";
+        std::chrono::milliseconds dura( 5 );
+        std::this_thread::sleep_for( dura );
+      }
+    }
+  }
+
+  static bool IMUAttitudeInit( const std::vector<IMU::Point> &imus, Eigen::Matrix3d &R );
+
   bool PreIntegrateIMU( std::vector<backend::IMU::Point> &imus, double last_image_time,
                         double curr_image_time,
-                        const IMU::PreintegratedPtr& pre_integrated_from_last_frame,
-                        const IMU::PreintegratedPtr& pre_integrated_from_last_kf );
+                        const IMU::PreintegratedPtr &pre_integrated_from_last_frame,
+                        const IMU::PreintegratedPtr &pre_integrated_from_last_kf );
 
   IMUMeasureStatus GetIntervalIMUMeasurement( double start, double end,
                                               std::vector<IMU::Point> &data );
@@ -51,12 +74,12 @@ private:
 typedef std::shared_ptr<IMUDataBase> IMUDataBasePtr;
 typedef std::shared_ptr<const IMUDataBase> IMUDataBaseConstPtr;
 
-inline void IMUDataBase::EraseOlderIMUMeasure( double time ) {
+inline void IMUDataBase::EraseOlderIMUMeasure( double last_image_time ) {
   double oldest_imu_time = queen_imu_meas_.front().t;
-  if ( time <= oldest_imu_time ) {
+  if ( last_image_time <= oldest_imu_time ) {
     return;
   }
-  while ( time < queen_imu_meas_.front().t ) {
+  while ( !queen_imu_meas_.empty() && last_image_time < queen_imu_meas_.front().t ) {
     queen_imu_meas_.pop();
   }
 }
@@ -64,7 +87,9 @@ inline void IMUDataBase::EraseOlderIMUMeasure( double time ) {
 inline IMUDataBase::IMUDataBase( const int imu_FEQ, const int cam_FEQ ) {
   CAM_FEQ = cam_FEQ;
   IMU_FEQ = imu_FEQ;
-  min_interval_imu_size_ = IMU_FEQ / CAM_FEQ;
+  min_interval_imu_size_ = static_cast<int>( static_cast<double>( IMU_FEQ ) / CAM_FEQ * 0.75 );
+  LOG( INFO ) << "IMU FPS:" << IMU_FEQ << ",Camera FPS: " << CAM_FEQ
+              << ",Min Interval imu size: " << min_interval_imu_size_;
 }
 
 inline void IMUDataBase::InsertMeasure( const IMU::Point &msg ) {
@@ -93,7 +118,7 @@ inline IMUDataBase::IMUMeasureStatus IMUDataBase::GetIntervalIMUMeasurement(
   }
 
   // pop IMU data less than the starting image time
-  while ( !queen_imu_meas_.empty() && queen_imu_meas_.front().t <= start ) {
+  while ( !queen_imu_meas_.empty() && queen_imu_meas_.front().t < start ) {
     queen_imu_meas_.pop();
   }
 
@@ -109,16 +134,13 @@ inline IMUDataBase::IMUMeasureStatus IMUDataBase::GetIntervalIMUMeasurement(
   return SUCCESS_GET_IMU_DATA;
 }
 
-inline bool IMUDataBase::PreIntegrateIMU( std::vector<backend::IMU::Point> &imus,
-                                          double last_image_time, double curr_image_time,
-                                          const IMU::PreintegratedPtr& pre_integrated_from_last_frame,
-                                          const IMU::PreintegratedPtr& pre_integrated_from_last_kf ) {
+inline bool IMUDataBase::PreIntegrateIMU(
+    std::vector<backend::IMU::Point> &imus, double last_image_time, double curr_image_time,
+    const IMU::PreintegratedPtr &pre_integrated_from_last_frame,
+    const IMU::PreintegratedPtr &pre_integrated_from_last_kf ) {
   if ( imus.empty() ) {
     return false;
   }
-
-  IMU::Preintegrated pre_integrate;
-
   int n = imus.size();
   for ( int i = 0; i < n; i++ ) {
     double tstep;
@@ -146,11 +168,32 @@ inline bool IMUDataBase::PreIntegrateIMU( std::vector<backend::IMU::Point> &imus
       angVel = imus[i].w;
       tstep = curr_image_time - last_image_time;
     }
-    pre_integrated_from_last_frame->IntegrateNewMeasurement( acc.cast<float>(),
-                                                             angVel.cast<float>(), tstep );
-    pre_integrated_from_last_kf->IntegrateNewMeasurement( acc.cast<float>(), angVel.cast<float>(),
-                                                          tstep );
+    if ( pre_integrated_from_last_frame != nullptr )
+      pre_integrated_from_last_frame->IntegrateNewMeasurement( acc.cast<float>(),
+                                                               angVel.cast<float>(), tstep );
+    if ( pre_integrated_from_last_kf != nullptr )
+      pre_integrated_from_last_kf->IntegrateNewMeasurement( acc.cast<float>(), angVel.cast<float>(),
+                                                            tstep );
   }
+  return true;
+}
+
+inline bool IMUDataBase::IMUAttitudeInit( const std::vector<IMU::Point> &imu_data,
+                                          Eigen::Matrix3d &R ) {
+  if ( imu_data.size() < 2 ) {
+    LOG( WARNING ) << "Imu Data Less, Not Init R\n";
+    return false;
+  }
+  Eigen::Vector3d aver_ccc( 0, 0, 0 );
+  for ( auto &ele : imu_data ) {
+    aver_ccc = aver_ccc + ele.a;
+  }
+  aver_ccc = aver_ccc / imu_data.size();
+  Eigen::Matrix3d R0 = com::g2R( aver_ccc );
+  R = R0;
+  Eigen::Vector3d ypr = com::R2ypr( R0 );
+  LOG( INFO ) << "Init R:" << ypr.transpose();
+  return true;
 }
 
 }  // namespace IMU

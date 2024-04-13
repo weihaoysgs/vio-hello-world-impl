@@ -85,6 +85,13 @@ public:
         bwx( b_ang_vel_x ),
         bwy( b_ang_vel_y ),
         bwz( b_ang_vel_z ) {}
+  Bias( Eigen::Vector3d acc_bias, Eigen::Vector3d gyr_bias )
+      : bax( acc_bias.x() ),
+        bay( acc_bias.y() ),
+        baz( acc_bias.z() ),
+        bwx( gyr_bias.x() ),
+        bwy( gyr_bias.y() ),
+        bwz( gyr_bias.z() ) {}
   void CopyFrom( Bias &b );
   friend std::ostream &operator<<( std::ostream &out, const Bias &b );
 

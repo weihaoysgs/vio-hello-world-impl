@@ -5,6 +5,7 @@
 
 #include <unordered_set>
 
+#include "backend/sensor_fusion/imu/imu_frame_state.h"
 #include "sophus/se3.hpp"
 #include "vio_hw/internal/camera_calibration.hpp"
 #include "vio_hw/internal/keypoint.hpp"
@@ -126,7 +127,6 @@ public:
 
   // Pose (T cam -> world), (T world -> cam)
   Sophus::SE3d Twc_, Tcw_;
-  Sophus::SE3d Twb_, Tbw_;
   /* TODO
   Set a vector of calib ptrs to handle any multicam system.
   Each calib ptr should contain an extrinsic parametrization with a common
@@ -149,6 +149,10 @@ public:
   // Mutex
   mutable std::mutex kps_mutex_, pose_mutex_;
   mutable std::mutex grid_mutex_, cokfs_mutex_;
+
+  // imu state
+  backend::IMU::IMUState imu_state_;
+
 };
 
 typedef std::shared_ptr<Frame> FramePtr;

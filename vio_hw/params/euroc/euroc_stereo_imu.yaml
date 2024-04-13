@@ -65,8 +65,8 @@ LoopCloser:
   loop.threshold: 0.1
 
 Backend:
-  use.backend: 0
-  opt.window.size: 15
+  use.backend: 1
+  opt.window.size: 25
 
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )

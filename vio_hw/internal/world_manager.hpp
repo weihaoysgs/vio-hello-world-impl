@@ -28,6 +28,7 @@ public:
   bool getNewImage( cv::Mat &iml, cv::Mat &imr, double &time );
   void setupCalibration();
   bool VisualizationImage();
+  void Visualization();
   void VisualizationKFTraj();
   bool GenerateFeatureExtractorBase();
   void SaveKFTrajectoryTUM( const std::string path );
@@ -61,6 +62,10 @@ private:
 
   // imu database
   backend::IMU::IMUDataBasePtr imu_database_;
+  bool is_init_imu_pose_ = false;
 };
+
+typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimeStamp;
+
 }  // namespace viohw
 #endif  // VIO_HELLO_WORLD_WORLD_MANAGER_HPP

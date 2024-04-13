@@ -33,27 +33,27 @@ enum class Color
 
 // Template function to get colored stream
 template <Color c>
-std::string getColoredStream(const std::string& message) {
-  if constexpr (c == Color::Red)
-    return std::string(RED) + message + TAIL;
-  else if constexpr (c == Color::Green)
-    return std::string(GREEN) + message + TAIL;
-  else if constexpr (c == Color::Yellow)
-    return std::string(YELLOW) + message + TAIL;
-  else if constexpr (c == Color::Blue)
-    return std::string(BLUE) + message + TAIL;
-  else if constexpr (c == Color::Purple)
-    return std::string(PURPLE) + message + TAIL;
-  else if constexpr (c == Color::DeepGreen)
-    return std::string(DEEPGREEN) + message + TAIL;
-  else if constexpr (c == Color::White)
-    return std::string(WHITE) + message + TAIL;
-  else if constexpr (c == Color::RedInWhite)
-    return std::string(RED_IN_WHITE) + message + TAIL;
-  else if constexpr (c == Color::GreenInWhite)
-    return std::string(GREEN_IN_WHITE) + message + TAIL;
-  else if constexpr (c == Color::YellowInWhite)
-    return std::string(YELLOW_IN_WHITE) + message + TAIL;
+std::string getColoredStream( const std::string& message ) {
+  if constexpr ( c == Color::Red )
+    return std::string( RED ) + message + TAIL;
+  else if constexpr ( c == Color::Green )
+    return std::string( GREEN ) + message + TAIL;
+  else if constexpr ( c == Color::Yellow )
+    return std::string( YELLOW ) + message + TAIL;
+  else if constexpr ( c == Color::Blue )
+    return std::string( BLUE ) + message + TAIL;
+  else if constexpr ( c == Color::Purple )
+    return std::string( PURPLE ) + message + TAIL;
+  else if constexpr ( c == Color::DeepGreen )
+    return std::string( DEEPGREEN ) + message + TAIL;
+  else if constexpr ( c == Color::White )
+    return std::string( WHITE ) + message + TAIL;
+  else if constexpr ( c == Color::RedInWhite )
+    return std::string( RED_IN_WHITE ) + message + TAIL;
+  else if constexpr ( c == Color::GreenInWhite )
+    return std::string( GREEN_IN_WHITE ) + message + TAIL;
+  else if constexpr ( c == Color::YellowInWhite )
+    return std::string( YELLOW_IN_WHITE ) + message + TAIL;
 }
 
 // Utility to cause a compile-time error on unsupported types
@@ -63,12 +63,26 @@ struct dependent_false : std::false_type
 };
 
 inline void printHelloWorldVIO() {
-  std::cout << BLUE  << std::endl
+  std::cout << BLUE << std::endl
             << "  _   _      _ _        __        __         _     _  __     _____ ___  \n"
                " | | | | ___| | | ___   \\ \\      / ___  _ __| | __| | \\ \\   / |_ _/ _ \\ \n"
                " | |_| |/ _ | | |/ _ \\   \\ \\ /\\ / / _ \\| '__| |/ _` |  \\ \\ / / | | | | |\n"
                " |  _  |  __| | | (_) |   \\ V  V | (_) | |  | | (_| |   \\ V /  | | |_| |\n"
                " |_| |_|\\___|_|_|\\___/     \\_/\\_/ \\___/|_|  |_|\\__,_|    \\_/  |___\\___/ \n"
+            << TAIL << std::endl;
+}
+
+inline void printFASTLogo() {
+  std::cout << BLUE << std::endl
+            << "\n"
+               " ______  ___ _   _  ______ ___  _____ _____   _      ___ ______ \n"
+               "|___  / |_  | | | | |  ___/ _ \\/  ___|_   _| | |    / _ \\| ___ \\\n"
+               "   / /    | | | | | | |_ / /_\\ \\ `--.  | |   | |   / /_\\ | |_/ /\n"
+               "  / /     | | | | | |  _||  _  |`--. \\ | |   | |   |  _  | ___ \\\n"
+               "./ /__/\\__/ | |_| | | |  | | | /\\__/ / | |   | |___| | | | |_/ /\n"
+               "\\_____\\____/ \\___/  \\_|  \\_| |_\\____/  \\_/   \\_____\\_| |_\\____/ \n"
+               "                                                                \n"
+               "                                                                "
             << TAIL << std::endl;
 }
 
@@ -140,27 +154,27 @@ inline void printZJUV2() {
 
 inline void printFZ() {
   std::cout << GREEN
-               "                       _oo0oo_                      \n"
-               "                      o8888888o                     \n"
-               "                      88\" . \"88                     \n"
-               "                      (| -_- |)                     \n"
-               "                      0\\  =  /0                     \n"
-               "                   ___/‘---’\\___                   \n"
-               "                  .' \\|       |/ '.                 \n"
-               "                 / \\\\|||  :  |||// \\                \n"
-               "                / _||||| -卍-|||||_ \\               \n"
-               "               |   | \\\\\\  -  /// |   |              \n"
-               "               | \\_|  ''\\---/''  |_/ |              \n"
-               "               \\  .-\\__  '-'  ___/-. /              \n"
-               "             ___'. .'  /--.--\\  '. .'___            \n"
-               "         .\"\" ‘<  ‘.___\\_<|>_/___.’>’ \"\".          \n"
-               "       | | :  ‘- \\‘.;‘\\ _ /’;.’/ - ’ : | |        \n"
-               "         \\  \\ ‘_.   \\_ __\\ /__ _/   .-’ /  /        \n"
-               "    =====‘-.____‘.___ \\_____/___.-’___.-’=====     \n"
-               "                       ‘=---=’                      \n"
-               "                                                    \n"
-               "...Best wishes for you, never fried chicken, never bugs...\n"
-               ".......................Amitabha......................\n"
+      "                       _oo0oo_                      \n"
+      "                      o8888888o                     \n"
+      "                      88\" . \"88                     \n"
+      "                      (| -_- |)                     \n"
+      "                      0\\  =  /0                     \n"
+      "                   ___/‘---’\\___                   \n"
+      "                  .' \\|       |/ '.                 \n"
+      "                 / \\\\|||  :  |||// \\                \n"
+      "                / _||||| -卍-|||||_ \\               \n"
+      "               |   | \\\\\\  -  /// |   |              \n"
+      "               | \\_|  ''\\---/''  |_/ |              \n"
+      "               \\  .-\\__  '-'  ___/-. /              \n"
+      "             ___'. .'  /--.--\\  '. .'___            \n"
+      "         .\"\" ‘<  ‘.___\\_<|>_/___.’>’ \"\".          \n"
+      "       | | :  ‘- \\‘.;‘\\ _ /’;.’/ - ’ : | |        \n"
+      "         \\  \\ ‘_.   \\_ __\\ /__ _/   .-’ /  /        \n"
+      "    =====‘-.____‘.___ \\_____/___.-’___.-’=====     \n"
+      "                       ‘=---=’                      \n"
+      "                                                    \n"
+      "...Best wishes for you, never fried chicken, never bugs...\n"
+      ".......................Amitabha......................\n"
             << TAIL << std::endl;
 }
 

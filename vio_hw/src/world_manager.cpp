@@ -12,7 +12,8 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   GenerateFeatureExtractorBase();
 
   // create IMU database
-  imu_database_.reset( new backend::IMU::IMUDataBase( 200, 30 ) );
+  imu_database_.reset( new backend::IMU::IMUDataBase( params_->imu_setting_.imu_FPS_,
+                                                      params_->cam_setting_.camera_FPS_ ) );
 
   // create visualization
   VisualizationBase::VisualizationOption viz_option{ VisualizationBase::RVIZ };
@@ -48,9 +49,6 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
 
   // create mapping thread, and mapping will create sub thread for Estimator and LoopClosing
   mapping_.reset( new Mapping( params_, map_manager_, current_frame_, loop_closer_, estimator_ ) );
-
-  com::printHelloWorldVIO();
-  com::printKeyboard();
 }
 
 void WorldManager::run() {
@@ -58,33 +56,72 @@ void WorldManager::run() {
   double cur_time = 0, last_time = 0;
   std::vector<backend::IMU::Point> imus;
   bool use_imu = params_->slam_setting_.use_imu_;
+  Sophus::SE3d Tbc = params_->extrinsic_setting_.Tbc0_;
+  auto acc_n = static_cast<float>( params_->imu_setting_.acc_n_ );
+  auto acc_w = static_cast<float>( params_->imu_setting_.acc_w_ );
+  auto gyr_n = static_cast<float>( params_->imu_setting_.gyr_n_ );
+  auto gyr_w = static_cast<float>( params_->imu_setting_.gyr_w_ );
+
+  // TODO Only for test
+  Eigen::Vector3d MH_05_gt_bias_acc( -0.020544, 0.124837, 0.061800 );
+  Eigen::Vector3d MH_05_gt_bias_gyr( -0.001806, 0.020940, 0.076870 );
+
+  backend::IMU::Calib calib( Tbc.cast<float>(), gyr_n, acc_n, gyr_w, acc_w );
+  backend::IMU::Bias bias( MH_05_gt_bias_acc, MH_05_gt_bias_gyr );
+
+  TimeStamp current_process_time, last_process_time;
+  long process_fps = 0;
 
   while ( true ) {
     if ( getNewImage( img_left, img_right, cur_time ) ) {
+      current_process_time = std::chrono::high_resolution_clock ::now();
+      if ( use_imu ) {
+        // reset preintegration from last frame, using last frame bias
+        current_frame_->imu_state_.resetPreIntegrationFromLastFrame( bias, calib );
+        // get interval imu measurement form last_time to cur_time
+        auto status = imu_database_->GetIntervalIMUMeasurement( last_time, cur_time, imus );
+
+        if ( status != backend::IMUMeasureStatus::SUCCESS_GET_IMU_DATA ) {
+          // if not success get imu measure, set imu measure failed
+          LOG( WARNING ) << backend::IMUMeasureStatusToString( status )
+                         << ", size : " << imus.size();
+          current_frame_->imu_state_.setIMUMeasureAvailable( false );
+        } else {
+          // set imu measure available success and integrate imu measures
+          current_frame_->imu_state_.setIMUMeasureAvailable( true );
+          PreIntegrateIMU( imus, last_time, cur_time );
+        }
+        imu_database_->EraseOlderIMUMeasure( last_time );
+
+        // using imu acc init attitude
+        if ( !is_init_imu_pose_ ) {
+          Eigen::Matrix3d R;
+          if ( !imu_database_->IMUAttitudeInit( imus, R ) ) {
+            continue;
+          }
+          is_init_imu_pose_ = true;
+          Sophus::SE3d Twb0( R, Eigen::Vector3d::Zero() );
+          Sophus::SE3d Twc( Twb0 * Tbc );
+          current_frame_->SetTwc( Twc );
+        }
+      }
       frame_id_++;
       current_frame_->updateFrame( frame_id_, cur_time );
 
-      if ( use_imu ) {
-        auto status = imu_database_->GetIntervalIMUMeasurement( last_time, cur_time, imus );
-        if ( status != backend::IMUMeasureStatus::SUCCESS_GET_IMU_DATA ) {
-          LOG( WARNING ) << backend::IMUMeasureStatusToString( status );
-        } else {
-          // PreIntegrateIMU( imus );
-        }
-      }
-
       last_time = cur_time;
 
+      // tracker frame to frame
       bool is_kf = visual_frontend_->VisualTracking( img_left, cur_time );
 
-      viz_->addTrajectory( current_frame_->GetTwc().rotationMatrix(),
-                           current_frame_->GetTwc().translation() );
-      viz_->showTrajectory();
-      VisualizationImage();
+      // visualization tracking result and trajectory
+      Visualization();
 
+      // create keyframe and visualization kf trajectory
       if ( is_kf ) {
         Keyframe kf( current_frame_->kfid_, img_left, img_right,
                      visual_frontend_->GetCurrentFramePyramid() );
+
+        // add keyframe to mapping thread
         mapping_->AddNewKf( kf );
 
         if ( !kf_viz_is_on_ ) {
@@ -92,6 +129,11 @@ void WorldManager::run() {
           kf_viz_thread.detach();
         }
       }
+
+      process_fps = 1000 / std::chrono::duration_cast<std::chrono::milliseconds>(
+                               current_process_time - last_process_time )
+                               .count();
+      last_process_time = current_process_time;
     }
     std::chrono::milliseconds dura( 1 );
     std::this_thread::sleep_for( dura );
@@ -250,9 +292,18 @@ void WorldManager::InsertIMUMeasure( backend::IMU::Point& data ) {
   imu_database_->InsertMeasure( data );
 }
 
-void WorldManager::PreIntegrateIMU( vector<backend::IMU::Point>& mvImuFromLastFrame,
-                                    double last_image_time, double curr_image_time ) {
+void WorldManager::PreIntegrateIMU( vector<backend::IMU::Point>& imus, double last_image_time,
+                                    double curr_image_time ) {
+  imu_database_->PreIntegrateIMU( imus, last_image_time, curr_image_time,
+                                  current_frame_->imu_state_.preintegrated_from_last_frame_,
+                                  current_frame_->imu_state_.preintegrated_from_last_kf_ );
+}
 
+void WorldManager::Visualization() {
+  viz_->addTrajectory( current_frame_->GetTwc().rotationMatrix(),
+                       current_frame_->GetTwc().translation() );
+  viz_->showTrajectory();
+  VisualizationImage();
 }
 
 }  // namespace viohw

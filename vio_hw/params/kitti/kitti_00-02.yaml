@@ -51,17 +51,18 @@ IMU:
 
 SLAM:
   stereo.mode: 1
-  use.imu: 1
+  use.imu: 0
   force.realtime: 1
   use.Rviz: 1
   use.Pangolin: 0
 
 LoopCloser:
-  use.loop: 0
+  use.loop: 1
   loop.threshold: 0.6
 
 Backend:
   use.backend: 0
+  opt.window.size: 15
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )
 Extrinsic:
