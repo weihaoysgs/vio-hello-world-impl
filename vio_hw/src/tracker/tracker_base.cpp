@@ -12,11 +12,15 @@ std::shared_ptr<TrackerBase> TrackerBase::Create(
   switch (options.tracker_type_) {
     case OPTICAL_FLOW: {
       LOG(INFO) << "Create Tracker with [OPTICAL_FLOW]";
-      return std::make_shared<OpticalFlowImpl>();
+      return std::make_shared<OpticalFlowImpl>(*options.opticalFlowImplConfig);
     }
     case LIGHT_GLUE: {
+    #ifdef ENABLE_DFM
       LOG(INFO) << "Create Tracker with [LIGHT_GLUE]";
-      return std::make_shared<LightGlueImpl>();
+      return std::make_shared<LightGlueImpl>(*options.lightGlueImplConfig);
+    #else
+      LOG(FATAL) << "DFM-Matcher Not Enable, Create Tracker with [LIGHT_GLUE] Failed";
+    #endif
     }
     case SUPER_GLUE: {
       LOG(FATAL) << "TOBE support SUPER_GLUE";

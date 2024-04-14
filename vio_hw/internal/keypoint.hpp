@@ -27,13 +27,21 @@ struct Keypoint
   cv::Point2f runpx_;
   Eigen::Vector3d rbv_;
 
+  // for deep feature matcher
+  Eigen::Matrix<double, 259, 1> sp_feat_desc_ = Eigen::Matrix<double, 259, 1>::Zero();
+
   bool is_re_tracked_;
 
   Keypoint()
-      : lmid_(-1), scale_(0), angle_(-1.), is3d_(false), is_stereo_(false), is_re_tracked_(false) {}
+      : lmid_( -1 ),
+        scale_( 0 ),
+        angle_( -1. ),
+        is3d_( false ),
+        is_stereo_( false ),
+        is_re_tracked_( false ) {}
 
   // For using kps in ordered containers
-  bool operator<(const Keypoint &kp) const { return lmid_ < kp.lmid_; }
+  bool operator<( const Keypoint &kp ) const { return lmid_ < kp.lmid_; }
 };
 
 }  // namespace viohw

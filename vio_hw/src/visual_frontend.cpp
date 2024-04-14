@@ -21,8 +21,7 @@ VisualFrontEnd::VisualFrontEnd( viohw::SettingPtr state, viohw::FramePtr frame,
   klt_use_prior_ = param_->feat_tracker_setting_.klt_use_prior_;
   klt_win_size_ = param_->feat_tracker_setting_.klt_win_size_;
   klt_pyr_level_ = param_->feat_tracker_setting_.klt_pyr_level_;
-  klt_err_ = param_->feat_tracker_setting_.klt_err_;
-  klt_max_fb_dist_ = param_->feat_tracker_setting_.klt_max_fb_dist_;
+
   track_keyframetoframe_ = param_->feat_tracker_setting_.track_keyframetoframe_;
 }
 
@@ -102,7 +101,12 @@ void VisualFrontEnd::KLTTracking() {
 
   vkp_is3d.reserve( current_frame_->nbkps_ );
 
+  Eigen::Matrix<double, 259, Eigen::Dynamic> feat_prev, feat_cur;
+  feat_prev.resize( 259, current_frame_->nbkps_ );
+  CHECK( current_frame_->mapkps_.size() == current_frame_->nbkps_ ) << "kps size not equal";
+
   // Front-End is thread-safe so we can direclty access curframe's kps
+  int index = 0;
   for ( const auto& it : current_frame_->mapkps_ ) {
     auto& kp = it.second;
 
@@ -117,6 +121,7 @@ void VisualFrontEnd::KLTTracking() {
     vkp_ids.push_back( kp.lmid_ );
     vkps.push_back( kp.px_ );
     vpriors.push_back( kp.px_ );
+    feat_prev.col( index++ ) = kp.sp_feat_desc_;
   }
 
   // 1st track 3d kps if using prior
@@ -128,14 +133,18 @@ void VisualFrontEnd::KLTTracking() {
     // Good / bad kps vector
     std::vector<bool> kpstatus;
 
-    tracker_->trackerAndMatcher( prev_pyr_, cur_pyr_, klt_win_size_, klt_pyr_level_, klt_err_,
-                                 klt_max_fb_dist_, vkps, vpriors, kpstatus );
+    tracker_->trackerAndMatcher( prev_pyr_, cur_pyr_, vkps, vpriors, kpstatus, feat_prev,
+                                 feat_cur );
 
     size_t good_num = 0;
 
+    feat_cur.conservativeResize(259, feat_prev.cols());
     for ( size_t i = 0; i < vkps.size(); i++ ) {
       if ( kpstatus.at( i ) ) {
         current_frame_->UpdateKeypoint( vkp_ids.at( i ), vpriors.at( i ) );
+        if ( param_->feat_tracker_setting_.tracker_type_ == TrackerBase::LIGHT_GLUE ) {
+          current_frame_->UpdateKeypointDesc( vkp_ids.at( i ), feat_cur.col( i ) );
+        }
         good_num++;
       } else {
         // MapManager is responsible for all the removing operations

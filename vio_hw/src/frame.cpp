@@ -119,6 +119,15 @@ void Frame::AddKeypoint( const cv::Point2f &pt, const int lmid, const cv::Mat &d
   AddKeypoint( kp );
 }
 
+void Frame::AddKeypoint( const cv::Point2f &pt, const int lmid, const cv::Mat &desc,
+                         const Eigen::Matrix<double, 259, 1> &feat ) {
+  Keypoint kp = ComputeKeypoint( pt, lmid );
+  kp.desc_ = desc;
+  kp.sp_feat_desc_ = feat;
+
+  AddKeypoint( kp );
+}
+
 Keypoint Frame::ComputeKeypoint( const cv::Point2f &pt, const int lmid ) {
   Keypoint kp;
   kp.lmid_ = lmid;
@@ -259,6 +268,17 @@ void Frame::UpdateKeypointDesc( const int lmid, const cv::Mat &desc ) {
   }
 
   it->second.desc_ = desc;
+}
+
+void Frame::UpdateKeypointDesc( const int lmid, const Eigen::Matrix<double, 259, 1> &desc ) {
+  std::lock_guard<std::mutex> lock( kps_mutex_ );
+
+  auto it = mapkps_.find( lmid );
+  if ( it == mapkps_.end() ) {
+    return;
+  }
+
+  it->second.sp_feat_desc_ = desc;
 }
 
 // Return vector of 3D keypoint objects

@@ -40,6 +40,10 @@ public:
   // function overload, compute the keypoint with desc and add to the current frame
   void AddKeypoint( const cv::Point2f &pt, const int lmid, const cv::Mat &desc );
 
+  // function overload, compute the keypoint with dfm desc and add to the current frame
+  void AddKeypoint( const cv::Point2f &pt, const int lmid, const cv::Mat &desc,
+                    const Eigen::Matrix<double, 259, 1> &feat );
+
   // function Overload, compute keypoint with specified [lmid]
   Keypoint ComputeKeypoint( const cv::Point2f &pt, const int lmid );
 
@@ -76,6 +80,7 @@ public:
 
   // update keypoint desc
   void UpdateKeypointDesc( const int lmid, const cv::Mat &desc );
+  void UpdateKeypointDesc( const int lmid, const Eigen::Matrix<double, 259, 1> &desc );
 
   // get all keypoints
   std::vector<Keypoint> GetKeypoints() const;
@@ -152,7 +157,6 @@ public:
 
   // imu state
   backend::IMU::IMUState imu_state_;
-
 };
 
 typedef std::shared_ptr<Frame> FramePtr;

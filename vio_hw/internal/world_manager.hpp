@@ -31,6 +31,7 @@ public:
   void Visualization();
   void VisualizationKFTraj();
   bool GenerateFeatureExtractorBase();
+  bool GenerateFeatureTrackerMatcherBase();
   void SaveKFTrajectoryTUM( const std::string path );
   void InsertIMUMeasure( backend::IMU::Point &data );
   void PreIntegrateIMU( std::vector<backend::IMU::Point> &imu_data, double last_image_time,
@@ -47,7 +48,7 @@ private:
   int frame_id_ = -1;
 
   FeatureBasePtr feature_extractor_;
-  TrackerBasePtr tracker_;
+  TrackerBasePtr tracker_, tracker_for_mapping_;
   FramePtr current_frame_;
   MapManagerPtr map_manager_;
   VisualFrontEndPtr visual_frontend_;

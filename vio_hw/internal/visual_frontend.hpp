@@ -78,8 +78,6 @@ class VisualFrontEnd
   bool use_clahe_ = false;
   bool klt_use_prior_;
   int klt_pyr_level_;
-  float klt_err_;
-  float klt_max_fb_dist_;
   bool track_keyframetoframe_;
 };
 

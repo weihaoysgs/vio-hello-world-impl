@@ -15,6 +15,7 @@
 #include "common/print_tools.hpp"
 #include "sophus/se3.hpp"
 #include "vio_hw/internal/feat/feature.hpp"
+#include "vio_hw/internal/tracker/tracker_base.hpp"
 
 namespace viohw {
 class Setting
@@ -54,6 +55,8 @@ public:
     bool use_brief_;
     FeatureBase::FeatureType feature_type_;
     std::string feature_name_;
+    TrackerBase::TrackerType tracker_type_;
+    std::string tracker_name_;
   };
 
   // extrinsic parameters
@@ -103,6 +106,7 @@ public:
     std::string vocabulary_path_;
     std::string kf_traj_save_path_;
     std::string bag_file_path_;
+    std::string dfm_config_path_;
   };
 
   struct BackendOptimizationSetting
@@ -177,6 +181,7 @@ inline std::ostream& operator<<(std::ostream& os,
   os << std::boolalpha;
   os << std::right << std::setw(20) << "Vocabulary Path: "     << std::left << std::setw(10) << setting.vocabulary_path_ << std::endl
      << std::right << std::setw(20) << "KF Traj Save Path: "   << std::left << std::setw(10) << setting.kf_traj_save_path_ << std::endl
+     << std::right << std::setw(20) << "DFM Config Path: "     << std::left << std::setw(10) << setting.dfm_config_path_ << std::endl
      << std::right << std::setw(20) << "Bag File Path: "       << std::left << std::setw(10) << setting.bag_file_path_;
   return os;
 }
@@ -218,6 +223,8 @@ inline std::ostream& operator<<(
   os << std::boolalpha;
   os << std::right << std::setw(20) << "Feature.Type: "    << std::left << std::setw(10) <<  setting.feature_type_ << std::endl
      << std::right << std::setw(20) << "Feature.name: "    << std::left << std::setw(10) <<  setting.feature_name_ << std::endl
+     << std::right << std::setw(20) << "Tracker.Type: "    << std::left << std::setw(10) <<  setting.tracker_type_ << std::endl
+     << std::right << std::setw(20) << "Tracker.name: "    << std::left << std::setw(10) <<  setting.tracker_name_ << std::endl
      << std::right << std::setw(20) << "Max.Feature.Num: " << std::left << std::setw(10) <<  setting.max_feature_num_ << std::endl
      << std::right << std::setw(20) << "Max.Feature.Dis: " << std::left << std::setw(10) <<  setting.max_feature_dis_ << std::endl
      << std::right << std::setw(20) << "Quality.Level: "   << std::left << std::setw(10) <<  setting.feature_quality_level_ << std::endl

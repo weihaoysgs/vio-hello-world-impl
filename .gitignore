@@ -38,3 +38,4 @@ out/
 thirdparty/Vocabulary/ORBvoc.txt
 vio_hw/output/kitti_out/
 vio_hw/output/euroc_out/
+dfm/weight/

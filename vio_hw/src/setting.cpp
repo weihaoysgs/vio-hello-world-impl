@@ -77,6 +77,9 @@ void Setting::readFeatureTrackerParams( const cv::FileNode& node ) {
   node["feature.Type"] >> feat_tracker_setting_.feature_name_;
   feat_tracker_setting_.feature_type_ =
       FeatureBase::StringToFeatureType( feat_tracker_setting_.feature_name_ );
+  node["tracker.Type"] >> feat_tracker_setting_.tracker_name_;
+  feat_tracker_setting_.tracker_type_ =
+      TrackerBase::StringToTrackerType( feat_tracker_setting_.tracker_name_ );
 }
 
 void Setting::readExtrinsicParams( const cv::FileNode& node ) {
@@ -116,6 +119,7 @@ void Setting::readConfigFilePathSetting( const cv::FileNode& node ) {
   node["vocabulary.path"] >> config_file_path_setting_.vocabulary_path_;
   node["kf.traj.save.path"] >> config_file_path_setting_.kf_traj_save_path_;
   node["bag.file.path"] >> config_file_path_setting_.bag_file_path_;
+  node["dfm.config.file.path"] >> config_file_path_setting_.dfm_config_path_;
 }
 
 void Setting::readBackendOptimizationSetting( const cv::FileNode& node ) {

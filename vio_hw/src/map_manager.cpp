@@ -100,11 +100,11 @@ void MapManager::ExtractKeypoints( const cv::Mat& im, const cv::Mat& im_raw ) {
     if ( !new_kps.empty() ) {
       std::vector<cv::Point2f> desc_pts;
       cv::KeyPoint::convert( new_kps, desc_pts );
-      if ( param_->feat_tracker_setting_.use_brief_ ) {
-        std::vector<cv::Mat> vdescs = feature_extractor_->DescribeBRIEF( im_raw, desc_pts );
-        AddKeypointsToFrame( desc_pts, vdescs, *current_frame_ );
+      std::vector<cv::Mat> vdescs = feature_extractor_->DescribeBRIEF( im_raw, desc_pts );
+      if ( param_->feat_tracker_setting_.tracker_type_ == TrackerBase::LIGHT_GLUE ) {
+        AddKeypointsToFrame( desc_pts, vdescs, feat, *current_frame_ );
       } else {
-        AddKeypointsToFrame( desc_pts, *current_frame_ );
+        AddKeypointsToFrame( desc_pts, vdescs, *current_frame_ );
       }
     }
   }
@@ -119,6 +119,30 @@ void MapManager::AddKeypointsToFrame( const std::vector<cv::Point2f>& vpts, Fram
     frame.AddKeypoint( vpt, lm_id_ );
     // Create landmark with same id
     AddMapPoint();
+  }
+}
+
+void MapManager::AddKeypointsToFrame( const std::vector<cv::Point2f>& vpts,
+                                      const std::vector<cv::Mat>& vdescs,
+                                      const Eigen::Matrix<double, 259, Eigen::Dynamic>& feat,
+                                      viohw::Frame& frame ) {
+  CHECK( vpts.size() == feat.cols() );
+  CHECK( vdescs.size() == feat.cols() );
+  std::lock_guard<std::mutex> lock( lm_mutex_ );
+  // Add keypoints + create landmarks
+  int num = 0;
+  for ( size_t i = 0; i < vpts.size(); i++ ) {
+    if ( !vdescs.at( i ).empty() ) {
+      // Add keypoint to current frame
+      frame.AddKeypoint( vpts.at( i ), lm_id_, vdescs.at( i ), feat.col( i ) );
+      // Create landmark with same id
+      AddMapPoint( vdescs.at( i ) );
+    } else {
+      // Add keypoint to current frame
+      frame.AddKeypoint( vpts.at( i ), lm_id_ );
+      // Create landmark with same id
+      AddMapPoint();
+    }
   }
 }
 
@@ -207,6 +231,9 @@ void MapManager::StereoMatching( Frame& frame, const std::vector<cv::Mat>& vleft
 
   std::vector<int> v3dkpids, vkpids, voutkpids, vpriorids;
   std::vector<cv::Point2f> v3dkps, v3dpriors, vkps, vpriors;
+  Eigen::Matrix<double, 259, Eigen::Dynamic> feat_prev, feat_cur;
+  feat_prev.resize( 259, static_cast<Eigen::Index>( nbkps ) );
+
   for ( size_t i = 0; i < nbkps; i++ ) {
     // Set left kp
     auto& kp = vleftkps.at( i );
@@ -217,6 +244,7 @@ void MapManager::StereoMatching( Frame& frame, const std::vector<cv::Mat>& vleft
     vkpids.push_back( kp.lmid_ );
     vkps.push_back( kp.px_ );
     vpriors.push_back( priorpt );
+    feat_prev.col( i ) = kp.sp_feat_desc_;
   }
 
   std::vector<cv::Point2f> good_right_kps;
@@ -226,10 +254,8 @@ void MapManager::StereoMatching( Frame& frame, const std::vector<cv::Mat>& vleft
     // Good / bad kps vector
     std::vector<bool> vkpstatus;
     std::vector<uchar> inliers;
-    tracker_->trackerAndMatcher(
-        vleftpyr, vrightpyr, param_->feat_tracker_setting_.klt_win_size_,
-        param_->feat_tracker_setting_.klt_pyr_level_, param_->feat_tracker_setting_.klt_err_,
-        param_->feat_tracker_setting_.klt_max_fb_dist_, vkps, vpriors, vkpstatus );
+    tracker_->trackerAndMatcher( vleftpyr, vrightpyr, vkps, vpriors, vkpstatus, feat_prev,
+                                 feat_cur );
 
     for ( size_t i = 0; i < vkpstatus.size(); i++ ) {
       if ( vkpstatus.at( i ) ) {

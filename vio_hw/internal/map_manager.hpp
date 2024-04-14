@@ -53,6 +53,11 @@ public:
   void AddKeypointsToFrame( const std::vector<cv::Point2f> &vpts,
                             const std::vector<cv::Mat> &vdescs, Frame &frame );
 
+  // add keypoint(with desc) to frame and [map_lms_]
+  void AddKeypointsToFrame( const std::vector<cv::Point2f> &vpts,
+                            const std::vector<cv::Mat> &vdescs,
+                            const Eigen::Matrix<double, 259, Eigen::Dynamic> &feat, Frame &frame );
+
   // remove keypoint from current frame
   void RemoveObsFromCurFrameById( const int lmid );
 
@@ -69,7 +74,7 @@ public:
   // remove mappoint obs in keyframe
   void RemoveMapPointObs( const int lmid, const int kfid );
 
-  void RemoveMapPoint(const int lmid);
+  void RemoveMapPoint( const int lmid );
 
   // compute and update keypoint desc
   void DescribeKeypoints( const cv::Mat &im, const std::vector<Keypoint> &vkps,

@@ -3,6 +3,8 @@
 #include "vio_hw/internal/feat/good_feature_impl.hpp"
 #include "vio_hw/internal/feat/orb_slam_impl.hpp"
 #include "vio_hw/internal/feat/superpoint_impl.hpp"
+#include "vio_hw/internal/tracker/lightglue_impl.hpp"
+#include "vio_hw/internal/tracker/optical_flow_impl.hpp"
 
 namespace viohw {
 
@@ -21,8 +23,7 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   viz_ = VisualizationBase::Create( viz_option );
 
   // create feature tracker
-  TrackerBase::TrackerOption tracker_option{ TrackerBase::OPTICAL_FLOW };
-  tracker_ = TrackerBase::Create( tracker_option );
+  GenerateFeatureTrackerMatcherBase();
 
   // TODO: for [ncellsize] param
   // create current frame
@@ -33,7 +34,7 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   }
 
   // create map manager
-  map_manager_.reset( new MapManager( params_, current_frame_, feature_extractor_, tracker_ ) );
+  map_manager_.reset( new MapManager( params_, current_frame_, feature_extractor_, tracker_for_mapping_ ) );
 
   // create visual frontend
   visual_frontend_.reset(
@@ -141,8 +142,32 @@ void WorldManager::run() {
   }
 }
 
+bool WorldManager::GenerateFeatureTrackerMatcherBase() {
+  TrackerBase::TrackerOption tracker_option{ .tracker_type_ =
+                                                 params_->feat_tracker_setting_.tracker_type_ };
+
+  tracker_option.opticalFlowImplConfig.reset( new OpticalFlowImplConfig(
+      params_->feat_tracker_setting_.klt_win_size_, params_->feat_tracker_setting_.klt_pyr_level_,
+      params_->feat_tracker_setting_.klt_err_, params_->feat_tracker_setting_.klt_max_fb_dist_ ) );
+
+  tracker_option.lightGlueImplConfig.reset( new LightGlueImplConfig );
+  tracker_option.lightGlueImplConfig->max_kps_num_ =
+      params_->feat_tracker_setting_.max_feature_num_;
+  tracker_option.lightGlueImplConfig->config_file_path_ =
+      params_->config_file_path_setting_.dfm_config_path_;
+
+  tracker_ = TrackerBase::Create( tracker_option );
+  tracker_for_mapping_ = TrackerBase::Create( tracker_option );
+
+  return true;
+}
+
 bool WorldManager::GenerateFeatureExtractorBase() {
-  // TODO select feature extract type
+  if ( params_->feat_tracker_setting_.tracker_type_ == TrackerBase::LIGHT_GLUE &&
+       params_->feat_tracker_setting_.feature_type_ != FeatureBase::SUPER_POINT ) {
+    LOG( FATAL ) << "Enable LIGHTGLUE Must Enable SuperPoint";
+  }
+
   FeatureBase::FeatureExtractorOptions feature_options{
       .feature_type_ = params_->feat_tracker_setting_.feature_type_ };
 
@@ -163,7 +188,8 @@ bool WorldManager::GenerateFeatureExtractorBase() {
       params_->feat_tracker_setting_.max_feature_num_;
 
   feature_options.superPointExtractorConfig.reset( new SuperPointExtractorConfig );
-  feature_options.superPointExtractorConfig->config_file_path_ = "../dfm/params/splg_config.yaml";
+  feature_options.superPointExtractorConfig->config_file_path_ =
+      params_->config_file_path_setting_.dfm_config_path_;
   feature_options.superPointExtractorConfig->max_kps_ =
       params_->feat_tracker_setting_.max_feature_num_;
 
