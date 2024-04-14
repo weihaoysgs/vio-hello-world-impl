@@ -5,7 +5,7 @@
 namespace dfm {
 
 SuperPoint::SuperPoint( const SuperPointConfig &config ) : spConfig( std::move( config ) ) {
-  trtLogger::setReportableSeverity( trtLogger::Logger::Severity::kINFO );
+  trtLogger::setReportableSeverity( trtLogger::Logger::Severity::kERROR );
 }
 
 bool SuperPoint::build() {

@@ -73,6 +73,10 @@ void Setting::readFeatureTrackerParams( const cv::FileNode& node ) {
   node["klt.max.px.precision"] >> feat_tracker_setting_.klt_max_px_precision_;
   node["klt.max.fb.dist"] >> feat_tracker_setting_.klt_max_fb_dist_;
   node["klt.err"] >> feat_tracker_setting_.klt_err_;
+
+  node["feature.Type"] >> feat_tracker_setting_.feature_name_;
+  feat_tracker_setting_.feature_type_ =
+      FeatureBase::StringToFeatureType( feat_tracker_setting_.feature_name_ );
 }
 
 void Setting::readExtrinsicParams( const cv::FileNode& node ) {

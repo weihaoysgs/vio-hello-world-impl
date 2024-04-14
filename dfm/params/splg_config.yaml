@@ -7,7 +7,7 @@ SP.int8: 0           # Allow runnning the network in Int8 mode.
 SP.fp16: 1           # Allow running the network in FP16 mode.
 SP.onnxFilePath: "/home/weihao/workspace/lightglue_ws/deep-feature-matcher/weight/superpoint_v1.onnx"
 SP.engineFilePath: "/home/weihao/workspace/lightglue_ws/deep-feature-matcher/weight/superpoint_v1.engine"
-SP.keypointThreshold: 0.0005
+SP.keypointThreshold: 0.0001
 SP.maxKeypoints: 2048
 SP.border: 4
 SP.inputTensorNames:

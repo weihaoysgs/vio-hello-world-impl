@@ -3,6 +3,7 @@
 
 #include "feat/harris/harris.h"
 #include "vio_hw/internal/feat/feature.hpp"
+#include "Eigen/Core"
 
 namespace viohw {
 
@@ -22,8 +23,8 @@ class GoodFeature2Tracker : public FeatureBase
 public:
   explicit GoodFeature2Tracker( const GoodFeature2TrackerConfig &options );
 
-  bool detect( const cv::Mat &image, std::vector<cv::KeyPoint> &kps, cv::Mat mask = cv::Mat(),
-               cv::Mat desc = cv::Mat() ) override;
+  bool detect( const cv::Mat &image, std::vector<cv::KeyPoint> &kps, cv::Mat &mask,
+               cv::Mat &desc, Eigen::Matrix<double, 259, Eigen::Dynamic> &feat );
 
 private:
   GoodFeature2TrackerConfig feature_extract_config_;

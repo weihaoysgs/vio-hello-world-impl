@@ -41,7 +41,7 @@ inline bool readSpLgParameter( std::string config_file, SuperPointConfig &spConf
                                LightGlueConfig &lgConfig ) {
   const cv::FileStorage node( config_file.c_str(), cv::FileStorage::READ );
   if ( !node.isOpened() ) {
-    std::cerr << "Config file open failed\n";
+    std::cerr << "DFM Config file open failed\n";
     exit( -1 );
   }
 

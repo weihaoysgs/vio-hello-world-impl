@@ -40,6 +40,7 @@ set(SOURCE_FILES
         src/loop_closer.cpp
         src/optimization.cpp
         src/estimator.cpp
+        src/feat/superpoint_impl.cpp
 )
 
 add_library(vio_hw ${SOURCE_FILES})
@@ -54,6 +55,13 @@ target_link_libraries(vio_hw
         ${OpenCV_LIBS}
         ${catkin_LIBRARIES}
 )
+
+if (ENABLE_DEEP_FEATURE_MATCHER)
+    target_link_libraries(vio_hw
+        deep_feature_matcher
+    )
+endif ()
+
 
 add_executable(hello_world_vio node/hello_world_vio.cpp ${BACKWARD_ENABLE})
 add_backward(hello_world_vio)

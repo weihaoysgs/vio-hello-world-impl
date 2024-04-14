@@ -2,6 +2,7 @@
 
 #include "vio_hw/internal/feat/good_feature_impl.hpp"
 #include "vio_hw/internal/feat/orb_slam_impl.hpp"
+#include "vio_hw/internal/feat/superpoint_impl.hpp"
 
 namespace viohw {
 
@@ -142,7 +143,9 @@ void WorldManager::run() {
 
 bool WorldManager::GenerateFeatureExtractorBase() {
   // TODO select feature extract type
-  FeatureBase::FeatureExtractorOptions feature_options{ .feature_type_ = FeatureBase::HARRIS };
+  FeatureBase::FeatureExtractorOptions feature_options{
+      .feature_type_ = params_->feat_tracker_setting_.feature_type_ };
+
   feature_options.orbslamExtractorConfig.reset( new ORBSLAMExtractorConfig );
   feature_options.orbslamExtractorConfig->iniThFAST_ = 20;
   feature_options.orbslamExtractorConfig->minThFAST_ = 7;
@@ -157,6 +160,11 @@ bool WorldManager::GenerateFeatureExtractorBase() {
   feature_options.goodFeature2TrackerConfig->kps_quality_level_ =
       params_->feat_tracker_setting_.feature_quality_level_;
   feature_options.goodFeature2TrackerConfig->max_kps_num_ =
+      params_->feat_tracker_setting_.max_feature_num_;
+
+  feature_options.superPointExtractorConfig.reset( new SuperPointExtractorConfig );
+  feature_options.superPointExtractorConfig->config_file_path_ = "../dfm/params/splg_config.yaml";
+  feature_options.superPointExtractorConfig->max_kps_ =
       params_->feat_tracker_setting_.max_feature_num_;
 
   feature_extractor_ = FeatureBase::Create( feature_options );

@@ -23,8 +23,8 @@ class ORBSLAMExtractor : public FeatureBase
 {
 public:
   explicit ORBSLAMExtractor(const ORBSLAMExtractorConfig& option);
-  virtual bool detect( const cv::Mat &image, std::vector<cv::KeyPoint> &kps,
-                       cv::Mat mask = cv::Mat(), cv::Mat desc = cv::Mat() );
+  virtual bool detect( const cv::Mat &image, std::vector<cv::KeyPoint> &kps, cv::Mat &mask,
+                       cv::Mat &desc, Eigen::Matrix<double, 259, Eigen::Dynamic> &feat );
   std::shared_ptr<feat::ORBextractor> orb_extractor_ = nullptr;
 };
 

@@ -61,6 +61,8 @@ public:
   static void saveResultToDisk( const std::string &save_path,
                                 Eigen::Matrix<double, 259, Eigen::Dynamic> &features );
 
+  void setMaxExtractorKpsNumber( int num ) { spConfig.maxKeypoints = num; }
+
 private:
   SuperPointConfig spConfig;
   nvinfer1::Dims mInputDims;   //!< The dimensions of the input to the network.

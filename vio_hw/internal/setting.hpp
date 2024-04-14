@@ -14,6 +14,7 @@
 
 #include "common/print_tools.hpp"
 #include "sophus/se3.hpp"
+#include "vio_hw/internal/feat/feature.hpp"
 
 namespace viohw {
 class Setting
@@ -51,6 +52,8 @@ public:
     float klt_max_fb_dist_;
     float klt_err_;
     bool use_brief_;
+    FeatureBase::FeatureType feature_type_;
+    std::string feature_name_;
   };
 
   // extrinsic parameters
@@ -213,7 +216,9 @@ inline std::ostream& operator<<(
     std::ostream& os, const Setting::FeatureAndTrackerSetting& setting) {
   os << std::right << std::setw(24) << GREEN << setting.name_ << TAIL << std::endl;
   os << std::boolalpha;
-  os << std::right << std::setw(20) << "Max.Feature.Num: " << std::left << std::setw(10) <<  setting.max_feature_num_ << std::endl
+  os << std::right << std::setw(20) << "Feature.Type: "    << std::left << std::setw(10) <<  setting.feature_type_ << std::endl
+     << std::right << std::setw(20) << "Feature.name: "    << std::left << std::setw(10) <<  setting.feature_name_ << std::endl
+     << std::right << std::setw(20) << "Max.Feature.Num: " << std::left << std::setw(10) <<  setting.max_feature_num_ << std::endl
      << std::right << std::setw(20) << "Max.Feature.Dis: " << std::left << std::setw(10) <<  setting.max_feature_dis_ << std::endl
      << std::right << std::setw(20) << "Quality.Level: "   << std::left << std::setw(10) <<  setting.feature_quality_level_ << std::endl
      << std::right << std::setw(20) << "Use.CLAHE: "       << std::left << std::setw(10) <<  setting.use_clahe_ << std::endl

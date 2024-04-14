@@ -93,8 +93,10 @@ void MapManager::ExtractKeypoints( const cv::Mat& im, const cv::Mat& im_raw ) {
   int num_need_detect = param_->feat_tracker_setting_.max_feature_num_ - kps.size();
   if ( num_need_detect > 0 ) {
     std::vector<cv::KeyPoint> new_kps;
+    Eigen::Matrix<double, 259, Eigen::Dynamic> feat;
+    cv::Mat desc;
     feature_extractor_->setTobeExtractKpsNumber( num_need_detect );
-    feature_extractor_->detect( im, new_kps, mask );
+    feature_extractor_->detect( im, new_kps, mask, desc, feat );
     if ( !new_kps.empty() ) {
       std::vector<cv::Point2f> desc_pts;
       cv::KeyPoint::convert( new_kps, desc_pts );
@@ -276,26 +278,24 @@ void MapManager::UpdateMapPoint( const int lmid, const Eigen::Vector3d& wpt,
   }
 }
 // Remove a MP from the map
-void MapManager::RemoveMapPoint(const int lmid)
-{
-  std::lock_guard<std::mutex> lock(lm_mutex_);
-  std::lock_guard<std::mutex> lockkf(kf_mutex_);
+void MapManager::RemoveMapPoint( const int lmid ) {
+  std::lock_guard<std::mutex> lock( lm_mutex_ );
+  std::lock_guard<std::mutex> lockkf( kf_mutex_ );
 
   // Get related MP
-  auto plmit = map_lms_.find(lmid);
+  auto plmit = map_lms_.find( lmid );
   // Skip if MP does not exist
-  if( plmit != map_lms_.end() ) {
+  if ( plmit != map_lms_.end() ) {
     // Remove all observations from KFs
-    for( const auto &kfid : plmit->second->GetKfObsSet() )
-    {
-      auto pkfit = map_kfs_.find(kfid);
-      if( pkfit == map_kfs_.end() ) {
+    for ( const auto& kfid : plmit->second->GetKfObsSet() ) {
+      auto pkfit = map_kfs_.find( kfid );
+      if ( pkfit == map_kfs_.end() ) {
         continue;
       }
-      pkfit->second->RemoveKeypointById(lmid);
+      pkfit->second->RemoveKeypointById( lmid );
 
-      for( const auto &cokfid : plmit->second->GetKfObsSet() ) {
-        if( cokfid != kfid ) {
+      for ( const auto& cokfid : plmit->second->GetKfObsSet() ) {
+        if ( cokfid != kfid ) {
           // TODO
           // pkfit->second->decreaseCovisibleKf(cokfid);
         }
@@ -303,11 +303,11 @@ void MapManager::RemoveMapPoint(const int lmid)
     }
 
     // If obs in cur Frame, remove cur obs
-    if( plmit->second->isobs_ ) {
-      current_frame_->RemoveKeypointById(lmid);
+    if ( plmit->second->isobs_ ) {
+      current_frame_->RemoveKeypointById( lmid );
     }
 
-    if( plmit->second->is3d_ ) {
+    if ( plmit->second->is3d_ ) {
       num_lms_--;
     }
 
@@ -318,7 +318,6 @@ void MapManager::RemoveMapPoint(const int lmid)
   // Visualization related part for pointcloud obs
   // TODO
 }
-
 
 // Remove a KF obs from a MP
 void MapManager::RemoveMapPointObs( const int lmid, const int kfid ) {

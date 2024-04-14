@@ -31,6 +31,20 @@ set(THIRD_PARTY_LIBS
 
 enable_testing()
 
+option(ENABLE_DEEP_FEATURE_MATCHER "Enable SuperPoint And LightGlue" OFF)
+if (ENABLE_DEEP_FEATURE_MATCHER)
+    # TensorRT include and lib file have been install to the cuda dir
+    # The tensorrt version in this project is [TensorRT-8.6.1]
+    find_package(CUDA 11.8 REQUIRED)
+    include_directories(${CUDA_INCLUDE_DIRS})
+    include_directories(${PROJECT_SOURCE_DIR}/dfm/3rdparty/tensorrt_utils)
+    add_compile_definitions(ENABLE_DFM=1)
+    add_subdirectory(dfm)
+    message(STATUS "Enable DFM Support")
+else ()
+    message(STATUS "Not Enable DFM Support")
+endif ()
+
 add_subdirectory(tiny_ceres_solver)
 add_subdirectory(feat)
 add_subdirectory(backend)

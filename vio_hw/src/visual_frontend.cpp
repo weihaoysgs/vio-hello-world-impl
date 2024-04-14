@@ -197,6 +197,11 @@ void VisualFrontEnd::ShowTrackingResult() {
   std::vector<cv::Point2f> vkf_px, vcur_px;
   for ( const auto& it : current_frame_->mapkps_ ) {
     auto& kp = it.second;
+    if ( kp.is3d_ ) {
+      cv::circle( draw_tracker_image_, kp.px_, 3, cv::Scalar( 255, 0, 0 ), -1 );
+    } else {
+      cv::circle( draw_tracker_image_, kp.px_, 3, cv::Scalar( 0, 255, 0 ), -1 );
+    }
     // Get the prev. KF related kp if it exists
     auto kf_kp = pkf->GetKeypointById( kp.lmid_ );
     if ( kf_kp.lmid_ != kp.lmid_ ) {
@@ -204,14 +209,8 @@ void VisualFrontEnd::ShowTrackingResult() {
     }
     vkf_px.push_back( kf_kp.px_ );
     vcur_px.push_back( kp.px_ );
-    cv::arrowedLine( draw_tracker_image_, kp.px_, kf_kp.px_, cv::Scalar( 0, 255, 0 ), 2, 8, 0,
-                     0.3 );
-    // cv::circle( draw_tracker_image_, kf_kp.px_, 2, cv::Scalar( 0, 255, 0 ), -1 );
-    if ( kp.is3d_ ) {
-      cv::circle( draw_tracker_image_, kp.px_, 3, cv::Scalar( 0, 0, 255 ), -1 );
-    } else {
-      cv::circle( draw_tracker_image_, kp.px_, 3, cv::Scalar( 255, 0, 0 ), -1 );
-    }
+    // cv::arrowedLine( draw_tracker_image_, kp.px_, kf_kp.px_, cv::Scalar( 0, 255, 0 ), 2, 8, 0,
+    //                  0.3 );
   }
 }
 

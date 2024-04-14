@@ -4,6 +4,7 @@
 #include "vio_hw/internal/feat/good_feature_impl.hpp"
 #include "vio_hw/internal/feat/orb_cv_impl.hpp"
 #include "vio_hw/internal/feat/orb_slam_impl.hpp"
+#include "vio_hw/internal/feat/superpoint_impl.hpp"
 
 namespace viohw {
 
@@ -26,9 +27,12 @@ std::shared_ptr<FeatureBase> FeatureBase::Create(const FeatureExtractorOptions& 
       return std::make_shared<ORBSLAMExtractor>(*options.orbslamExtractorConfig);
     }
     case FeatureType::SUPER_POINT: {
-      // TODO
-      LOG(FATAL) << "TODO Feature Extractor with [SUPER_POINT].";
-      break;
+      #ifdef ENABLE_DFM
+        LOG(INFO) << "Create Feature Extractor with DFM[SuperPoint]";
+        return std::make_shared<SuperPointImpl>(*options.superPointExtractorConfig);
+      #else
+        LOG(FATAL) << "DISABLE_DFM Feature Extractor with [SUPER_POINT].";
+      #endif
     }
     default: {
       LOG(FATAL) << "Please select correct feature detector method.";

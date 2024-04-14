@@ -1,9 +1,5 @@
-# TensorRT include and lib file have been install to the cuda dir
-# The tensorrt version in this project is [TensorRT-8.6.1]
-find_package(CUDA 11.8 REQUIRED)
-include_directories(${CUDA_INCLUDE_DIRS})
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/tensorrt_utils)
+
 add_library(tensorrt_utils
         ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/tensorrt_utils/tensorrt_utils/logger.cpp
 )

@@ -7,7 +7,8 @@ GoodFeature2Tracker::GoodFeature2Tracker( const GoodFeature2TrackerConfig &optio
 }
 
 bool GoodFeature2Tracker::detect( const cv::Mat &image, std::vector<cv::KeyPoint> &kps,
-                                  cv::Mat mask, cv::Mat desc ) {
+                                  cv::Mat &mask, cv::Mat &desc,
+                                  Eigen::Matrix<double, 259, Eigen::Dynamic> &feat ) {
   std::vector<cv::Point2f> points;
   feat::goodFeaturesToTrack( image, points, tobe_extractor_kps_num_,
                              feature_extract_config_.kps_quality_level_,
