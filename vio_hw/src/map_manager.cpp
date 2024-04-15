@@ -85,9 +85,9 @@ void MapManager::ExtractKeypoints( const cv::Mat& im, const cv::Mat& im_raw ) {
 
   cv::Mat mask = cv::Mat( im.rows, im.cols, CV_8UC1, cv::Scalar( 255 ) );
   for ( auto& pt : kps ) {
-    // cv::circle( mask, pt.px_, param_->feat_tracker_setting_.max_feature_dis_, 0, -1 );
-    cv::rectangle( mask, pt.px_ - cv::Point2f( 10, 10 ), pt.px_ + cv::Point2f( 10, 10 ), 0,
-                   cv::FILLED );
+    cv::circle( mask, pt.px_, param_->feat_tracker_setting_.max_feature_dis_, 0, -1 );
+    // cv::rectangle( mask, pt.px_ - cv::Point2f( 10, 10 ), pt.px_ + cv::Point2f( 10, 10 ), 0,
+    //                cv::FILLED );
   }
 
   int num_need_detect = param_->feat_tracker_setting_.max_feature_num_ - kps.size();

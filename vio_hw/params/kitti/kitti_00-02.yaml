@@ -14,17 +14,20 @@ Camera:
   right.K: [718.856, 718.856, 607.1928, 185.2157]
   left.distortion.coefficient: [0.0, 0.0, 0.0, 0.0]
   right.distortion.coefficient: [0.0, 0.0, 0.0, 0.0]
+  FPS: 20
 
 ConfigFilePath:
   vocabulary.path: "/home/weihao/workspace/vio-hello-world-impl/thirdparty/Vocabulary/ORBvoc.txt"
   kf.traj.save.path: "/home/weihao/workspace/vio-hello-world-impl/vio_hw/output/kitti_out/kitti_00_kf.txt"
+  dfm.config.file.path: "/home/weihao/workspace/vio-hello-world-impl/dfm/params/splg_config.yaml"
   bag.file.path: ""
 
+
 FeatureAndTracker:
-  feature.Type: 0
-  tracker.Type: 0
+  feature.Type: "HARRIS"  # ["ORB_CV","HARRIS","ORB","SUPER_POINT"]
+  tracker.Type: "OPTICAL_FLOW" # ["OPTICAL_FLOW", "LIGHT_GLUE"]
   # common params
-  max.kps.num: 300
+  max.kps.num: 500
   max.kps.distance: 20
   use.clahe: 0
   clahe.val: 3
@@ -44,10 +47,12 @@ FeatureAndTracker:
 
 IMU:
   topic: "/imu0"
-  acc_n: 0.1
-  acc_w: 0.2
-  gyr_n: 0.3
-  gyr_w: 0.4
+  acc_n: 2.0000e-1
+  acc_w: 3.0000e-03
+  gyr_n: 1.7e-4
+  gyr_w: 1.9393e-05
+  g_norm: 9.81
+  FPS: 200
 
 SLAM:
   stereo.mode: 1
@@ -58,11 +63,11 @@ SLAM:
 
 LoopCloser:
   use.loop: 1
-  loop.threshold: 0.6
+  loop.threshold: 0.1
 
 Backend:
-  use.backend: 0
-  opt.window.size: 15
+  use.backend: 1
+  opt.window.size: 10
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )
 Extrinsic:

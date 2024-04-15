@@ -92,6 +92,7 @@ bool Optimization::LocalPoseGraph( Frame &new_frame, int kf_loop_id, const Sophu
   std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> vwpt;
   std::vector<Sophus::SE3d, Eigen::aligned_allocator<Sophus::SE3d>> vTwc;
 
+  std::lock_guard<std::mutex> lock(map_manager_->map_mutex_);
   // get updated KFs / MPs
   for ( const auto &kf_id_pkf : map_kfs ) {
     int kf_id = kf_id_pkf.first;
@@ -124,8 +125,6 @@ bool Optimization::LocalPoseGraph( Frame &new_frame, int kf_loop_id, const Sophu
       }
     }
   }
-
-  std::lock_guard<std::mutex> lck( map_manager_->map_mutex_ );
 
   Sophus::SE3d init_Tcw = new_frame.GetTcw();
 

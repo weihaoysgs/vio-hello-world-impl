@@ -41,8 +41,10 @@ void LoopCloser::run() {
 
       std::pair<int, float> candidate_kf_id_score = DetectLoop( cv_descs );
 
-      if ( candidate_kf_id_score.second > 0.10 ) {
-        LOG( INFO ) << "Loop Score: " << candidate_kf_id_score.second;
+      if ( candidate_kf_id_score.second > param_->loop_setting_.loop_threshold_ ) {
+        LOG( INFO ) << tceres::internal::StringPrintf( "Loop Score: %.3f, Loop Threshold [%.3f]",
+                                                       candidate_kf_id_score.second,
+                                                       param_->loop_setting_.loop_threshold_ );
       } else {
         continue;
       }
@@ -108,6 +110,15 @@ void LoopCloser::ProcessLoopCandidate( int kf_loop_id ) {
   if ( num_good_kps >= 30 ) {
     double lc_pose_err = ( new_kf_->GetTcw() * Twc ).log().norm();
 
+    double min_lc_pose_err = 1.0;
+    if ( std::abs( lc_pose_err ) < min_lc_pose_err ) {
+      LOG( WARNING ) << tceres::internal::StringPrintf(
+          "LoopCloser Error %.5f too small, less than [%.3f] no need to carry out pose graph "
+          "optimization",
+          lc_pose_err, min_lc_pose_err );
+      return;
+    }
+
     LOG( INFO ) << "[PoseGraph] >>> Closing a loop between : "
                 << " KF #" << new_kf_->kfid_ << " (img #" << new_kf_->id_ << ") and KF #"
                 << lc_kf->kfid_ << " (img #" << lc_kf->id_ << " ), lc pose err: " << lc_pose_err;
@@ -115,6 +126,7 @@ void LoopCloser::ProcessLoopCandidate( int kf_loop_id ) {
     LOG( INFO ) << "loop kf pos: " << lc_kf->GetTwc().translation().transpose() << "; "
                 << "new  kf pos: " << new_kf_->GetTwc().translation().transpose() << "; "
                 << "correct pos: " << Twc.translation().transpose();
+    std::unique_lock<std::mutex> lock2( map_manager_->optim_mutex_ );
     optimization_->LocalPoseGraph( *new_kf_, lc_kf->kfid_, Twc );
   }
 }
