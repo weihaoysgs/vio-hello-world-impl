@@ -35,10 +35,12 @@ public:
 
     sub_left_img_ = nh_.subscribe( slam_world_->getParams()->cam_setting_.topic_left_right_[0], 1,
                                    &SensorManager::subLeftImage, this );
-    sub_right_img_ = nh_.subscribe( slam_world_->getParams()->cam_setting_.topic_left_right_[1], 1,
-                                    &SensorManager::subRightImage, this );
-    sub_imu_ = nh_.subscribe( slam_world_->getParams()->imu_setting_.imu_topic_, 10,
-                              &SensorManager::subIMU, this );
+    if ( slam_world_->getParams()->slam_setting_.stereo_mode_ )
+      sub_right_img_ = nh_.subscribe( slam_world_->getParams()->cam_setting_.topic_left_right_[1],
+                                      1, &SensorManager::subRightImage, this );
+    if ( slam_world_->getParams()->slam_setting_.use_imu_ )
+      sub_imu_ = nh_.subscribe( slam_world_->getParams()->imu_setting_.imu_topic_, 10,
+                                &SensorManager::subIMU, this );
   };
 
   ~SensorManager() = default;
@@ -102,6 +104,19 @@ public:
             if ( !image0.empty() && !image1.empty() ) {
               slam_world_->addNewStereoImages( time0, image0, image1 );
             }
+          }
+        }
+      } else {
+        cv::Mat image0;
+        std::lock_guard<std::mutex> lock( img_mutex_ );
+
+        if ( !img0_buf_.empty() ) {
+          double time = img0_buf_.front()->header.stamp.toSec();
+          image0 = getGrayImageFromMsg( img0_buf_.front() );
+          img0_buf_.pop();
+
+          if ( !image0.empty() ) {
+            slam_world_->addNewMonoImage( time, image0 );
           }
         }
       }

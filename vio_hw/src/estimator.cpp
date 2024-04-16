@@ -2,8 +2,12 @@
 
 namespace viohw {
 
-Estimator::Estimator( SettingPtr param, MapManagerPtr map_manager, OptimizationPtr optimization )
-    : param_( param ), map_manager_( map_manager ), optimization_( optimization ) {}
+Estimator::Estimator( SettingPtr param, MapManagerPtr map_manager, OptimizationPtr optimization,
+                      SystemStatePtr state )
+    : param_( param ),
+      map_manager_( map_manager ),
+      optimization_( optimization ),
+      system_state_( state ) {}
 
 void Estimator::run() {
   bool open_backend = param_->backend_optimization_setting_.open_backend_opt_;
@@ -23,7 +27,11 @@ void Estimator::run() {
 }
 
 void Estimator::ApplyLocalBA() {
-  int mincstkfs = 2;
+  int mincstkfs = 1;
+
+  if ( !param_->slam_setting_.stereo_mode_ ) {
+    mincstkfs = 2;
+  }
 
   if ( newkf_->kfid_ < mincstkfs ) {
     return;
@@ -34,15 +42,13 @@ void Estimator::ApplyLocalBA() {
 
   std::lock_guard<std::mutex> lock2( map_manager_->optim_mutex_ );
 
-  // TODO
   // We signal that Estimator is performing BA
-  // pslamstate_->blocalba_is_on_ = true;
+  system_state_->is_local_ba_.store( true );
 
-  bool use_robust_cost = true;
-  optimization_->LocalBA( *newkf_, use_robust_cost );
+  optimization_->LocalBA( *newkf_, true );
 
   // We signal that Estimator is stopping BA
-  // pslamstate_->blocalba_is_on_ = false;
+  system_state_->is_local_ba_.store( false );
 }
 
 bool Estimator::GetNewKf() {

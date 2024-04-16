@@ -53,6 +53,7 @@ public:
     float klt_max_fb_dist_;
     float klt_err_;
     bool use_brief_;
+    double init_parallax_;
     FeatureBase::FeatureType feature_type_;
     std::string feature_name_;
     TrackerBase::TrackerType tracker_type_;
@@ -223,6 +224,7 @@ inline std::ostream& operator<<(
   os << std::boolalpha;
   os << std::right << std::setw(20) << "Feature.Type: "    << std::left << std::setw(10) <<  setting.feature_type_ << std::endl
      << std::right << std::setw(20) << "Feature.name: "    << std::left << std::setw(10) <<  setting.feature_name_ << std::endl
+     << std::right << std::setw(20) << "Init.Parallax: "    << std::left << std::setw(10) <<  setting.init_parallax_ << std::endl
      << std::right << std::setw(20) << "Tracker.Type: "    << std::left << std::setw(10) <<  setting.tracker_type_ << std::endl
      << std::right << std::setw(20) << "Tracker.name: "    << std::left << std::setw(10) <<  setting.tracker_name_ << std::endl
      << std::right << std::setw(20) << "Max.Feature.Num: " << std::left << std::setw(10) <<  setting.max_feature_num_ << std::endl

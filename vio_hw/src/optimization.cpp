@@ -92,7 +92,7 @@ bool Optimization::LocalPoseGraph( Frame &new_frame, int kf_loop_id, const Sophu
   std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> vwpt;
   std::vector<Sophus::SE3d, Eigen::aligned_allocator<Sophus::SE3d>> vTwc;
 
-  std::lock_guard<std::mutex> lock(map_manager_->map_mutex_);
+  std::lock_guard<std::mutex> lock( map_manager_->map_mutex_ );
   // get updated KFs / MPs
   for ( const auto &kf_id_pkf : map_kfs ) {
     int kf_id = kf_id_pkf.first;
@@ -284,12 +284,6 @@ void Optimization::LocalBA( Frame &newframe, const bool buse_robust_cost ) {
     problem.SetParameterBlockConstant( rlextrinpose.values() );
   }
 
-  // Get the new KF covisible KFs
-  // std::map<int,int> map_covkfs = newframe.getCovisibleKfMap();
-
-  // Add the new KF to the map with max score
-  // map_covkfs.emplace(newframe.kfid_, newframe.nb3dkps_);
-
   // Keep track of MPs no suited for BA for speed-up
   std::unordered_set<int> set_badlmids;
 
@@ -299,7 +293,7 @@ void Optimization::LocalBA( Frame &newframe, const bool buse_robust_cost ) {
 
   for ( int i = 0; i < inertial_frames.size(); i++ ) {
     std::shared_ptr<Frame> pkf = inertial_frames[i];
-    // Sophus::SE3d Tcb = pslamstate_->T_imu_camera_.inverse();
+
     map_id_posespar_.emplace( pkf->kfid_, PoseParametersBlock( pkf->kfid_, pkf->GetTwc() ) );
     tceres::LocalParameterization *local_parameterization = new SE3LeftParameterization();
     problem.AddParameterBlock( map_id_posespar_.at( pkf->kfid_ ).values(), 7,
@@ -313,9 +307,15 @@ void Optimization::LocalBA( Frame &newframe, const bool buse_robust_cost ) {
     }
     map_local_pkfs.emplace( pkf->kfid_, pkf );
   }
+
+  // set const frame
   {
     std::shared_ptr<Frame> before_kf = inertial_frames.back();
     problem.SetParameterBlockConstant( map_id_posespar_.at( before_kf->kfid_ ).values() );
+    if ( nmincstkfs > 1 ) {
+      std::shared_ptr<Frame> kf = inertial_frames.at( inertial_frames.size() - 1 );
+      problem.SetParameterBlockConstant( map_id_posespar_.at( kf->kfid_ ).values() );
+    }
   }
 
   // Go through the MPs to optimize

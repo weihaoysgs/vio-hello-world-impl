@@ -29,7 +29,8 @@ FeatureAndTracker:
   # common params
   max.kps.num: 300
   max.kps.distance: 20
-  use.clahe: 0
+  init.parallax: 20.
+  use.clahe: 1
   clahe.val: 3
   track.keyframetoframe: 0
   use.brief: 1
@@ -63,11 +64,11 @@ SLAM:
 
 LoopCloser:
   use.loop: 0
-  loop.threshold: 0.1
+  loop.threshold: 0.07
 
 Backend:
   use.backend: 1
-  opt.window.size: 25
+  opt.window.size: 15
 
 
 # Camera Extrinsic parameters T_b_ci ( v_b = T_b_ci * v_ci )

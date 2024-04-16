@@ -14,6 +14,9 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   // create feature extractor
   GenerateFeatureExtractorBase();
 
+  // create feature tracker
+  GenerateFeatureTrackerMatcherBase();
+
   // create IMU database
   imu_database_.reset( new backend::IMU::IMUDataBase( params_->imu_setting_.imu_FPS_,
                                                       params_->cam_setting_.camera_FPS_ ) );
@@ -22,8 +25,7 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   VisualizationBase::VisualizationOption viz_option{ VisualizationBase::RVIZ };
   viz_ = VisualizationBase::Create( viz_option );
 
-  // create feature tracker
-  GenerateFeatureTrackerMatcherBase();
+  system_state_.reset( new SystemState );
 
   // TODO: for [ncellsize] param
   // create current frame
@@ -34,11 +36,12 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   }
 
   // create map manager
-  map_manager_.reset( new MapManager( params_, current_frame_, feature_extractor_, tracker_for_mapping_ ) );
+  map_manager_.reset(
+      new MapManager( params_, current_frame_, feature_extractor_, tracker_for_mapping_ ) );
 
   // create visual frontend
   visual_frontend_.reset(
-      new VisualFrontEnd( params_, current_frame_, map_manager_, tracker_, viz_ ) );
+      new VisualFrontEnd( params_, current_frame_, map_manager_, tracker_, viz_, system_state_ ) );
 
   // create optimization
   optimization_.reset( new Optimization( params_, map_manager_ ) );
@@ -47,7 +50,7 @@ WorldManager::WorldManager( std::shared_ptr<Setting>& setting ) : params_( setti
   loop_closer_.reset( new LoopCloser( params_, map_manager_, optimization_ ) );
 
   // create estimator thread
-  estimator_.reset( new Estimator( params_, map_manager_, optimization_ ) );
+  estimator_.reset( new Estimator( params_, map_manager_, optimization_, system_state_ ) );
 
   // create mapping thread, and mapping will create sub thread for Estimator and LoopClosing
   mapping_.reset( new Mapping( params_, map_manager_, current_frame_, loop_closer_, estimator_ ) );
@@ -196,6 +199,14 @@ bool WorldManager::GenerateFeatureExtractorBase() {
   feature_extractor_ = FeatureBase::Create( feature_options );
 
   return true;
+}
+
+void WorldManager::addNewMonoImage( const double time, cv::Mat& im0 ) {
+  std::lock_guard<std::mutex> lock( img_mutex_ );
+  img_left_queen_.push( im0 );
+  img_time_queen_.push( time );
+
+  is_new_img_available_ = true;
 }
 
 void WorldManager::addNewStereoImages( const double time, cv::Mat& im0, cv::Mat& im1 ) {

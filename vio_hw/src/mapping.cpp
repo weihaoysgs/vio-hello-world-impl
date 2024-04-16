@@ -85,10 +85,6 @@ void Mapping::TriangulateTemporal( Frame& frame ) {
   }
 
   std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > vleftbvs, vrightbvs;
-  // Init a pkf object that will point to the prev KF to use for triangulation
-  std::shared_ptr<Frame> pkf;
-  pkf.reset( new Frame() );
-  pkf->kfid_ = -1;
 
   // Relative motions between new KF and prev. KFs
   int relkfid = -1;
@@ -123,7 +119,7 @@ void Mapping::TriangulateTemporal( Frame& frame ) {
     }
 
     // Get the 1st KF observation of the related MP
-    pkf = map_manager_->GetKeyframe( kfid );
+    auto pkf = map_manager_->GetKeyframe( kfid );
 
     if ( pkf == nullptr ) {
       continue;
@@ -142,6 +138,14 @@ void Mapping::TriangulateTemporal( Frame& frame ) {
     if ( params_->slam_setting_.stereo_mode_ && Tcicj.translation().norm() < 0.01 ) {
       continue;
     }
+
+    // TODO if using imu in mono mode, the [Tcicj.translation().norm() < 0.01] also can be use
+    // If no motion between both KF, skip
+    // if ( !params_->slam_setting_.stereo_mode_ && params_->slam_setting_.use_imu_ &&
+    //      Tcicj.translation().norm() < 0.01 ) {
+    //   continue;
+    // }
+
     // Get obs kp
     Keypoint kfkp = pkf->GetKeypointById( vkps.at( i ).lmid_ );
     if ( kfkp.lmid_ != vkps.at( i ).lmid_ ) {

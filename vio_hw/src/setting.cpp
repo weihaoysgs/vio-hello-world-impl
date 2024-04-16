@@ -68,6 +68,7 @@ void Setting::readFeatureTrackerParams( const cv::FileNode& node ) {
   node["klt.win.size"] >> feat_tracker_setting_.klt_win_size_;
   node["klt.pyr.level"] >> feat_tracker_setting_.klt_pyr_level_;
   node["use.brief"] >> feat_tracker_setting_.use_brief_;
+  node["init.parallax"] >> feat_tracker_setting_.init_parallax_;
 
   node["klt.max.iter"] >> feat_tracker_setting_.klt_max_iter_;
   node["klt.max.px.precision"] >> feat_tracker_setting_.klt_max_px_precision_;

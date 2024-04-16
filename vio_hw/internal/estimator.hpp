@@ -9,6 +9,7 @@
 #include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/optimization.hpp"
 #include "vio_hw/internal/setting.hpp"
+#include "vio_hw/internal/system_status.hpp"
 
 namespace viohw {
 class Estimator
@@ -18,7 +19,7 @@ public:
   // constructor
   Estimator() = default;
 
-  Estimator( SettingPtr param, MapManagerPtr map_manager, OptimizationPtr optimization );
+  Estimator( SettingPtr param, MapManagerPtr map_manager, OptimizationPtr optimization, SystemStatePtr state );
 
   // backend estimator thread
   void run();
@@ -33,6 +34,7 @@ private:
   SettingPtr param_;
   MapManagerPtr map_manager_;
   OptimizationPtr optimization_;
+  SystemStatePtr system_state_;
 
   bool is_newkf_available_ = false;
   bool is_loose_ba_on_ = false;

@@ -4,12 +4,13 @@ namespace viohw {
 
 VisualFrontEnd::VisualFrontEnd( viohw::SettingPtr state, viohw::FramePtr frame,
                                 viohw::MapManagerPtr map, viohw::TrackerBasePtr tracker,
-                                VisualizationBasePtr viz )
+                                VisualizationBasePtr viz, SystemStatePtr system )
     : param_( state ),
       current_frame_( frame ),
       map_manager_( map ),
       tracker_( tracker ),
-      viz_( viz ) {
+      viz_( viz ),
+      system_state_( system ) {
   use_clahe_ = param_->feat_tracker_setting_.use_clahe_;
 
   if ( use_clahe_ ) {
@@ -58,6 +59,22 @@ bool VisualFrontEnd::TrackerMono( cv::Mat& image, double time ) {
   // show tracking result to ui
   ShowTrackingResult();
 
+  if ( !param_->slam_setting_.stereo_mode_ && system_state_->getInitStatus() == NotInit ) {
+    if ( current_frame_->nb2dkps_ < 50 ) {
+      // TODO, reset system && when first stereo matcher too less, we also need reset system
+      system_state_->is_request_reset_.store( true );
+      LOG( WARNING ) << "[Visual-Front-End-Init]: Kps too Less, reset System";
+      return false;
+    } else if ( VisualMonoInit() ) {
+      LOG( INFO ) << "[Visual-Front-End]: Mono Visual SLAM Ready For Initialization!";
+      system_state_->setInitStatus( InitSuccess );
+      return true;
+    } else {
+      LOG( WARNING ) << "[Visual-Front-End-Init]: Not Ready To Init Yet!";
+      return false;
+    }
+  }
+
   // compute current visual frontend pose
   ComputePose();
 
@@ -66,6 +83,71 @@ bool VisualFrontEnd::TrackerMono( cv::Mat& image, double time ) {
 
   // check is new keyframe
   return CheckIsNewKeyframe();
+}
+
+bool VisualFrontEnd::VisualMonoInit() {
+  double avg_rot_parallax = ComputeParallax( current_frame_->kfid_, false, true, false );
+  if ( avg_rot_parallax < param_->feat_tracker_setting_.init_parallax_ ) {
+    LOG( WARNING ) << "Parallax Too Small: " << avg_rot_parallax;
+    return false;
+  } else {
+    // Get prev. KF
+    auto pkf = map_manager_->GetKeyframe( current_frame_->kfid_ );
+    if ( pkf == nullptr ) {
+      return false;
+    }
+
+    // Setup Essential Matrix computation for OpenGV-based filtering
+    std::vector<int> vkpsids, voutliersidx;
+    std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > vkfbvs, vcurbvs;
+    // Get bvs and compute the rotation compensated parallax for all cur kps
+    // for( const auto &kp : pcurframe_->getKeypoints() ) {
+    for ( const auto& it : current_frame_->mapkps_ ) {
+      auto& kp = it.second;
+      // Get the prev. KF related kp if it exists
+      auto kfkp = pkf->GetKeypointById( kp.lmid_ );
+      if ( kfkp.lmid_ != kp.lmid_ ) {
+        continue;
+      }
+      // Store the bvs and their ids
+      vkfbvs.push_back( kfkp.bv_ );
+      vcurbvs.push_back( kp.bv_ );
+      vkpsids.push_back( kp.lmid_ );
+    }
+    if ( vkpsids.size() < 8 ) {
+      LOG( WARNING ) << "Not enough kps to compute 5-pt Essential Matrix";
+      return false;
+    }
+
+    Eigen::Matrix3d Rkfc = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d tkfc = Eigen::Vector3d ::Zero();
+
+    bool success = geometry::Opencv5ptEssentialMatrix(
+        vkfbvs, vcurbvs, 100, 3., false, current_frame_->pcalib_leftcam_->fx_,
+        current_frame_->pcalib_leftcam_->fy_, Rkfc, tkfc, voutliersidx );
+
+    if ( !success ) {
+      LOG( WARNING ) << "Not enough inline kps to compute Essential Matrix";
+      return false;
+    }
+
+    // Remove outliers from cur. Frame
+    for ( const auto& idx : voutliersidx ) {
+      // MapManager is responsible for all the removing operations.
+      map_manager_->RemoveObsFromCurFrameById( vkpsids.at( idx ) );
+    }
+
+    // Arbitrary scale
+    tkfc.normalize();
+    tkfc = tkfc.eval() * 0.25;
+
+    LOG( INFO ) << ">>> Essential Mat init : " << tkfc.transpose();
+    Sophus::SE3d T_w_kf = pkf->GetTwc();
+    Sophus::SE3d T_kf_cur( Rkfc, tkfc );
+    current_frame_->SetTwc( T_w_kf * T_kf_cur );
+  }
+
+  return true;
 }
 
 void VisualFrontEnd::PreProcessImage( cv::Mat& img_raw ) {
@@ -138,7 +220,7 @@ void VisualFrontEnd::KLTTracking() {
 
     size_t good_num = 0;
 
-    feat_cur.conservativeResize(259, feat_prev.cols());
+    feat_cur.conservativeResize( 259, feat_prev.cols() );
     for ( size_t i = 0; i < vkps.size(); i++ ) {
       if ( kpstatus.at( i ) ) {
         current_frame_->UpdateKeypoint( vkp_ids.at( i ), vpriors.at( i ) );

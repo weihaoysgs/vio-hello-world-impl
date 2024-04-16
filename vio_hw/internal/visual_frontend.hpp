@@ -1,18 +1,20 @@
 #ifndef VIO_HELLO_WORLD_VISUAL_FRONTEND_HPP
 #define VIO_HELLO_WORLD_VISUAL_FRONTEND_HPP
 
+#include "geometry/motion_ba/motion_ba.hpp"
 #include "vio_hw/internal/constant_motion_model.hpp"
 #include "vio_hw/internal/frame.hpp"
 #include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/setting.hpp"
+#include "vio_hw/internal/system_status.hpp"
 #include "vio_hw/internal/tracker/tracker_base.hpp"
 #include "vio_hw/internal/viz/visualization_base.hpp"
-#include "geometry/motion_ba/motion_ba.hpp"
+#include "geometry/epipolar/epipolar_constraint.hpp"
 
 namespace viohw {
 class VisualFrontEnd
 {
- public:
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   // default construction function
@@ -22,17 +24,19 @@ class VisualFrontEnd
   ~VisualFrontEnd() = default;
 
   // construction function
-  VisualFrontEnd(SettingPtr setting, FramePtr frame, MapManagerPtr manager,
-                 TrackerBasePtr tracker, VisualizationBasePtr viz);
+  VisualFrontEnd( SettingPtr setting, FramePtr frame, MapManagerPtr manager, TrackerBasePtr tracker,
+                  VisualizationBasePtr viz, SystemStatePtr state );
 
   // tracking left image
-  bool TrackerMono(cv::Mat &image, double time);
+  bool TrackerMono( cv::Mat &image, double time );
+
+  bool VisualMonoInit();
 
   // tracking image and build keyframe
-  bool VisualTracking(cv::Mat &image, double time);
+  bool VisualTracking( cv::Mat &image, double time );
 
   // preprocess image, build pyramid for tracking and apply clahe
-  void PreProcessImage(cv::Mat &image);
+  void PreProcessImage( cv::Mat &image );
 
   // optical flow tracking for frame before and after
   void KLTTracking();
@@ -57,14 +61,15 @@ class VisualFrontEnd
   // get current frame[left image] pyramid image
   std::vector<cv::Mat> GetCurrentFramePyramid() const;
 
-  float ComputeParallax(const int kfid, bool do_unrot, bool median, bool is_2donly);
+  float ComputeParallax( const int kfid, bool do_unrot, bool median, bool is_2donly );
 
- private:
+private:
   MapManagerPtr map_manager_;
   FramePtr current_frame_;
   SettingPtr param_;
   TrackerBasePtr tracker_;
   VisualizationBasePtr viz_;
+  SystemStatePtr system_state_;
 
   ConstantMotionModel motion_model_;
 

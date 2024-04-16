@@ -13,6 +13,7 @@
 #include "vio_hw/internal/map_manager.hpp"
 #include "vio_hw/internal/mapping.hpp"
 #include "vio_hw/internal/setting.hpp"
+#include "vio_hw/internal/system_status.hpp"
 #include "vio_hw/internal/tracker/tracker_base.hpp"
 #include "vio_hw/internal/visual_frontend.hpp"
 #include "vio_hw/internal/viz/visualization_base.hpp"
@@ -25,6 +26,7 @@ public:
   void run();
   const std::shared_ptr<Setting> getParams() const { return params_; }
   void addNewStereoImages( double time, cv::Mat &im0, cv::Mat &im1 );
+  void addNewMonoImage( const double time, cv::Mat &im0 );
   bool getNewImage( cv::Mat &iml, cv::Mat &imr, double &time );
   void setupCalibration();
   bool VisualizationImage();
@@ -64,6 +66,9 @@ private:
   // imu database
   backend::IMU::IMUDataBasePtr imu_database_;
   bool is_init_imu_pose_ = false;
+
+  // system state
+  SystemStatePtr system_state_;
 };
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimeStamp;
